@@ -1,4 +1,5 @@
 import React from 'react';
+import mapBackground from 'figma:asset/6159593dc1e129bc0f365325080d4c6d97363b06.png';
 import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 
@@ -142,7 +143,7 @@ export const AdventureMapScreen: React.FC<AdventureMapScreenProps> = ({
       {/* Beautiful Map Background with Dark Overlay */}
       <div className="absolute inset-0">
         <img
-          src={brandingSettings.mapBackgroundImage}
+          src={brandingSettings.mapBackgroundImage || mapBackground}
           alt="Adventure Map"
           className="w-full h-full object-cover"
         />

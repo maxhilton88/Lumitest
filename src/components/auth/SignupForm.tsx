@@ -5,6 +5,7 @@ import { ImageWithFallback } from '../figma/ImageWithFallback';
 import forestWithFox from 'figma:asset/c69ab2873b937348bf448e37c8e87a0e753b1d7f.png';
 import { toast } from 'sonner@2.0.3';
 import { ButtonSpinner } from '../ui/spinner';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface SignupFormProps {
   userType: 'kindergarten' | 'superadmin';
@@ -23,6 +24,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,12 +150,13 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             </div>
 
             {/* Signup Button */}
-            <GlossyButton
+            <button
               type="submit"
-              className="w-full px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors mt-6"
+              disabled={isLoading}
+              className="w-full px-4 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? <ButtonSpinner /> : 'Create Account'}
-            </GlossyButton>
+            </button>
           </form>
 
           {/* Login Link */}

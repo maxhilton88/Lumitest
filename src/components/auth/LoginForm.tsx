@@ -4,6 +4,7 @@ import { useLanguage } from '../LanguageContext';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import forestWithFox from 'figma:asset/c69ab2873b937348bf448e37c8e87a0e753b1d7f.png';
 import { ButtonSpinner } from '../ui/spinner';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginFormProps {
   userType: 'kindergarten' | 'superadmin';

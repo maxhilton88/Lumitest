@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, Users, Download, Settings, LogOut, BarChart3, Menu, MessageCircle, Zap, BookOpen, FileText } from 'lucide-react';
 import { UpgradePage } from '../billing/UpgradePage';
 import { StripeCheckout } from '../billing/StripeCheckout';
@@ -11,6 +11,8 @@ import { ChildReport } from '../ChildReport';
 import { ReportModal } from '../ReportModal';
 import { Question } from '../screens/QuestionScreen';
 import { toast } from 'sonner';
+import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { loadLeads } from '../../utils/api';
 
 interface Lead {
   id: string;
@@ -69,45 +71,27 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportLead, setReportLead] = useState<Lead | null>(null);
-  const [leads] = useState<Lead[]>([
-    {
-      id: '1',
-      childName: 'Emma Wong',
-      parentName: 'Sarah Wong',
-      whatsapp: '+60123456789',
-      score: 8,
-      totalQuestions: 10,
-      completedAt: '2026-01-16 10:30 AM'
-    },
-    {
-      id: '2',
-      childName: 'Ahmad Razak',
-      parentName: 'Fatimah Razak',
-      whatsapp: '+60129876543',
-      score: 9,
-      totalQuestions: 10,
-      completedAt: '2026-01-15 2:45 PM'
-    },
-    {
-      id: '3',
-      childName: 'Li Wei',
-      parentName: 'Chen Li',
-      whatsapp: '+60187654321',
-      score: 7,
-      totalQuestions: 10,
-      completedAt: '2026-01-15 11:20 AM'
-    },
-    // Add more leads to demonstrate the 15-lead limit
-    ...Array.from({ length: 15 }, (_, i) => ({
-      id: String(i + 4),
-      childName: `Child ${i + 4}`,
-      parentName: `Parent ${i + 4}`,
-      whatsapp: `+6012345${String(i + 4).padStart(4, '0')}`,
-      score: Math.floor(Math.random() * 10) + 1,
-      totalQuestions: 10,
-      completedAt: '2026-01-14 9:00 AM'
-    }))
-  ]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(true);
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        setIsLoadingLeads(true);
+        console.log('Fetching leads from database...');
+        console.log('Auth token:', localStorage.getItem('access_token') ? 'Present' : 'Missing');
+        const fetchedLeads = await loadLeads();
+        console.log('Leads fetched successfully:', fetchedLeads);
+        setLeads(fetchedLeads);
+      } catch (error) {
+        console.error('Failed to load leads:', error);
+        toast.error(`Failed to load leads: ${error.message}`);
+      } finally {
+        setIsLoadingLeads(false);
+      }
+    };
+    fetchLeads();
+  }, []);
 
   const exportToCSV = () => {
     const csvContent = [
@@ -126,7 +110,9 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
   };
 
   const totalLeads = leads.length;
-  const averageScore = Math.round(leads.reduce((acc, lead) => acc + (lead.score / lead.totalQuestions * 100), 0) / leads.length);
+  const averageScore = totalLeads > 0 
+    ? Math.round(leads.reduce((acc, lead) => acc + (lead.score / lead.totalQuestions * 100), 0) / leads.length)
+    : 0;
 
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -350,7 +336,138 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {leads.map((lead, index) => {
+                      {isLoadingLeads ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                            <div className="flex flex-col items-center gap-2">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                              <p>Loading leads...</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : leads.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                            <div className="flex flex-col items-center gap-2">
+                              <Users className="w-12 h-12 text-gray-300" />
+                              <p className="text-lg font-medium text-gray-900">No leads yet</p>
+                              <p className="text-sm">Leads will appear here when parents complete the test</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        leads.map((lead, index) => {
+                          const percentage = Math.round((lead.score / lead.totalQuestions) * 100);
+                          const isBlurred = isTrialAccount && index >= 15; // Blur 16th lead onwards (index 15+)
+                          
+                          return (
+                            <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
+                              <td className={`px-6 py-4 text-sm text-gray-900 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
+                                {lead.childName}
+                              </td>
+                              <td className={`px-6 py-4 text-sm text-gray-600 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
+                                {lead.parentName}
+                              </td>
+                              <td className={`px-6 py-4 text-sm text-gray-600 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
+                                {lead.whatsapp}
+                              </td>
+                              <td className="px-6 py-4 text-sm">
+                                <span className="text-gray-900 font-medium">{lead.score}/{lead.totalQuestions}</span>
+                                <span className="text-gray-400 ml-2">({percentage}%)</span>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-600">{lead.completedAt}</td>
+                              <td className="px-6 py-4 text-sm">
+                                {isBlurred ? (
+                                  <button
+                                    onClick={() => setShowUpgrade(true)}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                                  >
+                                    <Zap className="w-3.5 h-3.5" />
+                                    Upgrade to Contact
+                                  </button>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => {
+                                        setReportLead(lead);
+                                        setShowReportModal(true);
+                                      }}
+                                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                    >
+                                      <FileText className="w-3.5 h-3.5" />
+                                      Report
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setSelectedLead(lead);
+                                        setShowWhatsAppModal(true);
+                                      }}
+                                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                                    >
+                                      <MessageCircle className="w-3.5 h-3.5" />
+                                      WhatsApp
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeMenu === 'leads' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900">All Leads</h2>
+                <button
+                  onClick={exportToCSV}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Export
+                </button>
+              </div>
+
+              <div className="border border-gray-100 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Child</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Parent</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Contact</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Score</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {isLoadingLeads ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                            <p>Loading leads...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : leads.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                          <div className="flex flex-col items-center gap-2">
+                            <Users className="w-12 h-12 text-gray-300" />
+                            <p className="text-lg font-medium text-gray-900">No leads yet</p>
+                            <p className="text-sm">Leads will appear here when parents complete the test</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      leads.map((lead, index) => {
                         const percentage = Math.round((lead.score / lead.totalQuestions) * 100);
                         const isBlurred = isTrialAccount && index >= 15; // Blur 16th lead onwards (index 15+)
                         
@@ -406,96 +523,8 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
                             </td>
                           </tr>
                         );
-                      })}</tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeMenu === 'leads' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">All Leads</h2>
-                <button
-                  onClick={exportToCSV}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Export
-                </button>
-              </div>
-
-              <div className="border border-gray-100 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Child</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Parent</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Score</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {leads.map((lead, index) => {
-                      const percentage = Math.round((lead.score / lead.totalQuestions) * 100);
-                      const isBlurred = isTrialAccount && index >= 15; // Blur 16th lead onwards (index 15+)
-                      
-                      return (
-                        <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                          <td className={`px-6 py-4 text-sm text-gray-900 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
-                            {lead.childName}
-                          </td>
-                          <td className={`px-6 py-4 text-sm text-gray-600 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
-                            {lead.parentName}
-                          </td>
-                          <td className={`px-6 py-4 text-sm text-gray-600 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
-                            {lead.whatsapp}
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            <span className="text-gray-900 font-medium">{lead.score}/{lead.totalQuestions}</span>
-                            <span className="text-gray-400 ml-2">({percentage}%)</span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{lead.completedAt}</td>
-                          <td className="px-6 py-4 text-sm">
-                            {isBlurred ? (
-                              <button
-                                onClick={() => setShowUpgrade(true)}
-                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-                              >
-                                <Zap className="w-3.5 h-3.5" />
-                                Upgrade to Contact
-                              </button>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    setReportLead(lead);
-                                    setShowReportModal(true);
-                                  }}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                                >
-                                  <FileText className="w-3.5 h-3.5" />
-                                  Report
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSelectedLead(lead);
-                                    setShowWhatsAppModal(true);
-                                  }}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                                >
-                                  <MessageCircle className="w-3.5 h-3.5" />
-                                  WhatsApp
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -14,7 +14,8 @@ import { SuperAdminDashboard } from './components/dashboards/SuperAdminDashboard
 import { DevNavigation, UserType } from './components/DevNavigation';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner@2.0.3';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { projectId, publicAnonKey } from './utils/supabase/info';
+import { submitLead } from './utils/api';
 
 // Sample questions for the test
 const sampleQuestions: Question[] = [
@@ -145,13 +146,22 @@ const sampleQuestions: Question[] = [
 type AuthScreen = 'login' | 'signup' | 'forgotPassword';
 type ChildScreen = 'childWelcome' | 'languageSelect' | 'adventureMap' | 'test' | 'leadGate' | 'results';
 
+// Demo school ID for child flow (in production, this would come from URL)
+const DEMO_SCHOOL_ID = 'demo-school-123';
+
 export default function App() {
-  // User type management
-  const [currentUserType, setCurrentUserType] = useState<UserType>('child');
+  // User type management - persist to localStorage
+  const [currentUserType, setCurrentUserType] = useState<UserType>(() => {
+    const saved = localStorage.getItem('userType');
+    return (saved as UserType) || 'child';
+  });
   
-  // Auth state
+  // Auth state - restore from localStorage
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  });
   
   // Child/Parent flow state
   const [childScreen, setChildScreen] = useState<ChildScreen>('childWelcome');
@@ -215,20 +225,77 @@ export default function App() {
   const [allDetailedAnswers, setAllDetailedAnswers] = useState<DetailedAnswer[]>([]);
   const [currentModuleAnswers, setCurrentModuleAnswers] = useState<DetailedAnswer[]>([]);
 
-  // Note: Background music would be initialized here when the hook is created
-  // useBackgroundMusic(musicEnabled);
-
   // ===== AUTH HANDLERS =====
-  const handleLogin = (email: string, password: string) => {
-    console.log('Login:', email, password);
-    toast.success('Login successful!');
-    setIsAuthenticated(true);
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      console.log('Login attempt:', email);
+      
+      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${publicAnonKey}`
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('Login error:', result);
+        toast.error(result.error || 'Invalid credentials');
+        return;
+      }
+
+      console.log('Login success:', result);
+      
+      // Store session data
+      localStorage.setItem('access_token', result.session.access_token);
+      localStorage.setItem('user_id', result.user.id);
+      localStorage.setItem('school_id', result.school.id);
+      localStorage.setItem('school_name', result.school.school_name);
+      
+      toast.success('Login successful!');
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Login network error:', error);
+      toast.error('Network error. Please try again.');
+    }
   };
 
-  const handleSignup = (data: { name: string; email: string; password: string; schoolName?: string }) => {
-    console.log('Signup:', data);
-    toast.success('Account created successfully!');
-    setIsAuthenticated(true);
+  const handleSignup = async (data: { name: string; email: string; password: string; schoolName?: string }) => {
+    try {
+      console.log('Signup attempt:', data);
+      
+      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${publicAnonKey}`
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          schoolName: data.schoolName || data.name,
+          kindergartenUrl: `${(data.schoolName || data.name).toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
+        })
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('Signup error:', result);
+        toast.error(result.error || 'Signup failed');
+        return;
+      }
+
+      console.log('Signup success:', result);
+      toast.success('Account created successfully! Please sign in.');
+      setAuthScreen('login');
+    } catch (error) {
+      console.error('Signup network error:', error);
+      toast.error('Network error. Please try again.');
+    }
   };
 
   const handleResetPassword = (email: string) => {
@@ -237,6 +304,10 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('school_id');
+    localStorage.removeItem('school_name');
     setIsAuthenticated(false);
     setAuthScreen('login');
     toast.info('Logged out successfully');
@@ -385,8 +456,29 @@ export default function App() {
     }
   };
 
-  const handleLeadSubmit = (data: { childName: string; parentName: string; whatsapp: string }) => {
+  const handleLeadSubmit = async (data: { childName: string; parentName: string; whatsapp: string }) => {
     setLeadData(data);
+    
+    // Submit lead to database
+    try {
+      // Get schoolId from localStorage (set by kindergarten) or use demo
+      const schoolId = localStorage.getItem('school_id') || DEMO_SCHOOL_ID;
+      
+      await submitLead({
+        schoolId,
+        childName: data.childName,
+        parentName: data.parentName,
+        whatsapp: data.whatsapp,
+        childAge: age,
+        includeMandarin: includeMandarinTest
+      });
+      
+      console.log('Lead submitted successfully');
+    } catch (error) {
+      console.error('Failed to submit lead:', error);
+      // Continue to results even if lead submission fails
+    }
+    
     setChildScreen('results');
   };
 
@@ -485,6 +577,7 @@ export default function App() {
   // ===== USER TYPE SWITCHING (DEV MODE) =====
   const handleSwitchUserType = (userType: UserType) => {
     setCurrentUserType(userType);
+    localStorage.setItem('userType', userType);
     setIsAuthenticated(false);
     setAuthScreen('login');
     setChildScreen('childWelcome');

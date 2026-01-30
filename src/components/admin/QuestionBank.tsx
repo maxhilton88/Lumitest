@@ -6,6 +6,7 @@ import { downloadAllTemplates } from '../../utils/templateGenerator';
 import { toast } from 'sonner@2.0.3';
 import { QuestionBankSkeleton } from '../ui/skeleton-loader';
 import { useConfirmation } from '../ui/confirmation-dialog';
+import { loadQuestions, saveQuestions, deleteQuestion } from '../../utils/api';
 
 interface Question {
   id: string;
@@ -461,7 +462,7 @@ export const QuestionBank: React.FC<QuestionBankProps> = ({ questionBank, setQue
       )}
 
       {/* Confirmation Dialog */}
-      <ConfirmDialog />
+      {ConfirmDialog}
     </div>
   );
 };
