@@ -58,26 +58,30 @@ app.post("/make-server-221a61bc/auth/signup", async (c) => {
 
     console.log(`User created with ID: ${authData.user.id}`);
 
-    // Create school record in database
-    const { data: schoolData, error: schoolError } = await supabaseAdmin
-      .from('schools')
-      .insert({
-        user_id: authData.user.id,
-        school_name: schoolName,
-        email,
-        kindergarten_url: kindergartenUrl,
-      })
-      .select()
-      .single();
-
-    if (schoolError) {
-      console.error('School creation error:', schoolError);
+    // Create school record in KV store
+    const schoolId = crypto.randomUUID();
+    const schoolData = {
+      id: schoolId,
+      user_id: authData.user.id,
+      school_name: schoolName,
+      email,
+      kindergarten_url: kindergartenUrl,
+      subscription_tier: 'trial',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    try {
+      await kv.set(`school:${authData.user.id}`, schoolData);
+      await kv.set(`school_by_id:${schoolId}`, schoolData);
+      await kv.set(`school_by_url:${kindergartenUrl}`, schoolData);
+      console.log(`School created successfully: ${schoolId}`);
+    } catch (kvError) {
+      console.error('School creation error:', kvError);
       // Rollback: delete the user if school creation fails
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      return c.json({ error: `Failed to create school: ${schoolError.message}` }, 500);
+      return c.json({ error: `Failed to create school: ${kvError.message}` }, 500);
     }
-
-    console.log(`School created successfully: ${schoolData.id}`);
 
     return c.json({
       success: true,
@@ -109,7 +113,7 @@ app.post("/make-server-221a61bc/auth/login", async (c) => {
     // Create a regular Supabase client for authentication
     const supabaseAuth = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('CUSTOM_ANON_KEY')!
+      Deno.env.get('SUPABASE_ANON_KEY')!
     );
 
     // Sign in with password to get real session token
@@ -125,17 +129,8 @@ app.post("/make-server-221a61bc/auth/login", async (c) => {
 
     console.log(`User authenticated: ${authData.user.id}`);
 
-    // Get school for this user
-    const { data: schoolData, error: schoolError } = await supabaseAdmin
-      .from('schools')
-      .select('*')
-      .eq('user_id', authData.user.id)
-      .maybeSingle();
-
-    if (schoolError) {
-      console.error('School fetch error:', schoolError);
-      return c.json({ error: `Error fetching school: ${schoolError.message}` }, 500);
-    }
+    // Get school for this user from KV store
+    const schoolData = await kv.get(`school:${authData.user.id}`);
 
     if (!schoolData) {
       console.error('No school found for user:', authData.user.id);
@@ -194,34 +189,29 @@ app.post("/make-server-221a61bc/questions", async (c) => {
     const savedQuestions = [];
 
     for (const q of questions) {
-      const { data, error } = await supabaseAdmin
-        .from('questions')
-        .upsert({
-          school_id: school.id,
-          quest: q.quest,
-          language: q.language || 'global',
-          age_difficulty: q.ageDifficulty || 5,
-          type: q.type,
-          question_text: q.question,
-          options: q.options,
-          correct_answer: q.correctAnswer,
-          foxy_message: q.foxyMessage,
-          hotspot_image: q.hotspotImage || null,
-          skills: q.skills || [],
-          created_by: user.id,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'id'
-        })
-        .select()
-        .single();
+      const questionId = q.id || crypto.randomUUID();
+      const questionData = {
+        id: questionId,
+        school_id: school.id,
+        quest: q.quest,
+        language: q.language || 'global',
+        age_difficulty: q.ageDifficulty || 5,
+        type: q.type,
+        question_text: q.question,
+        options: q.options,
+        correct_answer: q.correctAnswer,
+        foxy_message: q.foxyMessage,
+        hotspot_image: q.hotspotImage || null,
+        skills: q.skills || [],
+        created_by: user.id,
+        created_at: q.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) {
-        console.error('Error saving question:', error);
-        return c.json({ error: `Failed to save question: ${error.message}` }, 500);
-      }
-
-      savedQuestions.push(data);
+      await kv.set(`question:${questionId}`, questionData);
+      await kv.set(`school_question:${school.id}:${questionId}`, questionData);
+      
+      savedQuestions.push(questionData);
     }
 
     console.log(`Successfully saved ${savedQuestions.length} questions`);
@@ -256,16 +246,8 @@ app.get("/make-server-221a61bc/questions", async (c) => {
 
     console.log(`Fetching questions for school ${school.id}`);
 
-    const { data: questions, error } = await supabaseAdmin
-      .from('questions')
-      .select('*')
-      .eq('school_id', school.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching questions:', error);
-      return c.json({ error: `Failed to fetch questions: ${error.message}` }, 500);
-    }
+    // Get all questions for this school
+    const questions = await kv.getByPrefix(`school_question:${school.id}:`);
 
     // Transform to frontend format
     const transformedQuestions = questions.map(q => ({
@@ -281,6 +263,13 @@ app.get("/make-server-221a61bc/questions", async (c) => {
       hotspotImage: q.hotspot_image,
       skills: q.skills || []
     }));
+
+    // Sort by created_at descending
+    transformedQuestions.sort((a, b) => {
+      const dateA = new Date(questions.find(q => q.id === a.id)?.created_at || 0);
+      const dateB = new Date(questions.find(q => q.id === b.id)?.created_at || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
 
     console.log(`Returning ${transformedQuestions.length} questions`);
 
@@ -304,19 +293,19 @@ app.delete("/make-server-221a61bc/questions/:id", async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
+    // Get school for this user
+    const { error: schoolError, school } = await getSchoolForUser(user.id);
+    
+    if (schoolError || !school) {
+      return c.json({ error: 'No school found for user' }, 404);
+    }
+
     const questionId = c.req.param('id');
 
     console.log(`Deleting question ${questionId}`);
 
-    const { error } = await supabaseAdmin
-      .from('questions')
-      .delete()
-      .eq('id', questionId);
-
-    if (error) {
-      console.error('Error deleting question:', error);
-      return c.json({ error: `Failed to delete question: ${error.message}` }, 500);
-    }
+    await kv.del(`question:${questionId}`);
+    await kv.del(`school_question:${school.id}:${questionId}`);
 
     return c.json({
       success: true,
@@ -352,30 +341,31 @@ app.post("/make-server-221a61bc/leads", async (c) => {
 
     console.log(`Submitting lead for school ${schoolId}: ${childName}`);
 
-    // Insert lead into database
-    const { data: leadData, error: leadError } = await supabaseAdmin
-      .from('leads')
-      .insert({
-        school_id: schoolId,
-        child_name: childName,
-        parent_name: parentName,
-        whatsapp,
-        child_age: childAge || 5,
-        include_mandarin_test: includeMandarin || false,
-      })
-      .select()
-      .single();
+    // Create lead in KV store
+    const leadId = crypto.randomUUID();
+    const leadData = {
+      id: leadId,
+      school_id: schoolId,
+      child_name: childName,
+      parent_name: parentName,
+      whatsapp,
+      child_age: childAge || 5,
+      include_mandarin_test: includeMandarin || false,
+      answers: answers || [],
+      score: score || 0,
+      total_questions: totalQuestions || 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-    if (leadError) {
-      console.error('Lead creation error:', leadError);
-      return c.json({ error: `Failed to submit lead: ${leadError.message}` }, 500);
-    }
+    await kv.set(`lead:${leadId}`, leadData);
+    await kv.set(`school_lead:${schoolId}:${leadId}`, leadData);
 
-    console.log(`Lead created successfully: ${leadData.id}`);
+    console.log(`Lead created successfully: ${leadId}`);
 
     return c.json({
       success: true,
-      leadId: leadData.id,
+      leadId: leadId,
       message: "Lead submitted successfully!"
     });
   } catch (error) {
@@ -409,16 +399,15 @@ app.get("/make-server-221a61bc/leads", async (c) => {
 
     console.log(`Fetching leads for school ${school.id} (${school.school_name})`);
 
-    const { data: leads, error } = await supabaseAdmin
-      .from('leads')
-      .select('*')
-      .eq('school_id', school.id)
-      .order('created_at', { ascending: false });
+    // Get all leads for this school
+    const leads = await kv.getByPrefix(`school_lead:${school.id}:`);
 
-    if (error) {
-      console.error('Error fetching leads:', error);
-      return c.json({ error: `Failed to fetch leads: ${error.message}` }, 500);
-    }
+    // Sort by created_at descending
+    leads.sort((a, b) => {
+      const dateA = new Date(a.created_at || 0);
+      const dateB = new Date(b.created_at || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
 
     console.log(`Returning ${leads.length} leads`);
 
@@ -442,19 +431,19 @@ app.delete("/make-server-221a61bc/leads/:id", async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
+    // Get school for this user
+    const { error: schoolError, school } = await getSchoolForUser(user.id);
+    
+    if (schoolError || !school) {
+      return c.json({ error: 'No school found for user' }, 404);
+    }
+
     const leadId = c.req.param('id');
 
     console.log(`Deleting lead ${leadId}`);
 
-    const { error } = await supabaseAdmin
-      .from('leads')
-      .delete()
-      .eq('id', leadId);
-
-    if (error) {
-      console.error('Error deleting lead:', error);
-      return c.json({ error: `Failed to delete lead: ${error.message}` }, 500);
-    }
+    await kv.del(`lead:${leadId}`);
+    await kv.del(`school_lead:${school.id}:${leadId}`);
 
     return c.json({
       success: true,

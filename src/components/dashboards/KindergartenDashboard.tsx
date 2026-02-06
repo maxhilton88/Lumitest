@@ -71,27 +71,33 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportLead, setReportLead] = useState<Lead | null>(null);
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [isLoadingLeads, setIsLoadingLeads] = useState(true);
-
-  useEffect(() => {
-    const fetchLeads = async () => {
-      try {
-        setIsLoadingLeads(true);
-        console.log('Fetching leads from database...');
-        console.log('Auth token:', localStorage.getItem('access_token') ? 'Present' : 'Missing');
-        const fetchedLeads = await loadLeads();
-        console.log('Leads fetched successfully:', fetchedLeads);
-        setLeads(fetchedLeads);
-      } catch (error) {
-        console.error('Failed to load leads:', error);
-        toast.error(`Failed to load leads: ${error.message}`);
-      } finally {
-        setIsLoadingLeads(false);
-      }
-    };
-    fetchLeads();
-  }, []);
+  
+  // HARDCODED SAMPLE LEADS - 20 Malaysian kindergarten leads
+  const [leads] = useState<Lead[]>([
+    { id: '1', childName: 'Ahmad Zikri', parentName: 'Encik Ahmad bin Hassan', whatsapp: '+60123456789', score: 18, totalQuestions: 20, completedAt: '04 Feb 2026' },
+    { id: '2', childName: 'Nurul Aisyah', parentName: 'Puan Siti binti Abdullah', whatsapp: '+60127654321', score: 15, totalQuestions: 20, completedAt: '01 Feb 2026' },
+    { id: '3', childName: 'Wong Wei Jie', parentName: 'Mr. Wong Chee Keong', whatsapp: '+60138765432', score: 19, totalQuestions: 20, completedAt: '03 Feb 2026' },
+    { id: '4', childName: 'Lim Xin Yi', parentName: 'Mrs. Lim Mei Ling', whatsapp: '+60129876543', score: 17, totalQuestions: 20, completedAt: '30 Jan 2026' },
+    { id: '5', childName: 'Dharshini a/p Suresh', parentName: 'Mr. Suresh Kumar', whatsapp: '+60145678901', score: 14, totalQuestions: 20, completedAt: '02 Feb 2026' },
+    { id: '6', childName: 'Muhammad Hakimi', parentName: 'Encik Jamal bin Omar', whatsapp: '+60156789012', score: 16, totalQuestions: 20, completedAt: '29 Jan 2026' },
+    { id: '7', childName: 'Tan Jia Wen', parentName: 'Mrs. Tan Siew Hong', whatsapp: '+60167890123', score: 20, totalQuestions: 20, completedAt: '05 Feb 2026' },
+    { id: '8', childName: 'Aisya Sofea', parentName: 'Puan Nur Aini binti Yusof', whatsapp: '+60178901234', score: 13, totalQuestions: 20, completedAt: '27 Jan 2026' },
+    { id: '9', childName: 'Chen Wei Lun', parentName: 'Mr. Chen Kai Ming', whatsapp: '+60189012345', score: 18, totalQuestions: 20, completedAt: '31 Jan 2026' },
+    { id: '10', childName: 'Priya a/p Rajan', parentName: 'Mrs. Lakshmi Devi', whatsapp: '+60191234567', score: 11, totalQuestions: 20, completedAt: '25 Jan 2026' },
+    { id: '11', childName: 'Amirul Hakim', parentName: 'Encik Hafiz bin Ismail', whatsapp: '+60123334444', score: 19, totalQuestions: 20, completedAt: '28 Jan 2026' },
+    { id: '12', childName: 'Lee Kai Xuan', parentName: 'Mr. Lee Chong Wei', whatsapp: '+60125556666', score: 17, totalQuestions: 20, completedAt: '26 Jan 2026' },
+    { id: '13', childName: 'Sofia Hana', parentName: 'Puan Zarina binti Kamal', whatsapp: '+60127778888', score: 15, totalQuestions: 20, completedAt: '23 Jan 2026' },
+    { id: '14', childName: 'Karthik a/l Murugan', parentName: 'Mr. Murugan s/o Ravi', whatsapp: '+60129990000', score: 16, totalQuestions: 20, completedAt: '24 Jan 2026' },
+    { id: '15', childName: 'Nur Balqis', parentName: 'Puan Farah binti Ali', whatsapp: '+60141112222', score: 14, totalQuestions: 20, completedAt: '22 Jan 2026' },
+    // These will be blurred in trial mode (16+)
+    { id: '16', childName: 'Chua Ming Hao', parentName: 'Mrs. Chua Ai Ling', whatsapp: '+60152223333', score: 20, totalQuestions: 20, completedAt: '21 Jan 2026' },
+    { id: '17', childName: 'Alya Medina', parentName: 'Encik Rashid bin Hassan', whatsapp: '+60163334444', score: 18, totalQuestions: 20, completedAt: '19 Jan 2026' },
+    { id: '18', childName: 'Arjun a/l Dinesh', parentName: 'Mr. Dinesh Kumar', whatsapp: '+60174445555', score: 13, totalQuestions: 20, completedAt: '17 Jan 2026' },
+    { id: '19', childName: 'Ng Kai Le', parentName: 'Mr. Ng Boon Chuan', whatsapp: '+60185556666', score: 17, totalQuestions: 20, completedAt: '15 Jan 2026' },
+    { id: '20', childName: 'Fatin Izzah', parentName: 'Puan Halimah binti Osman', whatsapp: '+60196667777', score: 19, totalQuestions: 20, completedAt: '12 Jan 2026' },
+  ]);
+  
+  const [isLoadingLeads, setIsLoadingLeads] = useState(false); // No loading needed for hardcoded data
 
   const exportToCSV = () => {
     const csvContent = [

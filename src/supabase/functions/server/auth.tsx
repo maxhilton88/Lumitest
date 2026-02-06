@@ -1,9 +1,10 @@
 // Authentication utilities for Foxy Adventure
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import * as kv from './kv_store.tsx';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('CUSTOM_SERVICE_ROLE_KEY')!;
-const supabaseAnonKey = Deno.env.get('CUSTOM_ANON_KEY')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 // Create Supabase client with service role (for admin operations)
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
@@ -32,15 +33,15 @@ export async function verifyToken(authHeader: string | null) {
 
 // Get school for authenticated user
 export async function getSchoolForUser(userId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('schools')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-  
-  if (error) {
+  try {
+    const data = await kv.get(`school:${userId}`);
+    
+    if (!data) {
+      return { error: 'No school found for this user', school: null };
+    }
+    
+    return { error: null, school: data };
+  } catch (error) {
     return { error: error.message, school: null };
   }
-  
-  return { error: null, school: data };
 }
