@@ -5,170 +5,51 @@ interface MusicToggleProps {
   className?: string;
 }
 
-// Global state to ensure only one music instance plays across all components
-let globalAudioContext: AudioContext | null = null;
-let globalGainNode: GainNode | null = null;
+// Global audio element to persist across component re-renders/remounts
+let globalAudio: HTMLAudioElement | null = null;
 let globalIsPlaying = false;
-let globalMelodyTimeout: NodeJS.Timeout | null = null;
-let globalBassTimeout: NodeJS.Timeout | null = null;
+
+const MUSIC_URL = 'https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/public/music/Quest%20of%20the%20Little%20Stars.mp3';
 
 export const MusicToggle: React.FC<MusicToggleProps> = ({ className = '' }) => {
   const [isPlaying, setIsPlaying] = useState(globalIsPlaying);
-  const oscillatorsRef = useRef<OscillatorNode[]>([]);
 
-  // Initialize audio context once globally
+  // Initialize audio element once globally
   useEffect(() => {
-    if (!globalAudioContext) {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const gain = ctx.createGain();
-      gain.connect(ctx.destination);
-      gain.gain.value = 0.15; // Low volume for background music
-      
-      globalAudioContext = ctx;
-      globalGainNode = gain;
+    if (!globalAudio) {
+      const audio = new Audio(MUSIC_URL);
+      audio.loop = true;
+      audio.volume = 0.25; // Low volume for background music
+      audio.preload = 'metadata';
+      globalAudio = audio;
+
+      // Sync state if audio ends unexpectedly
+      audio.addEventListener('pause', () => {
+        if (!audio.loop) {
+          globalIsPlaying = false;
+        }
+      });
     }
 
-    // Cleanup on unmount
-    return () => {
-      // Don't close the global context - other instances might be using it
-    };
+    // Sync local state with global state on mount
+    setIsPlaying(globalIsPlaying);
   }, []);
 
-  const clearAllLoops = () => {
-    // Clear all setTimeout loops
-    if (globalMelodyTimeout) {
-      clearTimeout(globalMelodyTimeout);
-      globalMelodyTimeout = null;
-    }
-    if (globalBassTimeout) {
-      clearTimeout(globalBassTimeout);
-      globalBassTimeout = null;
-    }
-  };
+  const toggleMusic = async () => {
+    if (!globalAudio) return;
 
-  const stopAllOscillators = () => {
-    oscillatorsRef.current.forEach(osc => {
-      try {
-        osc.stop();
-        osc.disconnect();
-      } catch (e) {
-        // Ignore if already stopped
-      }
-    });
-    oscillatorsRef.current = [];
-  };
-
-  const playBackgroundMusic = () => {
-    if (!globalAudioContext || !globalGainNode) return;
-
-    // Clear any existing loops first
-    clearAllLoops();
-    stopAllOscillators();
-
-    // Create a simple, cheerful melody loop
-    const melody = [
-      { freq: 523.25, duration: 0.5 }, // C5
-      { freq: 587.33, duration: 0.5 }, // D5
-      { freq: 659.25, duration: 0.5 }, // E5
-      { freq: 523.25, duration: 0.5 }, // C5
-      { freq: 659.25, duration: 0.5 }, // E5
-      { freq: 523.25, duration: 0.5 }, // C5
-      { freq: 587.33, duration: 1.0 }, // D5
-    ];
-
-    const bass = [
-      { freq: 130.81, duration: 2.0 }, // C3
-      { freq: 146.83, duration: 2.0 }, // D3
-    ];
-
-    // Play melody in loop
-    const playMelodyLoop = () => {
-      if (!globalIsPlaying) return; // Stop if music was turned off
-      
-      let time = globalAudioContext!.currentTime;
-      
-      melody.forEach((note) => {
-        const osc = globalAudioContext!.createOscillator();
-        const noteGain = globalAudioContext!.createGain();
-        
-        osc.connect(noteGain);
-        noteGain.connect(globalGainNode!);
-        
-        osc.frequency.value = note.freq;
-        osc.type = 'sine';
-        
-        noteGain.gain.setValueAtTime(0, time);
-        noteGain.gain.linearRampToValueAtTime(0.3, time + 0.05);
-        noteGain.gain.exponentialRampToValueAtTime(0.01, time + note.duration);
-        
-        osc.start(time);
-        osc.stop(time + note.duration);
-        
-        oscillatorsRef.current.push(osc);
-        time += note.duration;
-      });
-
-      // Loop the melody only if still playing
-      if (globalIsPlaying) {
-        globalMelodyTimeout = setTimeout(playMelodyLoop, 3500);
-      }
-    };
-
-    // Play bass in loop
-    const playBassLoop = () => {
-      if (!globalIsPlaying) return; // Stop if music was turned off
-      
-      let time = globalAudioContext!.currentTime;
-      
-      bass.forEach((note) => {
-        const osc = globalAudioContext!.createOscillator();
-        const noteGain = globalAudioContext!.createGain();
-        
-        osc.connect(noteGain);
-        noteGain.connect(globalGainNode!);
-        
-        osc.frequency.value = note.freq;
-        osc.type = 'triangle';
-        
-        noteGain.gain.setValueAtTime(0.2, time);
-        noteGain.gain.exponentialRampToValueAtTime(0.01, time + note.duration);
-        
-        osc.start(time);
-        osc.stop(time + note.duration);
-        
-        oscillatorsRef.current.push(osc);
-        time += note.duration;
-      });
-
-      // Loop the bass only if still playing
-      if (globalIsPlaying) {
-        globalBassTimeout = setTimeout(playBassLoop, 4000);
-      }
-    };
-
-    playMelodyLoop();
-    playBassLoop();
-  };
-
-  const stopBackgroundMusic = () => {
-    globalIsPlaying = false;
-    
-    // Clear all setTimeout loops
-    clearAllLoops();
-    
-    // Stop all oscillators
-    stopAllOscillators();
-  };
-
-  const toggleMusic = () => {
     if (isPlaying) {
-      stopBackgroundMusic();
-      setIsPlaying(false);
+      globalAudio.pause();
       globalIsPlaying = false;
+      setIsPlaying(false);
     } else {
-      globalIsPlaying = true;
-      setIsPlaying(true);
-      playBackgroundMusic();
+      try {
+        await globalAudio.play();
+        globalIsPlaying = true;
+        setIsPlaying(true);
+      } catch (err) {
+        console.warn('Music playback failed (user interaction may be required):', err);
+      }
     }
   };
 
@@ -204,11 +85,7 @@ export const MusicToggle: React.FC<MusicToggleProps> = ({ className = '' }) => {
       
       {/* Sound waves when playing */}
       {isPlaying && (
-        <>
-          <div className="absolute inset-0 rounded-full bg-yellow-400 animate-ping opacity-30" />
-          <div className="absolute inset-0 rounded-full bg-yellow-300 animate-ping opacity-20" 
-               style={{ animationDelay: '0.3s' }} />
-        </>
+        <div className="absolute inset-0 rounded-full border-2 border-yellow-400/40 animate-pulse" />
       )}
     </button>
   );

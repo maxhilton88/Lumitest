@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GlossyButton } from '../GlossyButton';
 import { VoiceButton } from '../VoiceButton';
 import { FoxyCharacter } from '../FoxyCharacter';
@@ -6,9 +6,33 @@ import { ProgressBar } from '../ProgressBar';
 import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
-import { Confetti } from '../Confetti';
+import { VictoryBurst } from '../VictoryBurst';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
+import { FantasyBackground, FantasyFooter } from '../FantasyBackground';
 import forestBackground from 'figma:asset/a581931d108e11fed5631f15572c62563a4ab3d4.png';
+
+// ── Inject keyframe CSS ONCE globally (not per render) ──
+let questionStylesInjected = false;
+function injectQuestionStyles() {
+  if (questionStylesInjected) return;
+  questionStylesInjected = true;
+  const style = document.createElement('style');
+  style.id = 'question-screen-css';
+  style.textContent = `
+@keyframes qs-shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-10px)}20%,40%,60%,80%{transform:translateX(10px)}}
+@keyframes qs-explode{0%{transform:scale(1) rotate(0);opacity:1}50%{transform:scale(.9) rotate(-2deg);opacity:.8}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes qs-correct-glow{0%{box-shadow:0 0 0 0 rgba(124,198,67,.6),0 0 20px rgba(212,164,74,.3)}40%{box-shadow:0 0 30px 8px rgba(124,198,67,.4),0 0 60px rgba(212,164,74,.5)}100%{box-shadow:0 0 15px 4px rgba(124,198,67,.2),0 0 30px rgba(212,164,74,.2)}}
+@keyframes qs-wrong-crack{0%{box-shadow:0 0 0 0 rgba(255,107,107,.6)}25%{box-shadow:0 0 30px 8px rgba(255,50,50,.5);transform:translateX(-4px) rotate(-.5deg)}50%{box-shadow:0 0 15px 4px rgba(255,107,107,.3);transform:translateX(4px) rotate(.5deg)}75%{box-shadow:0 0 25px 6px rgba(255,50,50,.4);transform:translateX(-3px) rotate(-.3deg)}100%{box-shadow:0 0 8px 2px rgba(255,107,107,.15);transform:translateX(0) rotate(0)}}
+@keyframes qs-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes qs-progress-fill{0%{stroke-dashoffset:87.96}100%{stroke-dashoffset:0}}
+.qs-shake{animation:qs-shake .6s ease-in-out}
+.qs-explode{animation:qs-explode .6s ease-in-out}
+.qs-correct-glow{animation:qs-correct-glow 1s ease-out forwards}
+.qs-wrong-crack{animation:qs-wrong-crack .6s ease-out forwards}
+.qs-progress-ring{animation:qs-progress-fill 3s linear forwards}
+`;
+  document.head.appendChild(style);
+}
 
 export interface Question {
   id: string;
@@ -18,11 +42,12 @@ export interface Question {
     ms: string;
     zh: string;
   };
+  questionImage?: string; // Optional image shown with the question
   options?: Array<{
     id: string;
     text?: { en: string; ms: string; zh: string };
     image?: string;
-    position?: { x: number; y: number; width: number; height: number }; // For hotspot areas
+    position?: { x: number; y: number; width: number; height: number };
   }>;
   correctAnswer: string;
   foxyMessage?: {
@@ -30,7 +55,7 @@ export interface Question {
     ms: string;
     zh: string;
   };
-  hotspotImage?: string; // Main image for hotspot questions
+  hotspotImage?: string;
 }
 
 interface QuestionScreenProps {
@@ -39,6 +64,7 @@ interface QuestionScreenProps {
   totalQuestions: number;
   onAnswer: (answerId: string) => void;
   onNext: () => void;
+  hideProgress?: boolean;
   brandingSettings: {
     schoolName: string;
     logoUrl: string;
@@ -56,72 +82,64 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   totalQuestions,
   onAnswer,
   onNext,
+  hideProgress = false,
   brandingSettings
 }) => {
   const { language, t } = useLanguage();
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showVictory, setShowVictory] = useState(false);
   const [wrongShake, setWrongShake] = useState(false);
-  const [progress, setProgress] = useState(0);
   const { playCorrectSound, playWrongSound } = useSoundEffects();
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
-  
-  // For sequence questions - track the order
+  // Use a ref for the auto-advance timer so we can cancel it
+  const autoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Key to force CSS animation restart on the progress ring
+  const [progressKey, setProgressKey] = useState(0);
+
+  // For sequence questions
   const [sequenceOrder, setSequenceOrder] = useState<string[]>([]);
   const [sequenceSubmitted, setSequenceSubmitted] = useState(false);
 
-  // Initialize sequence order when question loads
+  // Inject global CSS once on mount
+  useEffect(() => { injectQuestionStyles(); }, []);
+
   useEffect(() => {
     if (question.type === 'sequence' && question.options) {
-      // Shuffle the options for the sequence question
       const shuffled = [...question.options].sort(() => Math.random() - 0.5);
       setSequenceOrder(shuffled.map(opt => opt.id));
       setSequenceSubmitted(false);
     }
   }, [question.id]);
 
-  // Auto-advance timer - 3 seconds
+  // Auto-advance timer — NO setInterval, NO state updates during animation
   useEffect(() => {
     if (selectedAnswer) {
-      setProgress(0);
-      const timer = setTimeout(() => {
+      // Bump the key to restart the CSS progress ring animation
+      setProgressKey(k => k + 1);
+
+      autoAdvanceTimerRef.current = setTimeout(() => {
         handleNext();
       }, 3000);
 
-      const interval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + (100 / 30), 100));
-      }, 100);
-
       return () => {
-        clearTimeout(timer);
-        clearInterval(interval);
+        if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
       };
     }
   }, [selectedAnswer]);
 
-  // Auto-play question audio when question loads
+  // Auto-play question audio
   useEffect(() => {
     const playQuestionAudio = () => {
       if ('speechSynthesis' in window) {
         const questionText = question.question[language];
         const utterance = new SpeechSynthesisUtterance(questionText);
-        
-        // Map languages to speech synthesis voices
-        const languageMap = {
-          en: 'en-US',
-          ms: 'ms-MY',
-          zh: 'zh-CN'
-        };
-        
+        const languageMap = { en: 'en-US', ms: 'ms-MY', zh: 'zh-CN' };
         utterance.lang = languageMap[language];
         utterance.rate = 0.9;
         utterance.pitch = 1.1;
-        
-        window.speechSynthesis.cancel(); // Cancel any ongoing speech
-        
-        // Small delay to ensure smooth playback
+        window.speechSynthesis.cancel();
         setTimeout(() => {
           window.speechSynthesis.speak(utterance);
         }, 300);
@@ -129,12 +147,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
     };
 
     playQuestionAudio();
-
-    // Cleanup: cancel speech when component unmounts
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, [question.id, language]); // Re-run when question changes or language changes
+    return () => { window.speechSynthesis.cancel(); };
+  }, [question.id, language]);
 
   const handleSelectAnswer = (answerId: string) => {
     setSelectedAnswer(answerId);
@@ -143,12 +157,10 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
     onAnswer(answerId);
 
     if (correct) {
-      // Correct answer: play success sound and show confetti
       playCorrectSound();
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      setShowVictory(true);
+      setTimeout(() => setShowVictory(false), 3000);
     } else {
-      // Wrong answer: play boom sound and shake
       playWrongSound();
       setWrongShake(true);
       setTimeout(() => setWrongShake(false), 600);
@@ -158,7 +170,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
   const handleNext = () => {
     setSelectedAnswer(null);
     setIsCorrect(null);
-    setShowConfetti(false);
+    setShowVictory(false);
     setWrongShake(false);
     setSequenceOrder([]);
     setSequenceSubmitted(false);
@@ -167,10 +179,9 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
   const handleSequenceSubmit = () => {
     if (question.type === 'sequence' && question.options) {
-      // Check if the entire sequence is correct
-      const correctOrder = question.correctAnswer.split(','); // e.g., "a,b,c,d"
+      const correctOrder = question.correctAnswer.split(',');
       const isSequenceCorrect = sequenceOrder.every((id, idx) => id === correctOrder[idx]);
-      
+
       setSelectedAnswer(isSequenceCorrect ? 'correct' : 'wrong');
       setIsCorrect(isSequenceCorrect);
       setSequenceSubmitted(true);
@@ -178,8 +189,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
       if (isSequenceCorrect) {
         playCorrectSound();
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+        setShowVictory(true);
+        setTimeout(() => setShowVictory(false), 3000);
       } else {
         playWrongSound();
         setWrongShake(true);
@@ -190,161 +201,337 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
   const moveSequenceItem = (fromIndex: number, toIndex: number) => {
     if (sequenceSubmitted) return;
-    
     const newOrder = [...sequenceOrder];
     const [movedItem] = newOrder.splice(fromIndex, 1);
     newOrder.splice(toIndex, 0, movedItem);
     setSequenceOrder(newOrder);
   };
 
+  // Fantasy color tokens
+  const gold = '#d4a44a';
+  const goldLight = '#ffeaa7';
+  const darkBg = 'rgba(30,22,12,0.92)';
+  const darkBgLight = 'rgba(42,31,14,0.85)';
+  const parchment = '#c8b88a';
+
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col">
-      {/* Confetti effect for correct answers */}
-      <Confetti isActive={showConfetti} />
+    <div className="h-[100dvh] relative overflow-hidden flex flex-col">
+      {/* Fantasy background */}
+      <FantasyBackground bgImage={brandingSettings.testBackgroundImage || forestBackground} overlayOpacity={0.55} />
 
-      {/* Forest background with overlay */}
-      <div className="absolute inset-0">
-        <img
-          src={forestBackground}
-          alt="Forest Background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
-        {/* Decorative forest silhouettes */}
-        <div className="absolute bottom-0 left-0 w-48 h-48 md:w-64 md:h-64 bg-[#2d5f3f] rounded-full blur-3xl opacity-30" />
-        <div className="absolute bottom-0 right-0 w-48 h-48 md:w-64 md:h-64 bg-[#3d7c54] rounded-full blur-3xl opacity-30" />
-        <div className="absolute top-0 left-1/4 w-32 h-32 md:w-48 md:h-48 bg-white rounded-full blur-2xl opacity-20" />
-      </div>
+      {/* Victory Burst */}
+      <VictoryBurst isActive={showVictory} />
 
-      {/* Music Toggle - Top Right */}
+      {/* Music Toggle */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
         <MusicToggle />
       </div>
 
-      <div className="relative z-10 flex flex-col h-full max-w-4xl mx-auto w-full">
-        {/* Progress Bar */}
-        <ProgressBar current={questionNumber} total={totalQuestions} />
+      <div className="relative z-10 flex flex-col h-full max-w-4xl mx-auto w-full overflow-y-auto">
+        {/* Progress Bar — hidden in practice mode */}
+        {!hideProgress && <ProgressBar current={questionNumber} total={totalQuestions} />}
 
         {/* Foxy Character */}
         <div className="px-4 md:px-6 pt-4">
-          <FoxyCharacter 
+          <FoxyCharacter
             size="md"
             message={question.foxyMessage?.[language] || question.question[language]}
           />
         </div>
 
         {/* Question Section */}
-        <div className="flex-1 flex flex-col px-4 md:px-6 py-4 md:py-6">
-          {/* Question text with voice button */}
-          <div className="bg-white/95 backdrop-blur-md rounded-3xl p-4 md:p-6 shadow-xl border-4 border-white mb-4 md:mb-6">
-            <div className="flex items-start gap-3 md:gap-4">
-              <VoiceButton 
-                text={question.question[language]} 
-                language={language} 
+        <div className="flex-1 flex flex-col justify-center px-4 md:px-6 py-4 md:py-6">
+          {/* Question text panel — dark fantasy glass */}
+          <div
+            className="relative rounded-2xl p-4 md:p-6 mb-4 md:mb-6"
+            style={{
+              background: `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)`,
+              border: `2px solid ${gold}44`,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
+            }}
+          >
+            {/* Corner accents */}
+            {['top-1 left-1', 'top-1 right-1', 'bottom-1 left-1', 'bottom-1 right-1'].map((pos, idx) => (
+              <div
+                key={idx}
+                className={`absolute ${pos} w-3 h-3 z-[1] pointer-events-none`}
+                style={{
+                  borderTop: pos.includes('top') ? `1.5px solid ${gold}55` : 'none',
+                  borderBottom: pos.includes('bottom') ? `1.5px solid ${gold}55` : 'none',
+                  borderLeft: pos.includes('left') ? `1.5px solid ${gold}55` : 'none',
+                  borderRight: pos.includes('right') ? `1.5px solid ${gold}55` : 'none',
+                  borderRadius: '3px',
+                }}
               />
+            ))}
+
+            <div className="flex items-start gap-3 md:gap-4">
+              <VoiceButton text={question.question[language]} language={language} />
               <div className="flex-1">
-                <p className="text-lg md:text-xl lg:text-2xl font-bold text-[#2d5f3f] leading-relaxed">
+                <p
+                  className="text-lg md:text-xl lg:text-2xl font-bold leading-relaxed"
+                  style={{ color: goldLight, textShadow: `0 0 8px ${gold}33, 0 2px 4px rgba(0,0,0,0.6)` }}
+                >
                   {question.question[language]}
                 </p>
               </div>
             </div>
+
+            {/* Question Image — shown only if questionImage exists */}
+            {question.questionImage && (
+              <div className="mt-4">
+                <div
+                  className="rounded-xl overflow-hidden"
+                  style={{ border: `2px solid ${gold}33` }}
+                >
+                  <ImageWithFallback
+                    src={question.questionImage}
+                    alt="Question illustration"
+                    className="w-full h-auto object-cover"
+                    style={{ maxHeight: '280px' }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Answer Options - Different types */}
-          {question.type === 'mcq' && question.options && (
-            <div className="grid grid-cols-2 gap-3 md:gap-4 lg:gap-6 mb-4 md:mb-6">
-              {question.options.map((option) => {
-                const isWrongAnswer = selectedAnswer === option.id && !isCorrect;
-                
-                return (
-                  <button
-                    key={option.id}
-                    onClick={() => handleSelectAnswer(option.id)}
-                    disabled={selectedAnswer !== null}
-                    className={`
-                      relative
-                      aspect-square
-                      rounded-2xl md:rounded-3xl
-                      overflow-hidden
-                      transition-all
-                      duration-300
-                      border-4
-                      ${selectedAnswer === option.id
-                        ? isCorrect
-                          ? 'border-[#7cc643] scale-105 shadow-2xl'
-                          : 'border-[#ff6b6b] scale-95'
-                        : selectedAnswer
-                          ? 'opacity-50 scale-95 border-white'
-                          : 'hover:scale-105 active:scale-95 border-white shadow-lg'
-                      }
-                      ${isWrongAnswer && wrongShake ? 'animate-shake' : ''}
-                    `}
-                  >
-                    {/* Option content */}
-                    <div 
+          {/* === MCQ Answer Options === */}
+          {question.type === 'mcq' && question.options && (() => {
+            const hasImages = question.options!.some(opt => opt.image);
+
+            // ---- IMAGE ANSWERS: 2×2 grid, full-bleed image bg, 4:3 landscape ----
+            if (hasImages) {
+              return (
+                <div className="grid grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
+                  {question.options!.map((option) => {
+                    const isWrongAnswer = selectedAnswer === option.id && !isCorrect;
+                    const isSelected = selectedAnswer === option.id;
+                    const isCorrectAnswer = isSelected && isCorrect;
+                    const hasText = option.text && (option.text.en || option.text.ms || option.text.zh);
+
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => handleSelectAnswer(option.id)}
+                        disabled={selectedAnswer !== null}
+                        className={`
+                          relative rounded-2xl overflow-hidden transition-all duration-300
+                          ${isSelected
+                            ? isCorrect ? 'scale-[1.03]' : 'scale-95'
+                            : selectedAnswer ? 'opacity-40 scale-95' : 'hover:scale-[1.03] active:scale-95'
+                          }
+                          ${isCorrectAnswer ? 'qs-correct-glow' : ''}
+                          ${isWrongAnswer ? 'qs-wrong-crack' : ''}
+                        `}
+                        style={{
+                          aspectRatio: '4/3',
+                          border: isSelected
+                            ? isCorrect ? '4px solid #7cc643' : '4px solid #ff6b6b'
+                            : `3px solid ${gold}44`,
+                          boxShadow: isSelected
+                            ? isCorrect
+                              ? '0 0 30px rgba(124,198,67,0.4), 0 6px 20px rgba(0,0,0,0.3)'
+                              : '0 0 30px rgba(255,107,107,0.4), 0 6px 20px rgba(0,0,0,0.3)'
+                            : selectedAnswer
+                              ? '0 2px 8px rgba(0,0,0,0.2)'
+                              : `0 4px 16px rgba(0,0,0,0.3), 0 0 8px ${gold}15`,
+                        }}
+                      >
+                        {/* Full-bleed background image */}
+                        {option.image && (
+                          <ImageWithFallback
+                            src={option.image}
+                            alt={option.text?.[language] || ''}
+                            className={`absolute inset-0 w-full h-full object-cover ${
+                              isWrongAnswer && wrongShake ? 'qs-explode' : ''
+                            }`}
+                          />
+                        )}
+
+                        {/* Dark gradient overlay at bottom for text */}
+                        {hasText && (
+                          <div
+                            className="absolute inset-x-0 bottom-0 flex items-end justify-center p-2 md:p-3"
+                            style={{
+                              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+                              minHeight: '40%',
+                            }}
+                          >
+                            <p
+                              className="text-lg md:text-xl lg:text-2xl font-black text-center leading-tight"
+                              style={{ color: '#fff', textShadow: '0 2px 6px rgba(0,0,0,0.8)' }}
+                            >
+                              {option.text![language]}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* No image fallback — dark bg with text centered */}
+                        {!option.image && hasText && (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center p-3"
+                            style={{ background: `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)` }}
+                          >
+                            <p
+                              className="text-xl md:text-2xl font-black text-center"
+                              style={{ color: goldLight, textShadow: `0 0 8px ${gold}33` }}
+                            >
+                              {option.text![language]}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Selection badge */}
+                        {isSelected && (
+                          <div
+                            className="absolute top-2 right-2 w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-xl z-10"
+                            style={{
+                              background: isCorrect
+                                ? 'linear-gradient(135deg, #7cc643, #6ab537)'
+                                : 'linear-gradient(135deg, #ff6b6b, #ee5a5a)',
+                              border: '3px solid white',
+                            }}
+                          >
+                            <span className="text-white text-base md:text-lg font-bold">
+                              {isCorrect ? '✓' : '✗'}
+                            </span>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            }
+
+            // ---- TEXT-ONLY ANSWERS: full-width stacked pills ----
+            return (
+              <div className="flex flex-col gap-3 md:gap-3.5 mb-4 md:mb-6">
+                {question.options!.map((option) => {
+                  const isWrongAnswer = selectedAnswer === option.id && !isCorrect;
+                  const isSelected = selectedAnswer === option.id;
+                  const isCorrectAnswer = isSelected && isCorrect;
+
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleSelectAnswer(option.id)}
+                      disabled={selectedAnswer !== null}
                       className={`
-                        absolute inset-0 bg-white p-3 md:p-4 flex flex-col items-center justify-center
-                        ${isWrongAnswer && wrongShake ? 'animate-explode' : ''}
+                        relative w-full rounded-xl overflow-hidden transition-all duration-300
+                        ${isSelected
+                          ? isCorrect ? 'scale-[1.02]' : 'scale-[0.98]'
+                          : selectedAnswer ? 'opacity-40 scale-[0.98]' : 'hover:scale-[1.02] active:scale-[0.98]'
+                        }
+                        ${isCorrectAnswer ? 'qs-correct-glow' : ''}
+                        ${isWrongAnswer ? 'qs-wrong-crack' : ''}
                       `}
+                      style={{
+                        padding: '14px 20px',
+                        border: isSelected
+                          ? isCorrect ? '3px solid #7cc643' : '3px solid #ff6b6b'
+                          : `3px solid ${gold}33`,
+                        background: isSelected
+                          ? isCorrect
+                            ? 'linear-gradient(135deg, rgba(124,198,67,0.15) 0%, rgba(124,198,67,0.05) 100%)'
+                            : 'linear-gradient(135deg, rgba(255,107,107,0.15) 0%, rgba(255,107,107,0.05) 100%)'
+                          : `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)`,
+                        boxShadow: isSelected
+                          ? isCorrect
+                            ? '0 0 20px rgba(124,198,67,0.3)'
+                            : '0 0 20px rgba(255,107,107,0.3)'
+                          : selectedAnswer
+                            ? '0 2px 6px rgba(0,0,0,0.15)'
+                            : `0 3px 12px rgba(0,0,0,0.25), 0 0 6px ${gold}10`,
+                      }}
                     >
-                      {option.image && (
-                        <ImageWithFallback
-                          src={option.image}
-                          alt={option.text?.[language] || ''}
-                          className="w-full h-full object-contain"
-                        />
-                      )}
-                      {option.text && (
-                        <p className="text-2xl md:text-3xl lg:text-4xl font-black text-[#2d5f3f] mt-2 text-center">
-                          {option.text[language]}
+                      <div className="flex items-center gap-3">
+                        {/* Option letter badge */}
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
+                          style={{
+                            background: isSelected
+                              ? isCorrect
+                                ? 'linear-gradient(135deg, #7cc643, #6ab537)'
+                                : 'linear-gradient(135deg, #ff6b6b, #ee5a5a)'
+                              : `linear-gradient(135deg, ${gold}, #a67c2e)`,
+                            color: isSelected ? 'white' : '#2a1f0e',
+                            border: isSelected
+                              ? isCorrect ? '2px solid #9ed963' : '2px solid #ff8888'
+                              : `2px solid ${goldLight}`,
+                          }}
+                        >
+                          {option.id.toUpperCase()}
+                        </div>
+
+                        {/* Answer text */}
+                        <p
+                          className="text-lg md:text-xl lg:text-2xl font-bold text-left flex-1"
+                          style={{
+                            color: isSelected
+                              ? isCorrect ? '#9ed963' : '#ff8888'
+                              : goldLight,
+                            textShadow: `0 0 6px ${gold}22`,
+                          }}
+                        >
+                          {option.text?.[language]}
                         </p>
-                      )}
-                    </div>
 
-                    {/* Selection indicator */}
-                    {selectedAnswer === option.id && (
-                      <div className="absolute top-2 right-2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white flex items-center justify-center shadow-xl border-4 border-white">
-                        <span className="text-2xl md:text-3xl">
-                          {isCorrect ? '✅' : '❌'}
-                        </span>
+                        {/* Selection indicator */}
+                        {isSelected && (
+                          <span className="text-xl font-bold flex-shrink-0" style={{ color: isCorrect ? '#7cc643' : '#ff6b6b' }}>
+                            {isCorrect ? '✓' : '✗'}
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
-          {/* Drag & Drop Type */}
+          {/* === Drag & Drop Type === */}
           {question.type === 'dragdrop' && question.options && (
             <div className="mb-4 md:mb-6">
               {/* Drop Zone */}
-              <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 border-4 border-white mb-6">
-                <p className="text-center text-[#2d5f3f] font-bold mb-4 text-xl">
+              <div
+                className="rounded-2xl p-6 mb-6"
+                style={{
+                  background: `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)`,
+                  border: `2px solid ${gold}44`,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                }}
+              >
+                <p
+                  className="text-center font-bold mb-4 text-lg"
+                  style={{ color: gold, fontFamily: "'Cinzel Decorative', serif" }}
+                >
                   {language === 'en' ? 'Drag the correct answer here' : language === 'ms' ? 'Seret jawapan yang betul ke sini' : '将正确答案拖到这里'}
                 </p>
-                <div 
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    if (!selectedAnswer) setIsDraggingOver(true);
-                  }}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); if (!selectedAnswer) setIsDraggingOver(true); }}
                   onDragLeave={() => setIsDraggingOver(false)}
                   onDrop={(e) => {
                     e.preventDefault();
                     setIsDraggingOver(false);
-                    if (draggedItem && !selectedAnswer) {
-                      handleSelectAnswer(draggedItem);
-                    }
+                    if (draggedItem && !selectedAnswer) handleSelectAnswer(draggedItem);
                   }}
-                  className={`
-                    min-h-40 rounded-2xl flex items-center justify-center transition-all
-                    ${selectedAnswer 
-                      ? 'border-4 border-solid border-[#7cc643] bg-[#7cc643]/10' 
+                  className="min-h-40 rounded-xl flex items-center justify-center transition-all"
+                  style={{
+                    border: selectedAnswer
+                      ? '4px solid #7cc64388'
                       : isDraggingOver
-                      ? 'border-4 border-solid border-[#7cc643] bg-[#7cc643]/20 scale-105'
-                      : 'border-4 border-dashed border-[#7cc643]/40 bg-[#7cc643]/5'
-                    }
-                  `}
+                        ? `4px solid ${gold}`
+                        : `4px dashed ${gold}44`,
+                    background: selectedAnswer
+                      ? 'rgba(124,198,67,0.08)'
+                      : isDraggingOver
+                        ? `${gold}15`
+                        : 'rgba(10,10,18,0.3)',
+                    transform: isDraggingOver ? 'scale(1.02)' : 'scale(1)',
+                    boxShadow: isDraggingOver ? `0 0 30px ${gold}33` : 'none',
+                  }}
                 >
                   {selectedAnswer ? (
                     <div className="text-center p-4">
@@ -355,10 +542,10 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                           className="w-32 h-32 object-contain mx-auto mb-2"
                         />
                       )}
-                      <p className="text-4xl font-black text-[#2d5f3f]">
+                      <p className="text-4xl font-black" style={{ color: goldLight }}>
                         {question.options.find(o => o.id === selectedAnswer)?.text?.[language]}
                       </p>
-                      {selectedAnswer && isCorrect !== null && (
+                      {isCorrect !== null && (
                         <div className="text-6xl mt-4">
                           {isCorrect ? '✅' : '❌'}
                         </div>
@@ -367,8 +554,8 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                   ) : (
                     <div className="text-center">
                       <div className="text-6xl mb-2">{isDraggingOver ? '✋' : '👇'}</div>
-                      <p className="text-gray-400 text-lg font-bold">
-                        {isDraggingOver 
+                      <p className="text-lg font-bold" style={{ color: `${parchment}88` }}>
+                        {isDraggingOver
                           ? (language === 'en' ? 'Drop here!' : language === 'ms' ? 'Lepaskan di sini!' : '放在这里！')
                           : (language === 'en' ? 'Drag an answer here' : language === 'ms' ? 'Seret jawapan ke sini' : '将答案拖到这里')
                         }
@@ -384,26 +571,29 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                   <div
                     key={option.id}
                     draggable={!selectedAnswer}
-                    onDragStart={(e) => {
-                      setDraggedItem(option.id);
-                      e.dataTransfer.effectAllowed = 'move';
-                    }}
-                    onDragEnd={() => {
-                      setDraggedItem(null);
-                      setIsDraggingOver(false);
-                    }}
+                    onDragStart={(e) => { setDraggedItem(option.id); e.dataTransfer.effectAllowed = 'move'; }}
+                    onDragEnd={() => { setDraggedItem(null); setIsDraggingOver(false); }}
                     onClick={() => !selectedAnswer && handleSelectAnswer(option.id)}
                     className={`
-                      p-6 rounded-2xl border-4 bg-white transition-all cursor-grab active:cursor-grabbing
-                      ${selectedAnswer === option.id 
-                        ? 'opacity-30 scale-90 border-gray-300 cursor-not-allowed' 
+                      p-6 rounded-xl transition-all
+                      ${selectedAnswer === option.id
+                        ? 'opacity-30 scale-90 cursor-not-allowed'
                         : selectedAnswer
-                          ? 'opacity-50 border-gray-300 cursor-not-allowed'
+                          ? 'opacity-50 cursor-not-allowed'
                           : draggedItem === option.id
-                          ? 'scale-95 opacity-50 border-[#7cc643]'
-                          : 'hover:scale-105 active:scale-95 border-white shadow-lg hover:border-[#7cc643]'
+                            ? 'scale-95 opacity-50 cursor-grabbing'
+                            : 'cursor-grab hover:scale-105 active:scale-95'
                       }
                     `}
+                    style={{
+                      background: `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)`,
+                      border: draggedItem === option.id
+                        ? `3px solid ${gold}`
+                        : `3px solid ${gold}33`,
+                      boxShadow: draggedItem === option.id
+                        ? `0 0 20px ${gold}33`
+                        : '0 4px 16px rgba(0,0,0,0.3)',
+                    }}
                   >
                     {option.image && (
                       <ImageWithFallback
@@ -412,7 +602,10 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                         className="w-full h-24 object-contain mb-2 pointer-events-none"
                       />
                     )}
-                    <p className="text-2xl font-black text-[#2d5f3f] text-center pointer-events-none select-none">
+                    <p
+                      className="text-2xl font-black text-center pointer-events-none select-none"
+                      style={{ color: goldLight }}
+                    >
                       {option.text?.[language]}
                     </p>
                   </div>
@@ -421,23 +614,32 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
             </div>
           )}
 
-          {/* Hotspot Type */}
+          {/* === Hotspot Type === */}
           {question.type === 'hotspot' && question.hotspotImage && question.options && (
             <div className="mb-4 md:mb-6">
-              <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 border-4 border-white">
-                <p className="text-center text-[#2d5f3f] font-bold mb-6 text-xl">
+              <div
+                className="rounded-2xl p-6"
+                style={{
+                  background: `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)`,
+                  border: `2px solid ${gold}44`,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                }}
+              >
+                <p
+                  className="text-center font-bold mb-6 text-lg"
+                  style={{ color: gold, fontFamily: "'Cinzel Decorative', serif" }}
+                >
                   {language === 'en' ? '👆 Tap on the correct part' : language === 'ms' ? '👆 Ketik bahagian yang betul' : '👆 点击正确的部分'}
                 </p>
-                
-                {/* Main Image with Clickable Hotspot Areas */}
+
                 <div className="relative max-w-2xl mx-auto">
                   <ImageWithFallback
                     src={question.hotspotImage}
                     alt="Hotspot Question"
-                    className="w-full h-auto rounded-2xl"
+                    className="w-full h-auto rounded-xl"
+                    style={{ border: `2px solid ${gold}33` }}
                   />
-                  
-                  {/* Clickable Hotspot Areas */}
+
                   {question.options.map((option) => {
                     const isSelected = selectedAnswer === option.id;
                     return (
@@ -460,9 +662,20 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                               : 'bg-[#ff6b6b]/40 border-4 border-[#ff6b6b] ring-8 ring-[#ff6b6b]/50'
                             : selectedAnswer
                               ? 'bg-transparent border-2 border-transparent'
-                              : 'bg-blue-500/20 border-3 border-blue-500/40 hover:bg-blue-500/40 hover:border-blue-500 hover:ring-4 hover:ring-blue-500/50 hover:scale-105'
+                              : 'border-3 hover:scale-105'
                           }
                         `}
+                        {...(!selectedAnswer && !isSelected ? {
+                          style: {
+                            position: 'absolute' as const,
+                            left: `${option.position?.x || 0}%`,
+                            top: `${option.position?.y || 0}%`,
+                            width: `${option.position?.width || 15}%`,
+                            height: `${option.position?.height || 15}%`,
+                            background: `${gold}20`,
+                            border: `3px solid ${gold}55`,
+                          }
+                        } : {})}
                       >
                         {isSelected && (
                           <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 text-7xl animate-bounce">
@@ -472,10 +685,12 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                       </button>
                     );
                   })}
-                  
-                  {/* Hint overlay */}
+
                   {!selectedAnswer && (
-                    <div className="absolute bottom-3 right-3 bg-black/70 text-white text-sm px-3 py-2 rounded-full backdrop-blur-sm">
+                    <div
+                      className="absolute bottom-3 right-3 text-sm px-3 py-2 rounded-full"
+                      style={{ background: 'rgba(10,10,18,0.9)', color: parchment, border: `1px solid ${gold}33` }}
+                    >
                       👆 {language === 'en' ? 'Tap the correct area' : language === 'ms' ? 'Ketik kawasan yang betul' : '点击正确区域'}
                     </div>
                   )}
@@ -484,78 +699,91 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
             </div>
           )}
 
-          {/* Sequence Type */}
+          {/* === Sequence Type === */}
           {question.type === 'sequence' && question.options && sequenceOrder.length > 0 && (
             <div className="mb-4 md:mb-6">
-              <div className={`bg-white/95 backdrop-blur-md rounded-3xl p-6 border-4 border-white ${wrongShake && sequenceSubmitted && !isCorrect ? 'animate-shake' : ''}`}>
-                <p className="text-center text-[#2d5f3f] font-bold mb-4 text-lg">
-                  {language === 'en' ? '🔀 Drag to arrange in the correct order' : language === 'ms' ? '🔀 Seret untuk susun mengikut urutan yang betul' : '🔀 拖动以按正确顺序排列'}
+              <div
+                className={`rounded-2xl p-6 ${wrongShake && sequenceSubmitted && !isCorrect ? 'qs-shake' : ''}`}
+                style={{
+                  background: `linear-gradient(135deg, ${darkBg} 0%, rgba(20,16,10,0.95) 100%)`,
+                  border: `2px solid ${gold}44`,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                }}
+              >
+                <p
+                  className="text-center font-bold mb-4 text-sm md:text-base whitespace-nowrap"
+                  style={{ color: gold, fontFamily: "'Cinzel Decorative', serif" }}
+                >
+                  {language === 'en' ? '🔀 Tap arrows or drag to reorder' : language === 'ms' ? '🔀 Ketik anak panah atau seret untuk susun' : '🔀 点击箭头或拖动排序'}
                 </p>
-                
-                {/* Draggable sequence items */}
+
                 <div className="space-y-3">
                   {sequenceOrder.map((optionId, index) => {
                     const option = question.options!.find(opt => opt.id === optionId);
                     if (!option) return null;
-                    
-                    // Check if this specific item is in the correct position
+
                     const correctOrder = question.correctAnswer.split(',');
                     const isItemCorrect = optionId === correctOrder[index];
-                    
+
                     return (
                       <div
                         key={optionId}
                         draggable={!sequenceSubmitted}
-                        onDragStart={(e) => {
-                          e.dataTransfer.effectAllowed = 'move';
-                          setDraggedItem(index.toString());
-                        }}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.dataTransfer.dropEffect = 'move';
-                        }}
+                        onDragStart={(e) => { e.dataTransfer.effectAllowed = 'move'; setDraggedItem(index.toString()); }}
+                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                         onDrop={(e) => {
                           e.preventDefault();
                           const draggedIdx = parseInt(draggedItem || '-1');
-                          if (draggedIdx !== -1 && draggedIdx !== index) {
-                            moveSequenceItem(draggedIdx, index);
-                          }
+                          if (draggedIdx !== -1 && draggedIdx !== index) moveSequenceItem(draggedIdx, index);
                           setDraggedItem(null);
                         }}
                         onDragEnd={() => setDraggedItem(null)}
                         className={`
-                          relative bg-white/80 backdrop-blur-sm rounded-2xl p-4 
-                          border-4 transition-all duration-200
-                          flex items-center gap-4
+                          relative rounded-xl p-4 flex items-center gap-4 transition-all duration-200
                           ${sequenceSubmitted
                             ? 'cursor-not-allowed'
                             : draggedItem === index.toString()
-                            ? 'opacity-50 scale-95 cursor-grabbing'
-                            : 'cursor-grab hover:scale-102 hover:border-[#7cc643] shadow-lg'
+                              ? 'opacity-50 scale-95 cursor-grabbing'
+                              : 'cursor-grab hover:scale-[1.02]'
                           }
-                          ${sequenceSubmitted && isItemCorrect
-                            ? 'border-[#7cc643] bg-[#7cc643]/10'
-                            : sequenceSubmitted && !isItemCorrect
-                            ? 'border-[#ff6b6b] bg-[#ff6b6b]/10'
-                            : 'border-white'}
                         `}
+                        style={{
+                          background: darkBgLight,
+                          border: sequenceSubmitted
+                            ? isItemCorrect
+                              ? '3px solid #7cc643'
+                              : '3px solid #ff6b6b'
+                            : `3px solid ${gold}33`,
+                          boxShadow: sequenceSubmitted
+                            ? isItemCorrect
+                              ? '0 0 15px rgba(124,198,67,0.2)'
+                              : '0 0 15px rgba(255,107,107,0.2)'
+                            : '0 4px 12px rgba(0,0,0,0.2)',
+                        }}
                       >
                         {/* Drag handle */}
                         <div className="flex items-center gap-2">
-                          {!sequenceSubmitted && <div className="text-2xl cursor-grab">⋮⋮</div>}
-                          <div className={`w-10 h-10 rounded-full text-white flex items-center justify-center font-black ${
-                            sequenceSubmitted && isItemCorrect 
-                              ? 'bg-[#7cc643]' 
-                              : sequenceSubmitted && !isItemCorrect 
-                              ? 'bg-[#ff6b6b]' 
-                              : 'bg-[#7cc643]'
-                          }`}>
+                          {!sequenceSubmitted && <div className="text-2xl cursor-grab" style={{ color: `${gold}66` }}>⋮⋮</div>}
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm"
+                            style={{
+                              background: sequenceSubmitted
+                                ? isItemCorrect
+                                  ? 'linear-gradient(135deg, #7cc643, #6ab537)'
+                                  : 'linear-gradient(135deg, #ff6b6b, #ee5a5a)'
+                                : `linear-gradient(135deg, ${gold}, #a67c2e)`,
+                              color: sequenceSubmitted ? 'white' : '#2a1f0e',
+                              border: sequenceSubmitted
+                                ? isItemCorrect ? '2px solid #9ed963' : '2px solid #ff8888'
+                                : `2px solid ${goldLight}`,
+                            }}
+                          >
                             {index + 1}
                           </div>
                         </div>
-                        
+
                         {/* Option content */}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           {option.image && (
                             <ImageWithFallback
                               src={option.image}
@@ -563,31 +791,73 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
                               className="w-20 h-20 object-contain mb-2"
                             />
                           )}
-                          <p className="text-xl font-bold text-[#2d5f3f] text-left">
+                          <p className="text-xl font-bold text-left" style={{ color: goldLight }}>
                             {option.text?.[language]}
                           </p>
                         </div>
 
-                        {/* Status indicator (after submit) */}
+                        {/* Status indicator */}
                         {sequenceSubmitted && (
                           <div className="text-3xl">
                             {isItemCorrect ? '✅' : '❌'}
+                          </div>
+                        )}
+
+                        {/* Up/Down arrow buttons for mobile reorder */}
+                        {!sequenceSubmitted && (
+                          <div className="flex flex-col gap-1 ml-auto shrink-0">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={(e) => { e.stopPropagation(); moveSequenceItem(index, index - 1); }}
+                              className="w-9 h-9 rounded-lg flex items-center justify-center active:scale-90 transition-all disabled:opacity-20"
+                              style={{
+                                background: index === 0 ? 'transparent' : `${gold}22`,
+                                border: `2px solid ${gold}${index === 0 ? '15' : '55'}`,
+                              }}
+                              aria-label="Move up"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 3L13 9H3L8 3Z" fill={index === 0 ? `${gold}33` : gold} />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === sequenceOrder.length - 1}
+                              onClick={(e) => { e.stopPropagation(); moveSequenceItem(index, index + 1); }}
+                              className="w-9 h-9 rounded-lg flex items-center justify-center active:scale-90 transition-all disabled:opacity-20"
+                              style={{
+                                background: index === sequenceOrder.length - 1 ? 'transparent' : `${gold}22`,
+                                border: `2px solid ${gold}${index === sequenceOrder.length - 1 ? '15' : '55'}`,
+                              }}
+                              aria-label="Move down"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 13L3 7H13L8 13Z" fill={index === sequenceOrder.length - 1 ? `${gold}33` : gold} />
+                              </svg>
+                            </button>
                           </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
-                
+
                 {/* Submit Button */}
                 {!sequenceSubmitted && (
                   <div className="mt-6 text-center">
                     <button
                       onClick={handleSequenceSubmit}
-                      className="px-8 py-4 rounded-2xl text-lg font-black uppercase
-                                bg-gradient-to-r from-[#7cc643] to-[#6ab537]
-                                text-white shadow-lg border-4 border-[#9ed963]
+                      className="px-8 py-4 rounded-xl text-lg font-black uppercase tracking-wider
                                 hover:scale-105 active:scale-95 transition-all"
+                      style={{
+                        fontFamily: "'Cinzel Decorative', serif",
+                        background: `linear-gradient(135deg, ${gold} 0%, #f0d078 50%, ${gold} 100%)`,
+                        color: '#2a1f0e',
+                        border: `3px solid ${goldLight}`,
+                        boxShadow: `0 4px 20px ${gold}44`,
+                        textShadow: '0 1px 0 rgba(255,255,255,0.3)',
+                      }}
                     >
                       {language === 'en' ? '✓ Check Answer' : language === 'ms' ? '✓ Semak Jawapan' : '✓ 检查答案'}
                     </button>
@@ -596,71 +866,43 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
               </div>
             </div>
           )}
-
-          <style>{`
-            @keyframes shake {
-              0%, 100% { transform: translateX(0); }
-              10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-              20%, 40%, 60%, 80% { transform: translateX(10px); }
-            }
-            @keyframes explode {
-              0% { transform: scale(1) rotate(0deg); opacity: 1; }
-              50% { transform: scale(0.9) rotate(-2deg); opacity: 0.8; }
-              100% { transform: scale(1) rotate(0deg); opacity: 1; }
-            }
-            .animate-shake {
-              animation: shake 0.6s ease-in-out;
-            }
-            .animate-explode {
-              animation: explode 0.6s ease-in-out;
-            }
-          `}</style>
         </div>
 
-        {/* Next Button */}
+        {/* Next Button — golden fantasy */}
         {selectedAnswer && (
           <div className="px-4 md:px-6 pb-6 md:pb-8">
             <button
               onClick={handleNext}
-              className="relative w-full px-8 py-4 rounded-2xl text-lg font-black uppercase tracking-wide
-                        bg-gradient-to-r from-[#7cc643] to-[#6ab537]
-                        text-white
-                        shadow-[0_6px_0_#5a9431,0_0_30px_rgba(124,198,67,0.5)]
-                        hover:shadow-[0_4px_0_#5a9431,0_0_40px_rgba(124,198,67,0.7)]
-                        active:translate-y-1
-                        active:shadow-[0_3px_0_#5a9431,0_0_20px_rgba(124,198,67,0.4)]
-                        transition-all duration-150
-                        border-4 border-[#9ed963]
-                        overflow-hidden
-                        group"
+              className="relative w-full px-8 py-4 rounded-xl text-lg font-black uppercase tracking-wider
+                        active:translate-y-1 transition-all duration-150 overflow-hidden group"
+              style={{
+                fontFamily: "'Cinzel Decorative', serif",
+                background: `linear-gradient(135deg, ${gold} 0%, #f0d078 30%, ${goldLight} 50%, #f0d078 70%, ${gold} 100%)`,
+                color: '#2a1f0e',
+                border: `4px solid ${goldLight}`,
+                boxShadow: `0 6px 0 #a67c2e, 0 0 30px ${gold}55`,
+                textShadow: '0 1px 0 rgba(255,255,255,0.4)',
+              }}
             >
-              {/* Magical sparkle background */}
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" 
-                    style={{
-                      backgroundSize: '200% 100%',
-                      animation: 'shimmer 2s infinite'
-                    }} />
-              
-              {/* Circular progress ring */}
+              {/* Shimmer effect */}
+              <span
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                style={{ backgroundSize: '200% 100%', animation: 'qs-shimmer 2s infinite' }}
+              />
+
+              {/* Circular progress ring — pure CSS animation, no JS state updates */}
               <svg className="absolute top-1/2 left-4 -translate-y-1/2 w-8 h-8 -rotate-90">
+                <circle cx="16" cy="16" r="14" stroke="rgba(42,31,14,0.3)" strokeWidth="3" fill="none" />
                 <circle
-                  cx="16"
-                  cy="16"
-                  r="14"
-                  stroke="rgba(255,255,255,0.3)"
-                  strokeWidth="3"
-                  fill="none"
-                />
-                <circle
-                  cx="16"
-                  cy="16"
-                  r="14"
-                  stroke="white"
+                  key={progressKey}
+                  cx="16" cy="16" r="14"
+                  stroke="#2a1f0e"
                   strokeWidth="3"
                   fill="none"
                   strokeDasharray="87.96"
-                  strokeDashoffset={87.96 - (87.96 * progress) / 100}
-                  className="transition-all duration-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                  strokeDashoffset="87.96"
+                  className="qs-progress-ring"
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(42,31,14,0.5))' }}
                 />
               </svg>
 
@@ -668,45 +910,22 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
               <span className="relative z-10 ml-8">
                 {language === 'en' ? 'Next' : language === 'ms' ? 'Seterusnya' : '下一个'} →
               </span>
-
-              {/* Sparkles */}
-              <span className="absolute top-2 right-2 text-xl animate-pulse">✨</span>
-              <span className="absolute bottom-2 right-8 text-lg animate-bounce" style={{ animationDelay: '0.2s' }}>⭐</span>
             </button>
 
-            <style>{`
-              @keyframes shimmer {
-                0% { background-position: -200% 0; }
-                100% { background-position: 200% 0; }
-              }
-            `}</style>
-
             {/* Auto-advance hint */}
-            <p className="text-center text-white/70 text-xs mt-2">
-              {language === 'en' 
-                ? 'Auto-advancing in 3 seconds...' 
-                : language === 'ms' 
-                ? 'Meneruskan secara automatik dalam 3 saat...'
-                : '3秒后自动前进...'}
+            <p className="text-center text-xs mt-2" style={{ color: `${parchment}88` }}>
+              {language === 'en'
+                ? 'Auto-advancing in 3 seconds...'
+                : language === 'ms'
+                  ? 'Meneruskan secara automatik dalam 3 saat...'
+                  : '3秒后自动前进...'}
             </p>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-2 left-0 right-0 z-10 text-center text-white text-xs md:text-sm">
-        <p>
-          <a 
-            href="https://projectlumi.org/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="hover:text-[#c6ff00] transition-colors"
-          >
-            © Project Lumi
-          </a>
-          {' . All Rights Reserved.'}
-        </p>
-      </div>
+      <FantasyFooter />
     </div>
   );
 };

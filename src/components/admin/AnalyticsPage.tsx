@@ -42,15 +42,15 @@ export const AnalyticsPage: React.FC = () => {
   return (
     <div className="h-full overflow-y-auto">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Analytics Dashboard</h2>
-          <p className="text-sm text-gray-500 mt-1">Track performance and engagement metrics</p>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900">Analytics Dashboard</h2>
+          <p className="text-xs md:text-sm text-gray-500 mt-1">Track performance and engagement metrics</p>
         </div>
         <select
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
-          className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-900"
+          className="px-3 md:px-4 py-1.5 md:py-2 border border-gray-200 rounded-lg text-xs md:text-sm focus:outline-none focus:border-gray-900 self-start sm:self-auto"
         >
           <option value="7days">Last 7 days</option>
           <option value="30days">Last 30 days</option>
@@ -60,56 +60,56 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-blue-600" />
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+              <Users className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
             </div>
-            <span className="text-xs text-green-600 font-medium">+12%</span>
+            <span className="text-[10px] md:text-xs text-green-600 font-medium">+12%</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">120</div>
-          <div className="text-sm text-gray-500">Total Tests Taken</div>
+          <div className="text-xl md:text-2xl font-bold text-gray-900">120</div>
+          <div className="text-xs md:text-sm text-gray-500">Total Tests Taken</div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-              <Award className="w-5 h-5 text-green-600" />
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-green-50 rounded-lg flex items-center justify-center">
+              <Award className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
             </div>
-            <span className="text-xs text-green-600 font-medium">+5%</span>
+            <span className="text-[10px] md:text-xs text-green-600 font-medium">+5%</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">76%</div>
-          <div className="text-sm text-gray-500">Average Score</div>
+          <div className="text-xl md:text-2xl font-bold text-gray-900">76%</div>
+          <div className="text-xs md:text-sm text-gray-500">Average Score</div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-              <Target className="w-5 h-5 text-orange-600" />
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+              <Target className="w-4 h-4 md:w-5 md:h-5 text-orange-600" />
             </div>
-            <span className="text-xs text-green-600 font-medium">+8%</span>
+            <span className="text-[10px] md:text-xs text-green-600 font-medium">+8%</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">89%</div>
-          <div className="text-sm text-gray-500">Completion Rate</div>
+          <div className="text-xl md:text-2xl font-bold text-gray-900">89%</div>
+          <div className="text-xs md:text-sm text-gray-500">Completion Rate</div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-purple-600" />
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-purple-600" />
             </div>
-            <span className="text-xs text-green-600 font-medium">+15%</span>
+            <span className="text-[10px] md:text-xs text-green-600 font-medium">+15%</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">28</div>
-          <div className="text-sm text-gray-500">This Week</div>
+          <div className="text-xl md:text-2xl font-bold text-gray-900">28</div>
+          <div className="text-xs md:text-sm text-gray-500">This Week</div>
         </div>
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
         {/* Test Completion Trends */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Test Completion Trends
@@ -126,7 +126,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Age Distribution */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Users className="w-4 h-4" />
             Age Distribution
@@ -153,7 +153,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Quest Performance */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
             Quest Performance
@@ -170,7 +170,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Score Distribution */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Award className="w-4 h-4" />
             Score Distribution
@@ -188,7 +188,7 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Top Performing Quests Table */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
         <h3 className="text-base font-semibold text-gray-900 mb-4">Quest Performance Details</h3>
         <div className="overflow-x-auto">
           <table className="w-full">

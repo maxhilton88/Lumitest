@@ -1,327 +1,857 @@
-import React, { useState } from 'react';
-import { QuestionEditor } from '../admin/QuestionEditor';
-import { Plus, Search, Edit, Trash2, Copy, ChevronRight, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Upload, Search, Trash2, Download, AlertCircle, CheckCircle, RefreshCw, Database, ChevronDown, ChevronRight, X, FileText } from 'lucide-react';
+import { Pencil, Save, ImagePlus, Image } from 'lucide-react';
+import { toast } from 'sonner@2.0.3';
+import { uploadQuestionBank, fetchQuestionBank, fetchQuestionBankStats, deleteGlobalQuestion, clearQuestionBank, updateGlobalQuestion, uploadQuestionImage } from '../../utils/api';
+
+interface BankQuestion {
+  q_id: string;
+  age_target: number;
+  subject: string;
+  dskp_code: string;
+  question_text_en: string;
+  question_text_ms: string;
+  question_text_zh: string;
+  input_type: string;
+  options_en: any;
+  options_ms: any;
+  options_zh: any;
+  correct_answer: string;
+  visual_prompt: string;
+  image_url: string;
+  created_at?: string;
+}
+
+interface SubjectStats {
+  name: string;
+  count: number;
+  ages: Record<number, number>;
+}
+
+// Parse CSV text with proper quote handling
+function parseCSV(text: string): Record<string, string>[] {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  const parseLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+        else { inQuotes = !inQuotes; }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const headers = parseLine(lines[0]);
+  const rows: Record<string, string>[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const values = parseLine(lines[i]);
+    const row: Record<string, string> = {};
+    headers.forEach((h, idx) => { row[h.trim()] = values[idx] || ''; });
+    rows.push(row);
+  }
+  return rows;
+}
+
+// Generate a sample CSV template
+function generateTemplate(): string {
+  const headers = 'age_target,subject,dskp_code,question_text_en,question_text_ms,question_text_zh,input_type,options_en,options_ms,options_zh,correct_answer,visual_prompt,image_url';
+  const samples = [
+    '4,English,BI 1.1.1,Which letter comes after A?,Huruf mana yang datang selepas A?,哪个字母在A之后?,mcq,B|C|D|Z,B|C|D|Z,B|C|D|Z,a,Cheerful alphabet scene,',
+    '5,Math,MA 2.1.1,What is 2 + 3?,Berapakah 2 + 3?,2加3等于多少?,mcq,4|5|6|7,4|5|6|7,4|5|6|7,b,Colorful number blocks,',
+    '4,Bahasa Melayu,BM 1.1.1,What colour is the sky?,Apakah warna langit?,天空是什么颜色?,mcq,Red|Blue|Green|Yellow,Merah|Biru|Hijau|Kuning,红色|蓝色|绿色|黄色,b,Bright sky scene,',
+    '"6",English,BI 3.2.1,"Put in order: wake up, eat, school, sleep","Susun mengikut urutan: bangun, makan, sekolah, tidur","按顺序排列：起床、吃饭、上学、睡觉",sequence,Wake up|Eat breakfast|Go to school|Sleep,Bangun|Makan pagi|Pergi sekolah|Tidur,起床|吃早餐|去上学|睡觉,"a,b,c,d",Daily routine images,',
+  ];
+  return headers + '\n' + samples.join('\n');
+}
 
 export const MasterQuestionBank: React.FC = () => {
-  const [showEditor, setShowEditor] = useState(false);
+  const [questions, setQuestions] = useState<BankQuestion[]>([]);
+  const [stats, setStats] = useState<{ subjects: SubjectStats[]; totalQuestions: number } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedQuest, setSelectedQuest] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'quests' | 'all'>('quests');
+  const [filterSubject, setFilterSubject] = useState<string>('all');
+  const [filterAge, setFilterAge] = useState<string>('all');
+  const [expandedSubjects, setExpandedSubjects] = useState<Set<string>>(new Set());
 
-  const [questions, setQuestions] = useState([
-    {
-      id: '1',
-      quest: 'english',
-      language: 'en',
-      difficulty: 1,
-      type: 'mcq',
-      voiceScript: 'Which letter comes after A?',
-      skills: ['Phonics'],
-      createdAt: '2024-01-15'
-    },
-    {
-      id: '2',
-      quest: 'numbers',
-      language: 'en',
-      difficulty: 2,
-      type: 'mcq',
-      voiceScript: 'How many apples are there?',
-      skills: ['Numeracy', 'Logic'],
-      createdAt: '2024-01-14'
-    },
-    {
-      id: '3',
-      quest: 'english',
-      language: 'ms',
-      difficulty: 1,
-      type: 'mcq',
-      voiceScript: 'Huruf apa selepas A?',
-      skills: ['Phonics'],
-      createdAt: '2024-01-13'
-    },
-    {
-      id: '4',
-      quest: 'bahasa',
-      language: 'ms',
-      difficulty: 2,
-      type: 'mcq',
-      voiceScript: 'Apakah warna langit?',
-      skills: ['Language'],
-      createdAt: '2024-01-12'
+  // Upload state
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ stored: number; errors: string[] } | null>(null);
+
+  // Edit state
+  const [editingQuestion, setEditingQuestion] = useState<BankQuestion | null>(null);
+  const [editForm, setEditForm] = useState<Record<string, any>>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Track last uploaded image file size for display
+  const [lastUploadedSize, setLastUploadedSize] = useState<number | null>(null);
+
+  // Helper: convert options array to pipe-delimited string for editing
+  const optionsToPipe = (options: any): string => {
+    if (!options) return '';
+    if (typeof options === 'string') return options;
+    if (Array.isArray(options)) {
+      return options.map((o: any) => typeof o === 'string' ? o : (o.text || '')).join('|');
     }
-  ]);
-
-  const quests = [
-    { id: 'english', name: 'English Forest', icon: '🌳', color: '#7cc643' },
-    { id: 'numbers', name: 'Numbers Island', icon: '🔢', color: '#4a90e2' },
-    { id: 'bahasa', name: 'Rimba Bahasa', icon: '🇲🇾', color: '#e74c3c' },
-    { id: 'mandarin', name: 'Mandarin Mountain', icon: '🏔️', color: '#f39c12' },
-    { id: 'science', name: 'Mystery Jungle', icon: '🔬', color: '#9b59b6' }
-  ];
-
-  const handleSaveQuestion = (questionData: any) => {
-    const newQuestion = {
-      id: String(questions.length + 1),
-      ...questionData,
-      voiceScript: questionData.voiceScript.en || questionData.voiceScript.ms || questionData.voiceScript.zh,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setQuestions([...questions, newQuestion]);
-    setShowEditor(false);
+    return '';
   };
 
-  const getQuestQuestionCount = (questId: string) => {
-    return questions.filter(q => q.quest === questId).length;
+  // Open edit modal
+  const handleEdit = (q: BankQuestion) => {
+    setEditingQuestion(q);
+    setLastUploadedSize(null);
+    setEditForm({
+      question_text_en: q.question_text_en || '',
+      question_text_ms: q.question_text_ms || '',
+      question_text_zh: q.question_text_zh || '',
+      age_target: q.age_target,
+      subject: q.subject,
+      dskp_code: q.dskp_code || '',
+      input_type: q.input_type || 'mcq',
+      options_en: optionsToPipe(q.options_en),
+      options_ms: optionsToPipe(q.options_ms),
+      options_zh: optionsToPipe(q.options_zh),
+      correct_answer: q.correct_answer || '',
+      visual_prompt: q.visual_prompt || '',
+      image_url: q.image_url || '',
+    });
   };
 
+  // Save edited question
+  const handleSaveEdit = async () => {
+    if (!editingQuestion) return;
+    setIsSaving(true);
+    try {
+      const updated = await updateGlobalQuestion(editingQuestion.q_id, editForm);
+      toast.success(`Question ${editingQuestion.q_id} updated`);
+      // Update local state
+      setQuestions(prev => prev.map(q =>
+        q.q_id === editingQuestion.q_id ? { ...q, ...updated } : q
+      ));
+      setEditingQuestion(null);
+    } catch (error) {
+      console.error('Save failed:', error);
+      toast.error(`Save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Load data
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [questionsData, statsData] = await Promise.all([
+        fetchQuestionBank(),
+        fetchQuestionBankStats()
+      ]);
+      setQuestions(questionsData);
+      setStats(statsData);
+    } catch (error) {
+      console.error('Failed to load question bank:', error);
+      toast.error('Failed to load question bank');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // Handle CSV upload
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+    setUploading(true);
+    setUploadResult(null);
+
+    try {
+      const text = await uploadFile.text();
+      const rows = parseCSV(text);
+
+      if (rows.length === 0) {
+        toast.error('No valid rows found in CSV');
+        setUploading(false);
+        return;
+      }
+
+      // Map CSV rows to API format
+      const mapped = rows.map(row => ({
+        age_target: Number(row['age_target'] || row['Age'] || row['age']),
+        subject: row['subject'] || row['Subject'],
+        dskp_code: row['dskp_code'] || row['DSKP'] || '',
+        question_text_en: row['question_text_en'] || row['Question'] || row['question'],
+        question_text_ms: row['question_text_ms'] || '',
+        question_text_zh: row['question_text_zh'] || '',
+        input_type: (row['input_type'] || row['type'] || 'mcq').toLowerCase(),
+        options_en: row['options_en'] || row['Options'] || '',
+        options_ms: row['options_ms'] || '',
+        options_zh: row['options_zh'] || '',
+        correct_answer: row['correct_answer'] || row['Answer'] || row['answer'],
+        visual_prompt: row['visual_prompt'] || '',
+        image_url: row['image_url'] || row['Image'] || '',
+      }));
+
+      const result = await uploadQuestionBank(mapped);
+      setUploadResult({ stored: result.stored, errors: result.errors || [] });
+      toast.success(`${result.stored} questions uploaded successfully!`);
+      
+      // Refresh data
+      await loadData();
+      
+      if (result.errors?.length === 0) {
+        setTimeout(() => { setShowUpload(false); setUploadFile(null); setUploadResult(null); }, 1500);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Handle delete single question
+  const handleDelete = async (qId: string) => {
+    if (!confirm(`Delete question ${qId}?`)) return;
+    try {
+      await deleteGlobalQuestion(qId);
+      toast.success(`Deleted ${qId}`);
+      setQuestions(prev => prev.filter(q => q.q_id !== qId));
+      // Refresh stats
+      const statsData = await fetchQuestionBankStats();
+      setStats(statsData);
+    } catch (error) {
+      toast.error('Failed to delete question');
+    }
+  };
+
+  // Handle clear all
+  const handleClearAll = async () => {
+    if (!confirm('Are you sure you want to delete ALL questions from the bank? This cannot be undone.')) return;
+    if (!confirm('REALLY sure? This will remove everything.')) return;
+    try {
+      const result = await clearQuestionBank();
+      toast.success(`Cleared ${result.deleted} questions`);
+      setQuestions([]);
+      setStats({ subjects: [], totalQuestions: 0 });
+    } catch (error) {
+      toast.error('Failed to clear question bank');
+    }
+  };
+
+  // Download CSV template
+  const handleDownloadTemplate = () => {
+    const csv = generateTemplate();
+    // BOM for Excel to correctly read UTF-8 (important for BM & Chinese text)
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'question_bank_template.csv';
+    // Append to DOM for Safari compatibility
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Filter questions
   const filteredQuestions = questions.filter(q => {
-    const matchesSearch = q.voiceScript.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesQuest = !selectedQuest || q.quest === selectedQuest;
-    return matchesSearch && matchesQuest;
+    if (filterSubject !== 'all' && q.subject !== filterSubject) return false;
+    if (filterAge !== 'all' && q.age_target !== Number(filterAge)) return false;
+    if (searchQuery) {
+      const search = searchQuery.toLowerCase();
+      return q.q_id.toLowerCase().includes(search) ||
+             q.question_text_en.toLowerCase().includes(search) ||
+             q.subject.toLowerCase().includes(search);
+    }
+    return true;
   });
 
-  if (showEditor) {
-    return (
-      <QuestionEditor
-        onSave={handleSaveQuestion}
-        onCancel={() => setShowEditor(false)}
-      />
-    );
-  }
+  // Group by subject for display
+  const groupedBySubject = filteredQuestions.reduce<Record<string, BankQuestion[]>>((acc, q) => {
+    if (!acc[q.subject]) acc[q.subject] = [];
+    acc[q.subject].push(q);
+    return acc;
+  }, {});
+
+  const toggleSubject = (subject: string) => {
+    setExpandedSubjects(prev => {
+      const next = new Set(prev);
+      if (next.has(subject)) next.delete(subject);
+      else next.add(subject);
+      return next;
+    });
+  };
+
+  const uniqueSubjects = [...new Set(questions.map(q => q.subject))].sort();
 
   return (
-    <div className="h-full bg-white">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-gray-100 px-8 py-6">
-        {/* Back button - above title */}
-        {(selectedQuest || viewMode === 'all') && (
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Database className="w-5 h-5" />
+            Global Question Bank
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {stats ? `${stats.totalQuestions} questions across ${stats.subjects.length} subjects` : 'Loading...'}
+          </p>
+        </div>
+        <div className="flex gap-2">
           <button
-            onClick={() => {
-              setSelectedQuest(null);
-              setViewMode('quests');
-            }}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-4"
+            onClick={loadData}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1.5"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back
+            <RefreshCw className="w-3.5 h-3.5" />
+            Refresh
           </button>
-        )}
-        
-        {/* Title and New Question button */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">
-              {selectedQuest 
-                ? quests.find(q => q.id === selectedQuest)?.name
-                : viewMode === 'all'
-                ? 'All Questions'
-                : 'Question Bank'
-              }
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {selectedQuest || viewMode === 'all'
-                ? 'Manage questions'
-                : 'Organize questions by quest module'
-              }
-            </p>
-          </div>
           <button
-            onClick={() => setShowEditor(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+            onClick={handleDownloadTemplate}
+            className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1.5"
           >
-            <Plus className="w-4 h-4" />
-            New Question
+            <Download className="w-3.5 h-3.5" />
+            CSV Template
+          </button>
+          <button
+            onClick={() => { setShowUpload(true); setUploadResult(null); setUploadFile(null); }}
+            className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-1.5"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Upload CSV
           </button>
         </div>
       </div>
 
-      <div className="p-8">
-        {/* QUEST LIST VIEW */}
-        {viewMode === 'quests' && !selectedQuest && (
-          <div>
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-6 mb-6">
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Total Questions</div>
-                <div className="text-2xl font-semibold text-gray-900">{questions.length}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Quest Modules</div>
-                <div className="text-2xl font-semibold text-gray-900">{quests.length}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Languages</div>
-                <div className="text-2xl font-semibold text-gray-900">
-                  {new Set(questions.map(q => q.language)).size}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">
-                  <button
-                    onClick={() => setViewMode('all')}
-                    className="text-gray-900 hover:underline font-medium"
-                  >
-                    View All Questions →
-                  </button>
-                </div>
+      {/* Stats Cards */}
+      {stats && stats.subjects.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {stats.subjects.map(subj => (
+            <div key={subj.name} className="bg-white border border-gray-200 rounded-xl p-4">
+              <p className="text-sm font-medium text-gray-900">{subj.name}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{subj.count}</p>
+              <div className="flex gap-1 mt-2">
+                {[4, 5, 6, 7].map(age => (
+                  <span key={age} className="text-xs px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                    Age {age}: {subj.ages[age] || 0}
+                  </span>
+                ))}
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            {/* Quest Cards */}
-            <div className="space-y-3">
-              {quests.map((quest) => {
-                const questionCount = getQuestQuestionCount(quest.id);
-                return (
-                  <button
-                    key={quest.id}
-                    onClick={() => setSelectedQuest(quest.id)}
-                    className="w-full border border-gray-100 rounded-lg p-6 hover:bg-gray-50 transition-colors text-left group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="text-3xl">{quest.icon}</div>
-                        <div>
-                          <h3 className="text-base font-semibold text-gray-900">{quest.name}</h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {questionCount} {questionCount === 1 ? 'question' : 'questions'}
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by ID, text, or subject..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm"
+          />
+        </div>
+        <select
+          value={filterSubject}
+          onChange={e => setFilterSubject(e.target.value)}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+        >
+          <option value="all">All Subjects</option>
+          {uniqueSubjects.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={filterAge}
+          onChange={e => setFilterAge(e.target.value)}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+        >
+          <option value="all">All Ages</option>
+          <option value="4">Age 4</option>
+          <option value="5">Age 5</option>
+          <option value="6">Age 6</option>
+          <option value="7">Age 7</option>
+        </select>
+        {questions.length > 0 && (
+          <button
+            onClick={handleClearAll}
+            className="px-3 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 flex items-center gap-1.5"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Clear All
+          </button>
         )}
+      </div>
 
-        {/* QUESTIONS TABLE VIEW (Selected Quest or All) */}
-        {(selectedQuest || viewMode === 'all') && (
-          <div>
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search questions..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-900 transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Stats for selected quest */}
-            <div className="grid grid-cols-4 gap-6 mb-6">
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Questions</div>
-                <div className="text-2xl font-semibold text-gray-900">{filteredQuestions.length}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Languages</div>
-                <div className="text-2xl font-semibold text-gray-900">
-                  {new Set(filteredQuestions.map(q => q.language)).size}
+      {/* Questions List - Grouped by Subject */}
+      {isLoading ? (
+        <div className="text-center py-12 text-gray-500">
+          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-3" />
+          Loading question bank...
+        </div>
+      ) : questions.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+          <FileText className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600 font-medium">No questions in the bank yet</p>
+          <p className="text-sm text-gray-500 mt-1">Upload a CSV to get started</p>
+          <button
+            onClick={() => setShowUpload(true)}
+            className="mt-4 px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800"
+          >
+            Upload CSV
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-sm text-gray-500">{filteredQuestions.length} questions shown</p>
+          {Object.entries(groupedBySubject).sort(([a], [b]) => a.localeCompare(b)).map(([subject, qs]) => (
+            <div key={subject} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+              <button
+                onClick={() => toggleSubject(subject)}
+                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  {expandedSubjects.has(subject) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  <span className="font-medium text-gray-900">{subject}</span>
+                  <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">
+                    {qs.length} questions
+                  </span>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Foundation</div>
-                <div className="text-2xl font-semibold text-gray-900">
-                  {filteredQuestions.filter(q => q.difficulty === 1).length}
+                <div className="flex gap-1.5">
+                  {[4, 5, 6, 7].map(age => {
+                    const count = qs.filter(q => q.age_target === age).length;
+                    return count > 0 ? (
+                      <span key={age} className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">
+                        {age}y: {count}
+                      </span>
+                    ) : null;
+                  })}
                 </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-1">Advanced</div>
-                <div className="text-2xl font-semibold text-gray-900">
-                  {filteredQuestions.filter(q => q.difficulty === 3).length}
-                </div>
-              </div>
-            </div>
-
-            {/* Questions Table */}
-            <div className="border border-gray-100 rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Question</th>
-                    {viewMode === 'all' && (
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Quest</th>
-                    )}
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Skills</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Difficulty</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Language</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredQuestions.map((question) => (
-                    <tr key={question.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-md truncate">{question.voiceScript}</div>
-                        <div className="text-xs text-gray-500 mt-1">{question.createdAt}</div>
-                      </td>
-                      {viewMode === 'all' && (
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-gray-600 capitalize">
-                            {quests.find(q => q.id === question.quest)?.name}
-                          </span>
-                        </td>
-                      )}
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600 uppercase">{question.type}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {question.skills.map((skill, i) => (
-                            <span key={i} className="text-xs text-gray-600">
-                              {skill}{i < question.skills.length - 1 ? ',' : ''}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">
-                          {question.difficulty === 1 ? 'Foundation' : question.difficulty === 2 ? 'Intermediate' : 'Advanced'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600 uppercase">{question.language}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button className="p-1 hover:bg-gray-100 rounded transition-colors" title="Edit">
-                            <Edit className="w-4 h-4 text-gray-400" />
-                          </button>
-                          <button className="p-1 hover:bg-gray-100 rounded transition-colors" title="Duplicate">
-                            <Copy className="w-4 h-4 text-gray-400" />
-                          </button>
-                          <button className="p-1 hover:bg-gray-100 rounded transition-colors" title="Delete">
-                            <Trash2 className="w-4 h-4 text-gray-400" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {filteredQuestions.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-sm text-gray-500 mb-4">No questions found</p>
-                  <button
-                    onClick={() => setShowEditor(true)}
-                    className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-                  >
-                    Create First Question
-                  </button>
+              </button>
+              {expandedSubjects.has(subject) && (
+                <div className="border-t border-gray-100">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left px-4 py-2 font-medium text-gray-600">ID</th>
+                        <th className="text-left px-4 py-2 font-medium text-gray-600">Age</th>
+                        <th className="text-left px-4 py-2 font-medium text-gray-600">Type</th>
+                        <th className="text-left px-4 py-2 font-medium text-gray-600">Question</th>
+                        <th className="text-center px-2 py-2 font-medium text-gray-600 w-8">
+                          <Image className="w-3.5 h-3.5 mx-auto text-gray-400" />
+                        </th>
+                        <th className="text-left px-4 py-2 font-medium text-gray-600">Answer</th>
+                        <th className="text-right px-4 py-2 font-medium text-gray-600">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {qs.sort((a, b) => a.age_target - b.age_target || a.q_id.localeCompare(b.q_id)).map(q => (
+                        <tr key={q.q_id} className="border-t border-gray-50 hover:bg-gray-50">
+                          <td className="px-4 py-2 font-mono text-xs text-gray-600">{q.q_id}</td>
+                          <td className="px-4 py-2">
+                            <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">{q.age_target}</span>
+                          </td>
+                          <td className="px-4 py-2">
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${
+                              q.input_type === 'mcq' ? 'bg-green-50 text-green-700' :
+                              q.input_type === 'sequence' ? 'bg-purple-50 text-purple-700' :
+                              'bg-orange-50 text-orange-700'
+                            }`}>{q.input_type}</span>
+                          </td>
+                          <td className="px-4 py-2 max-w-xs truncate text-gray-900">{q.question_text_en}</td>
+                          <td className="px-2 py-2 text-center">
+                            {(q.image_url || q.visual_prompt) && (
+                              <Image
+                                className="w-3.5 h-3.5 mx-auto text-gray-400"
+                                style={{ opacity: q.image_url ? 1 : 0.3 }}
+                                title={q.image_url ? 'Image uploaded' : `Prompt: ${q.visual_prompt}`}
+                              />
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-gray-600 font-mono text-xs">{q.correct_answer}</td>
+                          <td className="px-4 py-2 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => handleEdit(q)}
+                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="Edit question"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(q.q_id)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="Delete question"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
+          ))}
+        </div>
+      )}
+
+      {/* Upload Modal */}
+      {showUpload && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Upload Question Bank CSV</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  13-column multilingual format — IDs are auto-generated on upload
+                </p>
+              </div>
+              <button onClick={() => { setShowUpload(false); setUploadResult(null); }} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* File input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Choose CSV File</label>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={e => { setUploadFile(e.target.files?.[0] || null); setUploadResult(null); }}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  disabled={uploading}
+                />
+                {uploadFile && (
+                  <p className="text-sm text-gray-600 mt-1">{uploadFile.name} ({(uploadFile.size / 1024).toFixed(1)} KB)</p>
+                )}
+              </div>
+
+              {/* Result */}
+              {uploadResult && (
+                <div className={`p-4 rounded-lg border ${uploadResult.errors.length > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+                  <div className="flex items-start gap-2">
+                    {uploadResult.errors.length > 0 ? (
+                      <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                    ) : (
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{uploadResult.stored} questions stored successfully</p>
+                      {uploadResult.errors.length > 0 && (
+                        <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                          {uploadResult.errors.map((err, i) => (
+                            <p key={i} className="text-xs text-red-600">{err}</p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Instructions */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm font-medium text-gray-900 mb-2">CSV Column Format:</p>
+                <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                  <span><strong>age_target</strong> — 4, 5, 6, or 7</span>
+                  <span><strong>subject</strong> — English, Math, etc.</span>
+                  <span><strong>dskp_code</strong> — KSSR code</span>
+                  <span><strong>question_text_en</strong> — Question text in English</span>
+                  <span><strong>question_text_ms</strong> — Question text in Bahasa Melayu</span>
+                  <span><strong>question_text_zh</strong> — Question text in Chinese</span>
+                  <span><strong>input_type</strong> — mcq, sequence, hotspot</span>
+                  <span><strong>options_en</strong> — Pipe-separated or JSON in English</span>
+                  <span><strong>options_ms</strong> — Pipe-separated or JSON in Bahasa Melayu</span>
+                  <span><strong>options_zh</strong> — Pipe-separated or JSON in Chinese</span>
+                  <span><strong>correct_answer</strong> — a, b, c, d or a,b,c,d</span>
+                  <span><strong>visual_prompt</strong> — Image description</span>
+                  <span><strong>image_url</strong> — Optional image URL</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Options format: <code className="bg-gray-200 px-1 rounded">Apple|Banana|Cherry|Date</code> (auto-assigns IDs a,b,c,d)
+                </p>
+                <p className="text-xs text-green-600 mt-2 font-medium">
+                  No q_id needed — IDs are auto-generated as SUBJ-AGE-001, SUBJ-AGE-002, etc.
+                </p>
+              </div>
+
+              <button
+                onClick={handleDownloadTemplate}
+                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download Sample CSV Template
+              </button>
+            </div>
+
+            <div className="flex gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => { setShowUpload(false); setUploadResult(null); }}
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                disabled={uploading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpload}
+                disabled={!uploadFile || uploading}
+                className="flex-1 px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50"
+              >
+                {uploading ? 'Uploading...' : 'Upload & Store'}
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingQuestion && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Edit Question</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Modify the question details below
+                </p>
+              </div>
+              <button onClick={() => setEditingQuestion(null)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Form fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Question ID</label>
+                <input
+                  type="text"
+                  value={editingQuestion.q_id}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  readOnly
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Age Target</label>
+                <input
+                  type="number"
+                  value={editForm.age_target}
+                  onChange={e => setEditForm({ ...editForm, age_target: Number(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                <input
+                  type="text"
+                  value={editForm.subject}
+                  onChange={e => setEditForm({ ...editForm, subject: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">DSKP Code</label>
+                <input
+                  type="text"
+                  value={editForm.dskp_code}
+                  onChange={e => setEditForm({ ...editForm, dskp_code: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Question Text (English)</label>
+                <textarea
+                  value={editForm.question_text_en}
+                  onChange={e => setEditForm({ ...editForm, question_text_en: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Question Text (Bahasa Melayu)</label>
+                <textarea
+                  value={editForm.question_text_ms}
+                  onChange={e => setEditForm({ ...editForm, question_text_ms: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Question Text (Chinese)</label>
+                <textarea
+                  value={editForm.question_text_zh}
+                  onChange={e => setEditForm({ ...editForm, question_text_zh: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Input Type</label>
+                <select
+                  value={editForm.input_type}
+                  onChange={e => setEditForm({ ...editForm, input_type: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="mcq">Multiple Choice (MCQ)</option>
+                  <option value="sequence">Sequence</option>
+                  <option value="hotspot">Hotspot</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Options (English)</label>
+                <input
+                  type="text"
+                  value={editForm.options_en}
+                  onChange={e => setEditForm({ ...editForm, options_en: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Options (Bahasa Melayu)</label>
+                <input
+                  type="text"
+                  value={editForm.options_ms}
+                  onChange={e => setEditForm({ ...editForm, options_ms: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Options (Chinese)</label>
+                <input
+                  type="text"
+                  value={editForm.options_zh}
+                  onChange={e => setEditForm({ ...editForm, options_zh: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Correct Answer</label>
+                <input
+                  type="text"
+                  value={editForm.correct_answer}
+                  onChange={e => setEditForm({ ...editForm, correct_answer: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visual Prompt</label>
+                <input
+                  type="text"
+                  value={editForm.visual_prompt}
+                  onChange={e => setEditForm({ ...editForm, visual_prompt: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Question Image</label>
+                {/* Image preview */}
+                {editForm.image_url && (
+                  <div className="mb-3 relative inline-block">
+                    <img
+                      src={editForm.image_url}
+                      alt="Question"
+                      className="h-32 w-auto rounded-lg border border-gray-200 object-contain bg-gray-50"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                    <button
+                      onClick={() => setEditForm({ ...editForm, image_url: '' })}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 shadow"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                {/* Upload button */}
+                <div className="flex gap-2">
+                  <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition-colors">
+                    <ImagePlus className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">
+                      {editForm.image_url ? 'Replace Image' : 'Upload Image'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) {
+                          toast.error('Image must be under 5MB');
+                          return;
+                        }
+                        try {
+                          toast.loading('Uploading image...', { id: 'img-upload' });
+                          const result = await uploadQuestionImage(file);
+                          // Store the storage path (not the signed URL) — server resolves on GET
+                          setEditForm({ ...editForm, image_url: result.image_path });
+                          toast.success('Image uploaded!', { id: 'img-upload' });
+                          setLastUploadedSize(file.size);
+                        } catch (err) {
+                          console.error('Image upload failed:', err);
+                          toast.error(`Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`, { id: 'img-upload' });
+                        }
+                        // Reset input so same file can be re-selected
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
+                <p className="text-xs text-gray-400 mt-1.5">Recommended: 600 × 300px · Landscape · PNG or JPG · Max 5MB</p>
+                {/* Uploaded file size */}
+                {lastUploadedSize !== null && (
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Uploaded: {lastUploadedSize < 1024 * 1024 ? `${(lastUploadedSize / 1024).toFixed(1)} KB` : `${(lastUploadedSize / (1024 * 1024)).toFixed(2)} MB`}
+                  </p>
+                )}
+                {/* Manual URL fallback */}
+                <div className="mt-2">
+                  <p className="text-xs text-gray-400 mb-1">Or paste an external URL:</p>
+                  <input
+                    type="text"
+                    value={editForm.image_url}
+                    onChange={e => setEditForm({ ...editForm, image_url: e.target.value })}
+                    placeholder="https://example.com/image.png"
+                    className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setEditingQuestion(null)}
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                className="flex-1 px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

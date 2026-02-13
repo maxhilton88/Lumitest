@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, Download, Settings, LogOut, BarChart3, Menu, MessageCircle, Zap, BookOpen, FileText } from 'lucide-react';
-import { UpgradePage } from '../billing/UpgradePage';
-import { StripeCheckout } from '../billing/StripeCheckout';
+import { LayoutDashboard, Users, Download, Settings, LogOut, BarChart3, Menu, MessageCircle, Zap, TrendingUp, Target, CalendarDays, ArrowRight, Link2, Trophy, Star, AlertTriangle, FileText, Megaphone } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import { WhatsAppMessageModal } from '../WhatsAppMessageModal';
-import { QuestionBank } from '../admin/QuestionBank';
-import { QuestManager } from '../admin/QuestManager';
 import { AnalyticsPage } from '../admin/AnalyticsPage';
 import { SettingsPage } from '../admin/SettingsPage';
+import { MarketingPage } from '../kg/MarketingPage';
 import { ChildReport } from '../ChildReport';
 import { ReportModal } from '../ReportModal';
-import { Question } from '../screens/QuestionScreen';
 import { toast } from 'sonner';
 import { projectId, publicAnonKey } from '../../utils/supabase/info';
 import { loadLeads } from '../../utils/api';
+import { createKGCheckoutSession } from '../../utils/api';
+import { Pagination } from '../Pagination';
 
 interface Lead {
   id: string;
@@ -22,15 +21,13 @@ interface Lead {
   score: number;
   totalQuestions: number;
   completedAt: string;
+  status?: string;
 }
 
 interface KindergartenDashboardProps {
   schoolName: string;
   onLogout: () => void;
-  questionBank: Question[];
-  setQuestionBank: (questions: Question[]) => void;
-  questConfigs: Record<string, { language: 'global' | 'en' | 'ms' | 'zh', numberOfQuestions: number, skillFilters: string[] }>;
-  setQuestConfigs: (configs: Record<string, { language: 'global' | 'en' | 'ms' | 'zh', numberOfQuestions: number, skillFilters: string[] }>) => void;
+  // Question Bank & Quest Manager removed — content management is Super Admin only
   brandingSettings: {
     schoolName: string;
     logoUrl: string;
@@ -54,50 +51,57 @@ interface KindergartenDashboardProps {
 export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({ 
   schoolName,
   onLogout,
-  questionBank,
-  setQuestionBank,
-  questConfigs,
-  setQuestConfigs,
   brandingSettings,
   setBrandingSettings
 }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isCollapsed, setIsCollapsed] = useState(true); // Default to collapsed
-  const [showUpgrade, setShowUpgrade] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<{ id: string; name: string; amount: number; cycle: 'monthly' | 'annual' } | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile sidebar state
+  const [isUpgrading, setIsUpgrading] = useState(false); // Real Stripe checkout loading
   const [isTrialAccount, setIsTrialAccount] = useState(true); // Set to true for trial accounts
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportLead, setReportLead] = useState<Lead | null>(null);
   
-  // HARDCODED SAMPLE LEADS - 20 Malaysian kindergarten leads
-  const [leads] = useState<Lead[]>([
-    { id: '1', childName: 'Ahmad Zikri', parentName: 'Encik Ahmad bin Hassan', whatsapp: '+60123456789', score: 18, totalQuestions: 20, completedAt: '04 Feb 2026' },
-    { id: '2', childName: 'Nurul Aisyah', parentName: 'Puan Siti binti Abdullah', whatsapp: '+60127654321', score: 15, totalQuestions: 20, completedAt: '01 Feb 2026' },
-    { id: '3', childName: 'Wong Wei Jie', parentName: 'Mr. Wong Chee Keong', whatsapp: '+60138765432', score: 19, totalQuestions: 20, completedAt: '03 Feb 2026' },
-    { id: '4', childName: 'Lim Xin Yi', parentName: 'Mrs. Lim Mei Ling', whatsapp: '+60129876543', score: 17, totalQuestions: 20, completedAt: '30 Jan 2026' },
-    { id: '5', childName: 'Dharshini a/p Suresh', parentName: 'Mr. Suresh Kumar', whatsapp: '+60145678901', score: 14, totalQuestions: 20, completedAt: '02 Feb 2026' },
-    { id: '6', childName: 'Muhammad Hakimi', parentName: 'Encik Jamal bin Omar', whatsapp: '+60156789012', score: 16, totalQuestions: 20, completedAt: '29 Jan 2026' },
-    { id: '7', childName: 'Tan Jia Wen', parentName: 'Mrs. Tan Siew Hong', whatsapp: '+60167890123', score: 20, totalQuestions: 20, completedAt: '05 Feb 2026' },
-    { id: '8', childName: 'Aisya Sofea', parentName: 'Puan Nur Aini binti Yusof', whatsapp: '+60178901234', score: 13, totalQuestions: 20, completedAt: '27 Jan 2026' },
-    { id: '9', childName: 'Chen Wei Lun', parentName: 'Mr. Chen Kai Ming', whatsapp: '+60189012345', score: 18, totalQuestions: 20, completedAt: '31 Jan 2026' },
-    { id: '10', childName: 'Priya a/p Rajan', parentName: 'Mrs. Lakshmi Devi', whatsapp: '+60191234567', score: 11, totalQuestions: 20, completedAt: '25 Jan 2026' },
-    { id: '11', childName: 'Amirul Hakim', parentName: 'Encik Hafiz bin Ismail', whatsapp: '+60123334444', score: 19, totalQuestions: 20, completedAt: '28 Jan 2026' },
-    { id: '12', childName: 'Lee Kai Xuan', parentName: 'Mr. Lee Chong Wei', whatsapp: '+60125556666', score: 17, totalQuestions: 20, completedAt: '26 Jan 2026' },
-    { id: '13', childName: 'Sofia Hana', parentName: 'Puan Zarina binti Kamal', whatsapp: '+60127778888', score: 15, totalQuestions: 20, completedAt: '23 Jan 2026' },
-    { id: '14', childName: 'Karthik a/l Murugan', parentName: 'Mr. Murugan s/o Ravi', whatsapp: '+60129990000', score: 16, totalQuestions: 20, completedAt: '24 Jan 2026' },
-    { id: '15', childName: 'Nur Balqis', parentName: 'Puan Farah binti Ali', whatsapp: '+60141112222', score: 14, totalQuestions: 20, completedAt: '22 Jan 2026' },
-    // These will be blurred in trial mode (16+)
-    { id: '16', childName: 'Chua Ming Hao', parentName: 'Mrs. Chua Ai Ling', whatsapp: '+60152223333', score: 20, totalQuestions: 20, completedAt: '21 Jan 2026' },
-    { id: '17', childName: 'Alya Medina', parentName: 'Encik Rashid bin Hassan', whatsapp: '+60163334444', score: 18, totalQuestions: 20, completedAt: '19 Jan 2026' },
-    { id: '18', childName: 'Arjun a/l Dinesh', parentName: 'Mr. Dinesh Kumar', whatsapp: '+60174445555', score: 13, totalQuestions: 20, completedAt: '17 Jan 2026' },
-    { id: '19', childName: 'Ng Kai Le', parentName: 'Mr. Ng Boon Chuan', whatsapp: '+60185556666', score: 17, totalQuestions: 20, completedAt: '15 Jan 2026' },
-    { id: '20', childName: 'Fatin Izzah', parentName: 'Puan Halimah binti Osman', whatsapp: '+60196667777', score: 19, totalQuestions: 20, completedAt: '12 Jan 2026' },
-  ]);
-  
-  const [isLoadingLeads, setIsLoadingLeads] = useState(false); // No loading needed for hardcoded data
+  // REAL LEADS from KV store via API
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const LEADS_PAGE_SIZE = 15;
+
+  // Pagination: derive the visible page of leads
+  const totalLeadsPages = Math.ceil(leads.length / LEADS_PAGE_SIZE);
+  const paginatedLeads = leads.slice(
+    (currentPage - 1) * LEADS_PAGE_SIZE,
+    currentPage * LEADS_PAGE_SIZE
+  );
+
+  // Fetch real leads from API on mount
+  useEffect(() => {
+    const fetchLeads = async () => {
+      setIsLoadingLeads(true);
+      try {
+        console.log('=== KINDERGARTEN DASHBOARD: Fetching leads ===');
+        console.log('access_token in localStorage:', !!localStorage.getItem('access_token'));
+        console.log('school_id in localStorage:', localStorage.getItem('school_id'));
+        const fetchedLeads = await loadLeads();
+        console.log('=== KINDERGARTEN DASHBOARD: Fetched', fetchedLeads.length, 'leads ===');
+        if (fetchedLeads.length > 0) {
+          console.log('First lead:', fetchedLeads[0]);
+        }
+        setLeads(fetchedLeads);
+      } catch (error) {
+        console.error('=== KINDERGARTEN DASHBOARD: FAILED to load leads ===', error);
+        toast.error('Failed to load leads. Check console for details.');
+        setLeads([]);
+      } finally {
+        setIsLoadingLeads(false);
+      }
+    };
+    
+    fetchLeads();
+  }, []);
 
   const exportToCSV = () => {
     const csvContent = [
@@ -117,71 +121,96 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
 
   const totalLeads = leads.length;
   const averageScore = totalLeads > 0 
-    ? Math.round(leads.reduce((acc, lead) => acc + (lead.score / lead.totalQuestions * 100), 0) / leads.length)
+    ? Math.round(leads.reduce((acc, lead) => acc + (lead.totalQuestions > 0 ? (lead.score / lead.totalQuestions * 100) : 0), 0) / leads.length)
     : 0;
+
+  // Derived dashboard data
+  const thisMonthLeads = leads.filter(l => {
+    // Match current month dynamically
+    const now = new Date();
+    const leadDate = new Date(l.completedAt);
+    return !isNaN(leadDate.getTime()) && leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
+  }).length;
+  const highScorers = leads.filter(l => l.totalQuestions > 0 && (l.score / l.totalQuestions) >= 0.8).length;
+  const completionRate = totalLeads > 0 ? Math.round((highScorers / totalLeads) * 100) : 0;
+
+  // Score distribution for chart
+  const excellent = leads.filter(l => l.totalQuestions > 0 && (l.score / l.totalQuestions) * 100 >= 80).length;
+  const good = leads.filter(l => { if (l.totalQuestions === 0) return false; const p = (l.score / l.totalQuestions) * 100; return p >= 60 && p < 80; }).length;
+  const needsWork = leads.filter(l => l.totalQuestions > 0 && (l.score / l.totalQuestions) * 100 < 60).length;
+  const scoreDistribution = [
+    { name: 'Excellent', range: '80-100%', count: excellent, color: '#22c55e' },
+    { name: 'Good', range: '60-79%', count: good, color: '#3b82f6' },
+    { name: 'Needs Work', range: '<60%', count: needsWork, color: '#f59e0b' },
+  ];
+
+  // Quest popularity (simulated from lead data spread)
+  const questData = [
+    { name: 'English Forest', leads: 8, color: '#22c55e' },
+    { name: 'Numbers Island', leads: 5, color: '#3b82f6' },
+    { name: 'Rimba Bahasa', leads: 4, color: '#a855f7' },
+    { name: 'Mandarin Mountain', leads: 2, color: '#ef4444' },
+    { name: 'Mystery Jungle', leads: 1, color: '#f59e0b' },
+  ];
+
+  // Recent 5 leads
+  const recentLeads = leads.slice(0, 5);
+
+  // Top scorers
+  const topScorers = [...leads]
+    .filter(l => l.totalQuestions > 0)
+    .sort((a, b) => (b.score / b.totalQuestions) - (a.score / a.totalQuestions))
+    .slice(0, 3);
 
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'leads', icon: Users, label: 'Leads' },
-    { id: 'questions', icon: BookOpen, label: 'Question Bank' },
-    { id: 'quests', icon: FileText, label: 'Quest Manager' },
+    { id: 'marketing', icon: Megaphone, label: 'Marketing' },
+    // Question Bank & Quest Manager removed — content management is Super Admin only
     { id: 'analytics', icon: BarChart3, label: 'Analytics' },
     { id: 'settings', icon: Settings, label: 'Settings' },
   ];
 
-  const handleSelectPlan = (planId: string) => {
-    const plans: any = {
-      pro: { name: 'Professional', monthly: 49, annual: 356 },
-      enterprise: { name: 'Enterprise', monthly: 149, annual: 1428 }
-    };
-    
-    if (planId === 'enterprise') {
-      toast.info('Please contact sales@projectlumi.org for Enterprise plans');
+  // ===== REAL STRIPE KG PRO CHECKOUT (RM1,850/year) =====
+  const handleUpgradeClick = async () => {
+    const schoolId = localStorage.getItem('school_id');
+    const email = localStorage.getItem('user_email') || '';
+    if (!schoolId) {
+      toast.error('School ID not found. Please log in again.');
       return;
     }
-    
-    if (plans[planId]) {
-      setSelectedPlan({
-        id: planId,
-        name: plans[planId].name,
-        amount: plans[planId].annual,
-        cycle: 'annual'
-      });
-      setShowUpgrade(false);
-      setShowCheckout(true);
+    if (!email) {
+      toast.error('Email not found. Please log in again.');
+      return;
+    }
+    setIsUpgrading(true);
+    try {
+      const { url } = await createKGCheckoutSession(schoolId, email);
+      if (url) {
+        window.location.href = url; // Redirect to Stripe hosted checkout
+      } else {
+        toast.error('Failed to create checkout session — no URL returned.');
+      }
+    } catch (error: any) {
+      console.error('[KG] Upgrade checkout error:', error);
+      toast.error(`Checkout failed: ${error.message}`);
+    } finally {
+      setIsUpgrading(false);
     }
   };
 
-  const handlePaymentSuccess = () => {
-    setShowCheckout(false);
-    setSelectedPlan(null);
-    toast.success('Payment successful! Your subscription has been activated.');
-  };
-
-  if (showUpgrade) {
-    return (
-      <UpgradePage
-        onClose={() => setShowUpgrade(false)}
-        onSelectPlan={handleSelectPlan}
-      />
-    );
-  }
-
-  if (showCheckout && selectedPlan) {
-    return (
-      <StripeCheckout
-        planId={selectedPlan.id}
-        planName={selectedPlan.name}
-        amount={selectedPlan.amount}
-        billingCycle={selectedPlan.cycle}
-        onBack={() => {
-          setShowCheckout(false);
-          setShowUpgrade(true);
-        }}
-        onSuccess={handlePaymentSuccess}
-      />
-    );
-  }
+  // Handle checkout success/cancelled from Stripe redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success') {
+      toast.success('KG Pro subscription activated! Welcome aboard.');
+      setIsTrialAccount(false);
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (params.get('checkout') === 'cancelled') {
+      toast.info('Checkout cancelled. You can upgrade anytime.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="flex h-screen bg-white">
@@ -207,27 +236,44 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
         />
       )}
 
-      {/* Sidebar */}
-      <aside className={`border-r border-gray-100 flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - hidden on mobile, shown as overlay when mobileMenuOpen */}
+      <aside className={`
+        fixed md:relative z-50 md:z-auto h-full
+        border-r border-gray-100 flex flex-col bg-white
+        transition-all duration-300
+        ${mobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'}
+        md:translate-x-0
+        ${!mobileMenuOpen && (isCollapsed ? 'md:w-16' : 'md:w-64')}
+      `}>
         {/* Logo */}
         <div className="h-16 flex items-center px-4 border-b border-gray-100 justify-between">
-          {!isCollapsed && (
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-sm">L</span>
-              </div>
-              <span className="font-semibold text-gray-900">Project Lumi</span>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-sm">L</span>
             </div>
-          )}
+            {(mobileMenuOpen || !isCollapsed) && (
+              <span className="font-semibold text-gray-900">Project Lumi</span>
+            )}
+          </div>
+          {/* Close button on mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="md:hidden p-1 hover:bg-gray-100 rounded-lg"
+          >
+            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
         </div>
 
-        {/* School Name - Only shown when expanded */}
-        {!isCollapsed && (
+        {/* School Name */}
+        {(mobileMenuOpen || !isCollapsed) && (
           <div className="px-4 py-4 border-b border-gray-100">
             <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Organization</div>
             <div className="text-sm font-medium text-gray-900 truncate">{schoolName}</div>
@@ -235,35 +281,38 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 py-4">
+        <nav className="flex-1 px-2 py-4 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeMenu === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveMenu(item.id)}
+                onClick={() => {
+                  setActiveMenu(item.id);
+                  setMobileMenuOpen(false);
+                }}
                 className={`
                   w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-1
                   ${isActive 
                     ? 'bg-gray-100 text-gray-900' 
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-                  ${isCollapsed ? 'justify-center' : ''}
+                  ${!mobileMenuOpen && isCollapsed ? 'md:justify-center' : ''}
                 `}
-                title={isCollapsed ? item.label : ''}
+                title={!mobileMenuOpen && isCollapsed ? item.label : ''}
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                {!isCollapsed && <span>{item.label}</span>}
+                {(mobileMenuOpen || !isCollapsed) && <span>{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
-        {/* Collapse Toggle & Logout */}
+        {/* Collapse Toggle (desktop only) & Logout */}
         <div className="p-2 border-t border-gray-100 space-y-1">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
+            className="hidden md:flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <Menu className="w-4 h-4 flex-shrink-0" />
@@ -271,65 +320,366 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
           </button>
           <button
             onClick={onLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all ${isCollapsed ? 'justify-center' : ''}`}
-            title={isCollapsed ? 'Logout' : ''}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
-            {!isCollapsed && <span>Logout</span>}
+            {(mobileMenuOpen || !isCollapsed) && <span>Logout</span>}
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto w-full">
         {/* Header */}
-        <header className="h-16 border-b border-gray-100 flex items-center justify-between px-8">
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+        <header className="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-8">
+          <div className="flex items-center gap-3">
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg"
+            >
+              <Menu className="w-5 h-5 text-gray-700" />
+            </button>
+            <h1 className="text-base md:text-lg font-semibold text-gray-900">
+              {menuItems.find(m => m.id === activeMenu)?.label || 'Dashboard'}
+            </h1>
           </div>
           <button
-            onClick={() => setShowUpgrade(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+            onClick={handleUpgradeClick}
+            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-black text-white rounded-lg text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors"
           >
-            <Zap className="w-4 h-4" />
-            Upgrade
+            <Zap className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">Upgrade</span>
           </button>
         </header>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {activeMenu === 'dashboard' && (
             <div className="space-y-6">
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-6">
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Total Leads</div>
-                  <div className="text-3xl font-semibold text-gray-900">{totalLeads}</div>
+              {/* Stat Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div className="border border-gray-100 rounded-xl p-4 md:p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <Users className="w-4.5 h-4.5 text-blue-600" />
+                    </div>
+                    <span className="text-[10px] md:text-xs font-medium text-green-600 bg-green-50 px-1.5 md:px-2 py-0.5 rounded-full">+{thisMonthLeads} this mo</span>
+                  </div>
+                  <div className="text-xl md:text-2xl font-semibold text-gray-900">{totalLeads}</div>
+                  <div className="text-xs md:text-sm text-gray-500 mt-0.5">Total Leads</div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">Average Score</div>
-                  <div className="text-3xl font-semibold text-gray-900">{averageScore}%</div>
+
+                <div className="border border-gray-100 rounded-xl p-4 md:p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center">
+                      <Target className="w-4.5 h-4.5 text-emerald-600" />
+                    </div>
+                  </div>
+                  <div className="text-xl md:text-2xl font-semibold text-gray-900">{averageScore}%</div>
+                  <div className="text-xs md:text-sm text-gray-500 mt-0.5">Average Score</div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">This Month</div>
-                  <div className="text-3xl font-semibold text-gray-900">{totalLeads}</div>
+
+                <div className="border border-gray-100 rounded-xl p-4 md:p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center">
+                      <Trophy className="w-4.5 h-4.5 text-amber-600" />
+                    </div>
+                  </div>
+                  <div className="text-xl md:text-2xl font-semibold text-gray-900">{highScorers}</div>
+                  <div className="text-xs md:text-sm text-gray-500 mt-0.5">High Scorers (80%+)</div>
+                </div>
+
+                <div className="border border-gray-100 rounded-xl p-4 md:p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center">
+                      <CalendarDays className="w-4.5 h-4.5 text-purple-600" />
+                    </div>
+                  </div>
+                  <div className="text-xl md:text-2xl font-semibold text-gray-900">{thisMonthLeads}</div>
+                  <div className="text-xs md:text-sm text-gray-500 mt-0.5">This Month</div>
                 </div>
               </div>
 
-              {/* Leads Table */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-base font-semibold text-gray-900">Recent Leads</h2>
-                  <button
-                    onClick={exportToCSV}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
-                    Export
-                  </button>
+              {/* Charts Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                {/* Score Distribution */}
+                <div className="border border-gray-100 rounded-xl p-4 md:p-6">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">Score Distribution</h3>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                      <BarChart data={scoreDistribution} barSize={40}>
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} allowDecimals={false} />
+                        <Tooltip
+                          cursor={{ fill: '#f9fafb' }}
+                          contentStyle={{ border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '13px' }}
+                          formatter={(value: number, name: string) => [`${value} children`, '']}
+                          labelFormatter={(label: string) => {
+                            const item = scoreDistribution.find(d => d.name === label);
+                            return `${label} (${item?.range})`;
+                          }}
+                        />
+                        <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                          {scoreDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Legend */}
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-3 pt-3 border-t border-gray-50">
+                    {scoreDistribution.map((item) => (
+                      <div key={item.name} className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="text-xs text-gray-500">{item.name} ({item.count})</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="border border-gray-100 rounded-lg overflow-hidden">
+                {/* Quest Popularity */}
+                <div className="border border-gray-100 rounded-xl p-4 md:p-6">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">Leads by Quest</h3>
+                  <div className="space-y-3">
+                    {questData.map((quest) => {
+                      const maxLeads = Math.max(...questData.map(q => q.leads));
+                      const widthPercent = maxLeads > 0 ? (quest.leads / maxLeads) * 100 : 0;
+                      return (
+                        <div key={quest.name}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm text-gray-700">{quest.name}</span>
+                            <span className="text-sm font-medium text-gray-900">{quest.leads}</span>
+                          </div>
+                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${widthPercent}%`, backgroundColor: quest.color }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Top Scorers */}
+                  <div className="mt-6 pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Top Scorers</h4>
+                    <div className="space-y-2">
+                      {topScorers.map((lead, i) => {
+                        const pct = Math.round((lead.score / lead.totalQuestions) * 100);
+                        return (
+                          <div key={lead.id} className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                              i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : 'bg-orange-50 text-orange-600'
+                            }`}>
+                              {i + 1}
+                            </div>
+                            <span className="text-sm text-gray-900 flex-1">{lead.childName}</span>
+                            <span className="text-sm font-medium text-gray-900">{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Leads (compact - last 5 only) */}
+              <div className="border border-gray-100 rounded-xl">
+                <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900">Recent Leads</h3>
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <button
+                      onClick={exportToCSV}
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export
+                    </button>
+                    <button
+                      onClick={() => setActiveMenu('leads')}
+                      className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                      View all
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {recentLeads.map((lead) => {
+                    const pct = lead.totalQuestions > 0 ? Math.round((lead.score / lead.totalQuestions) * 100) : 0;
+                    return (
+                      <div key={lead.id} className="flex items-center px-4 md:px-6 py-3 md:py-3.5 hover:bg-gray-50 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">{lead.childName}</div>
+                          <div className="text-xs text-gray-500 truncate">{lead.parentName}</div>
+                        </div>
+                        <div className="text-right mr-3 md:mr-6">
+                          <div className="text-sm font-medium text-gray-900">{lead.score}/{lead.totalQuestions}</div>
+                          <div className={`text-xs font-medium ${pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-blue-600' : 'text-amber-600'}`}>
+                            {pct}%
+                          </div>
+                        </div>
+                        <div className="hidden sm:block text-xs text-gray-400 w-24 text-right mr-4">{lead.completedAt}</div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => { setReportLead(lead); setShowReportModal(true); }}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Report"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => { setSelectedLead(lead); setShowWhatsAppModal(true); }}
+                            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="WhatsApp"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                <button
+                  onClick={exportToCSV}
+                  className="flex items-center gap-3 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Download className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">Export Leads</div>
+                    <div className="text-xs text-gray-500">Download CSV file</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveMenu('marketing')}
+                  className="flex items-center gap-3 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Megaphone className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">Marketing Kit</div>
+                    <div className="text-xs text-gray-500">Share links & promo art</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveMenu('analytics')}
+                  className="flex items-center gap-3 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">View Analytics</div>
+                    <div className="text-xs text-gray-500">Detailed reports</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeMenu === 'leads' && (
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900">All Leads</h2>
+                <button
+                  onClick={exportToCSV}
+                  className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="hidden sm:inline">Export</span>
+                </button>
+              </div>
+
+              {/* Mobile Card Layout */}
+              <div className="md:hidden space-y-3">
+                {isLoadingLeads ? (
+                  <div className="flex flex-col items-center gap-2 py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="text-gray-500">Loading leads...</p>
+                  </div>
+                ) : leads.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-12 border border-gray-100 rounded-lg">
+                    <Users className="w-12 h-12 text-gray-300" />
+                    <p className="text-lg font-medium text-gray-900">No leads yet</p>
+                    <p className="text-sm text-gray-500">Leads will appear here when parents complete the test</p>
+                  </div>
+                ) : (
+                  paginatedLeads.map((lead, index) => {
+                    const percentage = lead.totalQuestions > 0 ? Math.round((lead.score / lead.totalQuestions) * 100) : 0;
+                    const absoluteIndex = (currentPage - 1) * LEADS_PAGE_SIZE + index;
+                    const isBlurred = isTrialAccount && absoluteIndex >= 15;
+                    return (
+                      <div key={lead.id} className="border border-gray-100 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className={isBlurred ? 'filter blur-sm select-none' : ''}>
+                            <div className="text-sm font-medium text-gray-900">{lead.childName}</div>
+                            <div className="text-xs text-gray-500">{lead.parentName}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium text-gray-900">{lead.score}/{lead.totalQuestions}</div>
+                            <div className={`text-xs font-medium ${percentage >= 80 ? 'text-green-600' : percentage >= 60 ? 'text-blue-600' : 'text-amber-600'}`}>
+                              {percentage}%
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-3">
+                          <div className={`text-xs text-gray-500 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
+                            {lead.whatsapp} · {lead.completedAt}
+                          </div>
+                          {isBlurred ? (
+                            <button
+                              onClick={handleUpgradeClick}
+                              disabled={isUpgrading}
+                              className="inline-flex items-center gap-1 px-2 py-1 bg-black text-white rounded text-xs font-medium"
+                            >
+                              <Zap className="w-3 h-3" />
+                              {isUpgrading ? 'Loading...' : 'Upgrade'}
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => { setReportLead(lead); setShowReportModal(true); }}
+                                className="p-1.5 text-blue-600 bg-blue-50 rounded-lg"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => { setSelectedLead(lead); setShowWhatsAppModal(true); }}
+                                className="p-1.5 text-green-600 bg-green-50 rounded-lg"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalLeadsPages}
+                  totalItems={leads.length}
+                  pageSize={LEADS_PAGE_SIZE}
+                  onPageChange={setCurrentPage}
+                  itemLabel="leads"
+                  compact
+                />
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block border border-gray-100 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100">
@@ -362,8 +712,8 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
                           </td>
                         </tr>
                       ) : (
-                        leads.map((lead, index) => {
-                          const percentage = Math.round((lead.score / lead.totalQuestions) * 100);
+                        paginatedLeads.map((lead, index) => {
+                          const percentage = lead.totalQuestions > 0 ? Math.round((lead.score / lead.totalQuestions) * 100) : 0;
                           const isBlurred = isTrialAccount && index >= 15; // Blur 16th lead onwards (index 15+)
                           
                           return (
@@ -385,11 +735,12 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
                               <td className="px-6 py-4 text-sm">
                                 {isBlurred ? (
                                   <button
-                                    onClick={() => setShowUpgrade(true)}
+                                    onClick={handleUpgradeClick}
+                                    disabled={isUpgrading}
                                     className="inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
                                   >
                                     <Zap className="w-3.5 h-3.5" />
-                                    Upgrade to Contact
+                                    {isUpgrading ? 'Loading...' : 'Upgrade to Contact'}
                                   </button>
                                 ) : (
                                   <div className="flex items-center gap-2">
@@ -423,136 +774,22 @@ export const KindergartenDashboard: React.FC<KindergartenDashboardProps> = ({
                     </tbody>
                   </table>
                 </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalLeadsPages}
+                  totalItems={leads.length}
+                  pageSize={LEADS_PAGE_SIZE}
+                  onPageChange={setCurrentPage}
+                  itemLabel="leads"
+                />
               </div>
             </div>
           )}
 
-          {activeMenu === 'leads' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">All Leads</h2>
-                <button
-                  onClick={exportToCSV}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Export
-                </button>
-              </div>
+          {/* Question Bank & Quest Manager removed — Super Admin only */}
 
-              <div className="border border-gray-100 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Child</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Parent</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Score</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {isLoadingLeads ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                            <p>Loading leads...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : leads.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center gap-2">
-                            <Users className="w-12 h-12 text-gray-300" />
-                            <p className="text-lg font-medium text-gray-900">No leads yet</p>
-                            <p className="text-sm">Leads will appear here when parents complete the test</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      leads.map((lead, index) => {
-                        const percentage = Math.round((lead.score / lead.totalQuestions) * 100);
-                        const isBlurred = isTrialAccount && index >= 15; // Blur 16th lead onwards (index 15+)
-                        
-                        return (
-                          <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                            <td className={`px-6 py-4 text-sm text-gray-900 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
-                              {lead.childName}
-                            </td>
-                            <td className={`px-6 py-4 text-sm text-gray-600 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
-                              {lead.parentName}
-                            </td>
-                            <td className={`px-6 py-4 text-sm text-gray-600 ${isBlurred ? 'filter blur-sm select-none' : ''}`}>
-                              {lead.whatsapp}
-                            </td>
-                            <td className="px-6 py-4 text-sm">
-                              <span className="text-gray-900 font-medium">{lead.score}/{lead.totalQuestions}</span>
-                              <span className="text-gray-400 ml-2">({percentage}%)</span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-600">{lead.completedAt}</td>
-                            <td className="px-6 py-4 text-sm">
-                              {isBlurred ? (
-                                <button
-                                  onClick={() => setShowUpgrade(true)}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
-                                >
-                                  <Zap className="w-3.5 h-3.5" />
-                                  Upgrade to Contact
-                                </button>
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setReportLead(lead);
-                                      setShowReportModal(true);
-                                    }}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                                  >
-                                    <FileText className="w-3.5 h-3.5" />
-                                    Report
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedLead(lead);
-                                      setShowWhatsAppModal(true);
-                                    }}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                                  >
-                                    <MessageCircle className="w-3.5 h-3.5" />
-                                    WhatsApp
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeMenu === 'questions' && (
-            <div>
-              <QuestionBank 
-                questionBank={questionBank}
-                setQuestionBank={setQuestionBank}
-              />
-            </div>
-          )}
-
-          {activeMenu === 'quests' && (
-            <div>
-              <QuestManager 
-                questConfigs={questConfigs}
-                setQuestConfigs={setQuestConfigs}
-              />
-            </div>
+          {activeMenu === 'marketing' && (
+            <MarketingPage />
           )}
 
           {activeMenu === 'analytics' && (

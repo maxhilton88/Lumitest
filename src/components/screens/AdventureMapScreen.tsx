@@ -139,7 +139,7 @@ export const AdventureMapScreen: React.FC<AdventureMapScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#87CEEB]">
+    <div className="h-[100dvh] relative overflow-hidden bg-[#87CEEB]">
       {/* Beautiful Map Background with Dark Overlay */}
       <div className="absolute inset-0">
         <img

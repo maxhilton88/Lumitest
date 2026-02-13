@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { playMenuSelect } from '../hooks/useSoundEffects';
 
-export type UserType = 'child' | 'kindergarten' | 'superadmin';
+export type UserType = 'child' | 'parent' | 'kindergarten' | 'superadmin';
 
 interface DevNavigationProps {
   currentUserType: UserType;
@@ -15,7 +16,8 @@ export const DevNavigation: React.FC<DevNavigationProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const userTypes = [
-    { type: 'child' as UserType, label: 'Child/Parent', icon: '👦', color: 'from-[#7cc643] to-[#3d7c54]' },
+    { type: 'child' as UserType, label: 'Test Funnel', icon: '👦', color: 'from-[#7cc643] to-[#3d7c54]' },
+    { type: 'parent' as UserType, label: 'Parent Home', icon: '👨‍👩‍👧', color: 'from-[#f59e0b] to-[#d97706]' },
     { type: 'kindergarten' as UserType, label: 'Kindergarten', icon: '🏫', color: 'from-[#ffd43b] to-[#d4a017]' },
     { type: 'superadmin' as UserType, label: 'Super Admin', icon: '👨‍💼', color: 'from-[#6d4c41] to-[#5d4037]' }
   ];
@@ -24,7 +26,7 @@ export const DevNavigation: React.FC<DevNavigationProps> = ({
     <div className="fixed bottom-6 right-6 z-50">
       {/* Menu Panel */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 bg-white/95 backdrop-blur-md rounded-3xl p-4 shadow-2xl border-4 border-white mb-2 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="absolute bottom-20 right-0 bg-white/95 rounded-3xl p-4 shadow-2xl border-4 border-white mb-2 animate-in slide-in-from-bottom-4 duration-300">
           <div className="space-y-2 min-w-[200px]">
             <div className="text-xs font-black text-[#2d5f3f] uppercase tracking-wide mb-3 px-2">
               Dev Mode - Switch User
@@ -33,6 +35,7 @@ export const DevNavigation: React.FC<DevNavigationProps> = ({
               <button
                 key={user.type}
                 onClick={() => {
+                  playMenuSelect();
                   onSwitchUserType(user.type);
                   setIsOpen(false);
                 }}
@@ -57,7 +60,7 @@ export const DevNavigation: React.FC<DevNavigationProps> = ({
 
       {/* Toggle Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => { playMenuSelect(); setIsOpen(!isOpen); }}
         className={`
           w-16 h-16 rounded-full 
           bg-gradient-to-br from-[#6d4c41] to-[#5d4037]

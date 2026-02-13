@@ -44,7 +44,7 @@ export const ChildReport: React.FC<ChildReportProps> = ({ data }) => {
           </div>
         </div>
         
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+        <div className="bg-white/10 rounded-2xl p-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
               <p className="text-white/70 text-sm mb-1">Child's Name</p>

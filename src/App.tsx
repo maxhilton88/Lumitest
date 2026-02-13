@@ -1,204 +1,69 @@
-import React, { useState } from 'react';
+/**
+ * App.tsx — Foxy Adventure Root (Stages 4-6 Complete)
+ *
+ * MainApp is the root layout: owns auth state, branding, and UI chrome.
+ * Test/quest session state lives in useTestSession hook.
+ * OAuth and Stripe callbacks live in dedicated hooks.
+ * All page components consume state via AppContext (unchanged interface).
+ */
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { LanguageProvider } from './components/LanguageContext';
-import { WelcomeScreen } from './components/screens/WelcomeScreen';
-import { AdventureMapScreen } from './components/screens/AdventureMapScreen';
-import { QuestionScreen, Question } from './components/screens/QuestionScreen';
-import { LeadGateScreen } from './components/screens/LeadGateScreen';
-import { ResultsScreen } from './components/screens/ResultsScreen';
-import { ChildWelcomePage } from './components/screens/ChildWelcomePage';
-import { LoginForm } from './components/auth/LoginForm';
-import { SignupForm } from './components/auth/SignupForm';
-import { ForgotPasswordForm } from './components/auth/ForgotPasswordForm';
-import { KindergartenDashboard } from './components/dashboards/KindergartenDashboard';
-import { SuperAdminDashboard } from './components/dashboards/SuperAdminDashboard';
+import { parentValidateSession, getStoredParentData } from './utils/parent-api';
 import { DevNavigation, UserType } from './components/DevNavigation';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner@2.0.3';
 import { projectId, publicAnonKey } from './utils/supabase/info';
-import { submitLead } from './utils/api';
+import { adminAuthClient, getFreshAdminToken } from './utils/supabase-client';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { DebugPanel } from './components/DebugPanel';
+import { createBrowserRouter, RouterProvider, useLocation, useNavigate, Outlet } from 'react-router';
+import { AppContext } from './contexts/AppContext';
+import { childRoutes } from './routes';
+import { useTestSession } from './hooks/useTestSession';
+import { useOAuthCallback } from './hooks/useOAuthCallback';
+import { useCheckoutCallback } from './hooks/useCheckoutCallback';
+import type { AuthScreen, BrandingSettings } from './types/app-types';
 
-// Sample questions for the test
-const sampleQuestions: Question[] = [
-  {
-    id: '1',
-    type: 'mcq',
-    question: {
-      en: 'Which letter comes after A?',
-      ms: 'Huruf apa selepas A?',
-      zh: '哪个字母在A后面？'
-    },
-    options: [
-      { id: 'a', text: { en: 'B', ms: 'B', zh: 'B' } },
-      { id: 'b', text: { en: 'C', ms: 'C', zh: 'C' } },
-      { id: 'c', text: { en: 'D', ms: 'D', zh: 'D' } },
-      { id: 'd', text: { en: 'Z', ms: 'Z', zh: 'Z' } }
-    ],
-    correctAnswer: 'a',
-    foxyMessage: {
-      en: "Let's find the letter that comes after A!",
-      ms: 'Mari cari huruf selepas A!',
-      zh: '让我们找到A后面的字母！'
-    }
-  },
-  {
-    id: '2',
-    type: 'dragdrop',
-    question: {
-      en: 'Drag the animal that lives in water',
-      ms: 'Seret haiwan yang hidup dalam air',
-      zh: '拖动住在水里的动物'
-    },
-    options: [
-      { id: 'a', text: { en: '🐟 Fish', ms: '🐟 Ikan', zh: '🐟 鱼' } },
-      { id: 'b', text: { en: '🐕 Dog', ms: '🐕 Anjing', zh: '🐕 狗' } },
-      { id: 'c', text: { en: '🐈 Cat', ms: '🐈 Kucing', zh: '🐈 猫' } },
-      { id: 'd', text: { en: '🐦 Bird', ms: '🐦 Burung', zh: '🐦 鸟' } }
-    ],
-    correctAnswer: 'a',
-    foxyMessage: {
-      en: "Which animal swims in the water?",
-      ms: 'Haiwan mana yang berenang dalam air?',
-      zh: '哪种动物在水里游泳？'
-    }
-  },
-  {
-    id: '3',
-    type: 'hotspot',
-    question: {
-      en: 'Tap on the face',
-      ms: 'Ketik pada muka',
-      zh: '点击脸部'
-    },
-    hotspotImage: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800',
-    options: [
-      { 
-        id: 'a', 
-        text: { en: 'Face', ms: 'Muka', zh: '脸' },
-        position: { x: 35, y: 15, width: 30, height: 25 }
-      },
-      { 
-        id: 'b', 
-        text: { en: 'Hand', ms: 'Tangan', zh: '手' },
-        position: { x: 10, y: 50, width: 20, height: 20 }
-      },
-      { 
-        id: 'c', 
-        text: { en: 'Body', ms: 'Badan', zh: '身体' },
-        position: { x: 30, y: 45, width: 40, height: 40 }
-      },
-      { 
-        id: 'd', 
-        text: { en: 'Legs', ms: 'Kaki', zh: '腿' },
-        position: { x: 35, y: 70, width: 30, height: 25 }
-      }
-    ],
-    correctAnswer: 'a',
-    foxyMessage: {
-      en: "Can you find the face?",
-      ms: 'Bolehkah kamu cari muka?',
-      zh: '你能找到脸吗？'
-    }
-  },
-  {
-    id: '4',
-    type: 'sequence',
-    question: {
-      en: 'Put these daily activities in the correct order',
-      ms: 'Susun aktiviti harian ini mengikut urutan yang betul',
-      zh: '按正确顺序排列这些日常活动'
-    },
-    options: [
-      { id: 'a', text: { en: '🌅 Wake up', ms: '🌅 Bangun tidur', zh: '🌅 起床' } },
-      { id: 'b', text: { en: '🍳 Eat breakfast', ms: '🍳 Sarapan', zh: '🍳 吃早餐' } },
-      { id: 'c', text: { en: '🚌 Go to school', ms: '🚌 Pergi sekolah', zh: '🚌 去学校' } },
-      { id: 'd', text: { en: '🌙 Sleep', ms: '🌙 Tidur', zh: '🌙 睡觉' } }
-    ],
-    correctAnswer: 'a,b,c,d',
-    foxyMessage: {
-      en: "What do you do first in the morning?",
-      ms: 'Apa yang kamu buat dahulu pada waktu pagi?',
-      zh: '早上你先做什么？'
-    }
-  },
-  {
-    id: '5',
-    type: 'mcq',
-    question: {
-      en: 'What is 1 + 1?',
-      ms: 'Berapa 1 + 1?',
-      zh: '1 + 1 等于几？'
-    },
-    options: [
-      { id: 'a', text: { en: '1', ms: '1', zh: '1' } },
-      { id: 'b', text: { en: '2', ms: '2', zh: '2' } },
-      { id: 'c', text: { en: '3', ms: '3', zh: '3' } },
-      { id: 'd', text: { en: '4', ms: '4', zh: '4' } }
-    ],
-    correctAnswer: 'b',
-    foxyMessage: {
-      en: "Let's add together!",
-      ms: 'Mari tambah bersama!',
-      zh: '让我们一起加！'
-    }
-  }
-];
+function MainApp() {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-type AuthScreen = 'login' | 'signup' | 'forgotPassword';
-type ChildScreen = 'childWelcome' | 'languageSelect' | 'adventureMap' | 'test' | 'leadGate' | 'results';
+  // ── User type derived from URL path (source of truth) ──
+  const currentUserType = useMemo<UserType>(() => {
+    const p = location.pathname;
+    if (p.startsWith('/kg')) return 'kindergarten';
+    if (p.startsWith('/admin')) return 'superadmin';
+    if (p.startsWith('/t/') || p.startsWith('/play/')) return 'child';
+    return 'parent';
+  }, [location.pathname]);
 
-// Demo school ID for child flow (in production, this would come from URL)
-const DEMO_SCHOOL_ID = 'demo-school-123';
+  // ═══════════════════════════════════════════════
+  // AUTH STATE
+  // ═══════════════════════════════════════════════
 
-export default function App() {
-  // User type management - persist to localStorage
-  const [currentUserType, setCurrentUserType] = useState<UserType>(() => {
-    const saved = localStorage.getItem('userType');
-    return (saved as UserType) || 'child';
-  });
-  
-  // Auth state - restore from localStorage
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const token = localStorage.getItem('access_token');
-    return !!token;
+    return !!localStorage.getItem('access_token');
   });
-  
-  // Child/Parent flow state
-  const [childScreen, setChildScreen] = useState<ChildScreen>('childWelcome');
-  const [age, setAge] = useState<number>(5);
-  const [includeMandarinTest, setIncludeMandarinTest] = useState<boolean>(false);
-  const [completedModules, setCompletedModules] = useState<string[]>([]);
-  const [currentModule, setCurrentModule] = useState<string>('');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<{ questionId: string; answerId: string }[]>([]);
-  const [leadData, setLeadData] = useState({ childName: '', parentName: '', whatsapp: '' });
+  const [userRole, setUserRole] = useState<'superadmin' | 'kindergarten' | null>(() => {
+    return (localStorage.getItem('user_role') as 'superadmin' | 'kindergarten') || null;
+  });
 
-  // Global music control - persists across pages
-  const [musicEnabled, setMusicEnabled] = useState(true);
-  
-  // GLOBAL QUESTION BANK - Shared across all components
-  const [questionBank, setQuestionBank] = useState<Question[]>([]);
-  
-  // GLOBAL QUEST CONFIGURATION
-  const [questConfigs, setQuestConfigs] = useState({
-    english: { language: 'en' as const, numberOfQuestions: 20, skillFilters: [] as string[] },
-    numbers: { language: 'global' as const, numberOfQuestions: 25, skillFilters: ['Numeracy'] },
-    bahasa: { language: 'ms' as const, numberOfQuestions: 20, skillFilters: [] as string[] },
-    mandarin: { language: 'zh' as const, numberOfQuestions: 15, skillFilters: [] as string[] },
-    science: { language: 'global' as const, numberOfQuestions: 30, skillFilters: ['General Science'] }
+  // Parent auth state
+  const [isParentAuthenticated, setIsParentAuthenticated] = useState(() => {
+    return !!localStorage.getItem('parent_access_token');
   });
-  
-  // GLOBAL BRANDING SETTINGS
-  interface BrandingSettings {
-    schoolName: string;
-    logoUrl: string;
-    primaryColor: string;
-    kindergartenUrl: string;
-    testPageBgColor: string;
-    mapBackgroundImage: string;
-    testBackgroundImage: string;
-  }
-  
+  const [parentData, setParentData] = useState<any>(() => getStoredParentData());
+
+  // ═══════════════════════════════════════════════
+  // UI CHROME STATE
+  // ═══════════════════════════════════════════════
+
+  const [showPracticeMode, setShowPracticeMode] = useState(false);
+  const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
+  const pendingQuestStartRef = React.useRef<(() => void) | null>(null);
+
+  // Branding settings (shared between test flow and KG dashboard)
   const [brandingSettings, setBrandingSettings] = useState<BrandingSettings>({
     schoolName: 'Little Stars Kindergarten',
     logoUrl: '',
@@ -206,41 +71,149 @@ export default function App() {
     kindergartenUrl: 'little-stars',
     testPageBgColor: '#ffffff',
     mapBackgroundImage: '',
-    testBackgroundImage: ''
+    testBackgroundImage: '',
   });
-  
-  // Store the loaded questions for current module test
-  const [currentTestQuestions, setCurrentTestQuestions] = useState<Question[]>(sampleQuestions);
-  
-  // DETAILED TEST RESULTS - Store answers with question metadata
-  interface DetailedAnswer {
-    questionId: string;
-    answerId: string;
-    correctAnswer: string;
-    isCorrect: boolean;
-    quest: string;
-    ageDifficulty: number;
-  }
-  
-  const [allDetailedAnswers, setAllDetailedAnswers] = useState<DetailedAnswer[]>([]);
-  const [currentModuleAnswers, setCurrentModuleAnswers] = useState<DetailedAnswer[]>([]);
 
-  // ===== AUTH HANDLERS =====
+  // ═══════════════════════════════════════════════
+  // TEST SESSION (Stage 4 — extracted to hook)
+  // ═══════════════════════════════════════════════
+
+  const testSession = useTestSession({
+    currentUserType,
+    navigate,
+    locationPathname: location.pathname,
+    brandingSettings,
+    setBrandingSettings,
+  });
+
+  // ═══════════════════════════════════════════════
+  // CALLBACKS (Stage 5 — extracted to hooks)
+  // ═══════════════════════════════════════════════
+
+  useOAuthCallback({ navigate, setIsParentAuthenticated, setParentData });
+  useCheckoutCallback({ navigate, locationPathname: location.pathname, setParentData });
+
+  // ═══════════════════════════════════════════════
+  // SESSION VALIDATION
+  // ═══════════════════════════════════════════════
+
+  // KG/Admin session validation
+  useEffect(() => {
+    const validateSession = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+
+      if (currentUserType !== 'kindergarten' && currentUserType !== 'superadmin') return;
+
+      try {
+        const freshToken = await getFreshAdminToken();
+        const sessionToken = freshToken || token;
+        console.log('Validating session token...', freshToken ? '(auto-refreshed)' : '(localStorage)');
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/session`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${publicAnonKey}`,
+              'X-User-Token': `Bearer ${sessionToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.warn('Session validation failed, clearing stale token');
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('user_id');
+          localStorage.removeItem('school_id');
+          localStorage.removeItem('school_name');
+          localStorage.removeItem('school_short_code');
+          localStorage.removeItem('school_kindergarten_url');
+          adminAuthClient.auth.signOut().catch(() => {});
+          setIsAuthenticated(false);
+          return;
+        }
+
+        const data = await response.json();
+        console.log('Session valid:', data.user?.email, data.school?.school_name);
+
+        if (data.school?.school_name) {
+          localStorage.setItem('school_name', data.school.school_name);
+          setBrandingSettings((prev) => ({ ...prev, schoolName: data.school.school_name }));
+        }
+
+        if (data.school?.short_code) {
+          localStorage.setItem('school_short_code', data.school.short_code);
+        }
+
+        if (data.school?.kindergarten_url) {
+          localStorage.setItem('school_kindergarten_url', data.school.kindergarten_url);
+        }
+
+        if (data.user?.role) {
+          localStorage.setItem('user_role', data.user.role);
+          setUserRole(data.user.role);
+        }
+
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error('Session validation network error:', error);
+      }
+    };
+
+    validateSession();
+  }, [currentUserType]);
+
+  // Parent session validation
+  useEffect(() => {
+    if (currentUserType !== 'parent') return;
+    const validateParent = async () => {
+      const result = await parentValidateSession();
+      if (result?.valid && result.parent) {
+        setIsParentAuthenticated(true);
+        setParentData(result.parent);
+        if (result.parent.include_mandarin_test !== undefined) {
+          testSession.setIncludeMandarinTest(result.parent.include_mandarin_test);
+          localStorage.setItem(
+            'include_mandarin_test',
+            JSON.stringify(result.parent.include_mandarin_test)
+          );
+        }
+      } else {
+        setIsParentAuthenticated(false);
+        setParentData(null);
+      }
+    };
+    if (isParentAuthenticated) {
+      validateParent();
+    }
+  }, [currentUserType]);
+
+  // ═══════════════════════════════════════════════
+  // AUTH HANDLERS
+  // ═══════════════════════════════════════════════
+
   const handleLogin = async (email: string, password: string) => {
     try {
       console.log('Login attempt:', email);
-      
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`
-        },
-        body: JSON.stringify({ email, password })
-      });
+
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         console.error('Login error:', result);
         toast.error(result.error || 'Invalid credentials');
@@ -248,13 +221,26 @@ export default function App() {
       }
 
       console.log('Login success:', result);
-      
-      // Store session data
+
       localStorage.setItem('access_token', result.session.access_token);
       localStorage.setItem('user_id', result.user.id);
       localStorage.setItem('school_id', result.school.id);
       localStorage.setItem('school_name', result.school.school_name);
-      
+      localStorage.setItem('school_short_code', result.school.short_code || '');
+      localStorage.setItem('school_kindergarten_url', result.school.kindergarten_url || '');
+      localStorage.setItem('user_email', result.user.email);
+
+      const role = result.user.role || 'kindergarten';
+      localStorage.setItem('user_role', role);
+      setUserRole(role);
+      console.log(`[AUTH] User role: ${role}`);
+
+      await adminAuthClient.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token,
+      });
+      console.log('[AUTH] Session set on adminAuthClient after login');
+
       toast.success('Login successful!');
       setIsAuthenticated(true);
     } catch (error) {
@@ -263,26 +249,34 @@ export default function App() {
     }
   };
 
-  const handleSignup = async (data: { name: string; email: string; password: string; schoolName?: string }) => {
+  const handleSignup = async (data: {
+    name: string;
+    email: string;
+    password: string;
+    schoolName?: string;
+  }) => {
     try {
       console.log('Signup attempt:', data);
-      
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          schoolName: data.schoolName || data.name,
-          kindergartenUrl: `${(data.schoolName || data.name).toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
-        })
-      });
+
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-221a61bc/auth/signup`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+            schoolName: data.schoolName || data.name,
+            kindergartenUrl: `${(data.schoolName || data.name).toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+          }),
+        }
+      );
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         console.error('Signup error:', result);
         toast.error(result.error || 'Signup failed');
@@ -308,465 +302,190 @@ export default function App() {
     localStorage.removeItem('user_id');
     localStorage.removeItem('school_id');
     localStorage.removeItem('school_name');
+    localStorage.removeItem('school_short_code');
+    localStorage.removeItem('school_kindergarten_url');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('user_email');
+    adminAuthClient.auth.signOut().catch(() => {});
     setIsAuthenticated(false);
+    setUserRole(null);
     setAuthScreen('login');
+    testSession.resetTestState();
     toast.info('Logged out successfully');
   };
 
-  // ===== CHILD FLOW HANDLERS =====
-  const handleStartAdventure = () => {
-    setChildScreen('languageSelect');
-  };
+  // ═══════════════════════════════════════════════
+  // USER TYPE SWITCHING (DEV MODE)
+  // ═══════════════════════════════════════════════
 
-  const handleLanguageStart = (childName: string, parentName: string, whatsapp: string, selectedAge: number, selectedIncludeMandarinTest: boolean) => {
-    setLeadData({ childName, parentName, whatsapp });
-    setAge(selectedAge);
-    setIncludeMandarinTest(selectedIncludeMandarinTest);
-    setChildScreen('adventureMap');
-    setCompletedModules([]);
-  };
-
-  // Load questions from Question Bank based on quest configuration
-  const loadQuestionsForModule = (moduleId: string, childAge: number): Question[] => {
-    // If Question Bank is empty, use sample questions as fallback
-    if (questionBank.length === 0) {
-      console.log('Question Bank is empty, using sample questions');
-      return sampleQuestions;
-    }
-
-    // Get quest configuration
-    const config = questConfigs[moduleId as keyof typeof questConfigs];
-    if (!config) {
-      console.log(`No config found for ${moduleId}, using sample questions`);
-      return sampleQuestions;
-    }
-
-    // Filter questions by quest and language
-    let filteredQuestions = questionBank.filter(q => {
-      // Match quest
-      const matchesQuest = q.quest === moduleId;
-      
-      // Match language (global means any language is ok)
-      const matchesLanguage = config.language === 'global' || q.language === 'global' || q.language === config.language;
-      
-      // Match skill filters (if any)
-      const matchesSkills = config.skillFilters.length === 0 || 
-                           (q.skills && q.skills.some(skill => config.skillFilters.includes(skill)));
-      
-      return matchesQuest && matchesLanguage && matchesSkills;
-    });
-
-    // If no questions found, use sample questions
-    if (filteredQuestions.length === 0) {
-      console.log(`No questions found for ${moduleId} in Question Bank, using sample questions`);
-      return sampleQuestions;
-    }
-
-    // Balance questions across age levels
-    const questionsPerAge: Record<number, Question[]> = {
-      4: [],
-      5: [],
-      6: [],
-      7: []
-    };
-
-    filteredQuestions.forEach(q => {
-      if (q.ageDifficulty && questionsPerAge[q.ageDifficulty]) {
-        questionsPerAge[q.ageDifficulty].push(q);
-      }
-    });
-
-    // Try to get equal distribution across ages
-    const targetQuestionsPerAge = Math.ceil(config.numberOfQuestions / 4);
-    const selectedQuestions: Question[] = [];
-
-    // Select questions from each age level
-    [4, 5, 6, 7].forEach(ageLevel => {
-      const ageQuestions = questionsPerAge[ageLevel];
-      const shuffled = [...ageQuestions].sort(() => Math.random() - 0.5);
-      const toTake = Math.min(targetQuestionsPerAge, shuffled.length);
-      selectedQuestions.push(...shuffled.slice(0, toTake));
-    });
-
-    // If we don't have enough questions, add more randomly
-    if (selectedQuestions.length < config.numberOfQuestions) {
-      const remaining = filteredQuestions.filter(q => !selectedQuestions.includes(q));
-      const shuffled = [...remaining].sort(() => Math.random() - 0.5);
-      selectedQuestions.push(...shuffled.slice(0, config.numberOfQuestions - selectedQuestions.length));
-    }
-
-    // Shuffle final questions
-    const finalQuestions = selectedQuestions
-      .slice(0, config.numberOfQuestions)
-      .sort(() => Math.random() - 0.5);
-
-    console.log(`Loaded ${finalQuestions.length} questions for ${moduleId}`);
-    return finalQuestions.length > 0 ? finalQuestions : sampleQuestions;
-  };
-
-  const handleModuleSelect = (moduleId: string) => {
-    // Load questions based on quest config and child's age
-    const loadedQuestions = loadQuestionsForModule(moduleId, age);
-    setCurrentTestQuestions(loadedQuestions);
-    
-    setCurrentModule(moduleId);
-    setChildScreen('test');
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
-    setCurrentModuleAnswers([]); // Reset current module detailed answers
-    toast.success(`Starting ${moduleId} adventure!`);
-  };
-
-  const handleAnswer = (answerId: string) => {
-    const currentQuestion = currentTestQuestions[currentQuestionIndex];
-    
-    // Store basic answer
-    setAnswers([...answers, { questionId: currentQuestion.id, answerId }]);
-    
-    // Store detailed answer with metadata
-    const detailedAnswer: DetailedAnswer = {
-      questionId: currentQuestion.id,
-      answerId: answerId,
-      correctAnswer: currentQuestion.correctAnswer,
-      isCorrect: answerId === currentQuestion.correctAnswer,
-      quest: currentQuestion.quest || currentModule,
-      ageDifficulty: currentQuestion.ageDifficulty || age
-    };
-    
-    setCurrentModuleAnswers([...currentModuleAnswers, detailedAnswer]);
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < currentTestQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      // Module completed - add current module answers to all answers
-      setAllDetailedAnswers([...allDetailedAnswers, ...currentModuleAnswers]);
-      
-      setCompletedModules([...completedModules, currentModule]);
-      
-      // Check if all modules are completed
-      const totalModules = includeMandarinTest ? 5 : 4;
-      if (completedModules.length + 1 >= totalModules) {
-        setChildScreen('leadGate');
-      } else {
-        setChildScreen('adventureMap');
-        toast.success(`${currentModule} completed! Choose your next adventure!`);
-      }
-    }
-  };
-
-  const handleLeadSubmit = async (data: { childName: string; parentName: string; whatsapp: string }) => {
-    setLeadData(data);
-    
-    // Submit lead to database
-    try {
-      // Get schoolId from localStorage (set by kindergarten) or use demo
-      const schoolId = localStorage.getItem('school_id') || DEMO_SCHOOL_ID;
-      
-      await submitLead({
-        schoolId,
-        childName: data.childName,
-        parentName: data.parentName,
-        whatsapp: data.whatsapp,
-        childAge: age,
-        includeMandarin: includeMandarinTest
-      });
-      
-      console.log('Lead submitted successfully');
-    } catch (error) {
-      console.error('Failed to submit lead:', error);
-      // Continue to results even if lead submission fails
-    }
-    
-    setChildScreen('results');
-  };
-
-  const handleShare = () => {
-    const score = calculateScore();
-    const percentage = Math.round((score / currentTestQuestions.length) * 100);
-    
-    const shareText = `🎉 ${leadData.childName} scored ${percentage}% on the KSSR readiness test! Ready for Standard 1! 🎓`;
-    
-    if (navigator.share) {
-      navigator.share({
-        title: 'KSSR Test Results',
-        text: shareText,
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(shareText);
-      toast.success('Result copied to clipboard!');
-    }
-  };
-
-  const calculateScore = () => {
-    return answers.filter((a, idx) => a.answerId === currentTestQuestions[idx].correctAnswer).length;
-  };
-  
-  // Calculate detailed report data from all answers
-  const calculateReportData = () => {
-    // Map quest IDs to display names
-    const questNames: Record<string, string> = {
-      english: 'English Forest',
-      numbers: 'Numbers Island',
-      bahasa: 'Rimba Bahasa',
-      mandarin: 'Mandarin Mountain',
-      science: 'Mystery Jungle'
-    };
-    
-    // Group answers by quest
-    const questGroups: Record<string, DetailedAnswer[]> = {};
-    allDetailedAnswers.forEach(answer => {
-      const quest = answer.quest || 'unknown';
-      if (!questGroups[quest]) {
-        questGroups[quest] = [];
-      }
-      questGroups[quest].push(answer);
-    });
-    
-    // Calculate quest results
-    const questResults = Object.keys(questGroups).map(questId => {
-      const answers = questGroups[questId];
-      const correct = answers.filter(a => a.isCorrect).length;
-      return {
-        quest: questNames[questId] || questId,
-        score: correct,
-        total: answers.length
-      };
-    });
-    
-    // Group answers by age difficulty
-    const ageGroups: Record<number, DetailedAnswer[]> = {
-      4: [],
-      5: [],
-      6: [],
-      7: []
-    };
-    
-    allDetailedAnswers.forEach(answer => {
-      const ageDiff = answer.ageDifficulty || age;
-      if (ageGroups[ageDiff]) {
-        ageGroups[ageDiff].push(answer);
-      }
-    });
-    
-    // Calculate age performance
-    const agePerformance = [4, 5, 6, 7].map(ageLevel => {
-      const answers = ageGroups[ageLevel];
-      const correct = answers.filter(a => a.isCorrect).length;
-      return {
-        age: ageLevel,
-        correct: correct,
-        total: answers.length
-      };
-    }).filter(perf => perf.total > 0); // Only include ages with questions
-    
-    const totalCorrect = allDetailedAnswers.filter(a => a.isCorrect).length;
-    const totalQuestions = allDetailedAnswers.length;
-    
-    console.log('Report Data:', { questResults, agePerformance, totalCorrect, totalQuestions });
-    
-    return {
-      questResults,
-      agePerformance,
-      score: totalCorrect,
-      totalQuestions: totalQuestions
-    };
-  };
-
-  // ===== USER TYPE SWITCHING (DEV MODE) =====
   const handleSwitchUserType = (userType: UserType) => {
-    setCurrentUserType(userType);
-    localStorage.setItem('userType', userType);
-    setIsAuthenticated(false);
-    setAuthScreen('login');
-    setChildScreen('childWelcome');
-    setCurrentQuestionIndex(0);
-    setAnswers([]);
+    const paths: Record<UserType, string> = {
+      child: '/t/demo',
+      parent: '/',
+      kindergarten: '/kg',
+      superadmin: '/admin',
+    };
+    navigate(paths[userType]);
+    if (userType !== 'parent') {
+      setIsAuthenticated(false);
+      setAuthScreen('login');
+    }
+    testSession.resetTestState();
     toast.info(`Switched to ${userType} mode`);
   };
 
-  // ===== RENDER LOGIC =====
+  // ═══════════════════════════════════════════════
+  // CONTEXT VALUE
+  // ═══════════════════════════════════════════════
 
-  // CHILD/PARENT FLOW (No authentication required)
-  if (currentUserType === 'child') {
-    return (
-      <LanguageProvider>
-        <div className="relative">
-          {childScreen === 'childWelcome' && (
-            <ChildWelcomePage onStartAdventure={handleStartAdventure} />
-          )}
+  const contextValue = useMemo(
+    () => ({
+      // Auth (KG/Admin)
+      isAuthenticated,
+      setIsAuthenticated,
+      userRole,
+      authScreen,
+      setAuthScreen,
+      // Auth (Parent)
+      isParentAuthenticated,
+      setIsParentAuthenticated,
+      parentData,
+      setParentData,
+      // User type
+      currentUserType,
+      handleSwitchUserType,
+      // Child flow (from useTestSession)
+      childScreen: testSession.childScreen,
+      setChildScreen: testSession.setChildScreen,
+      age: testSession.age,
+      includeMandarinTest: testSession.includeMandarinTest,
+      setIncludeMandarinTest: testSession.setIncludeMandarinTest,
+      completedModules: testSession.completedModules,
+      currentModule: testSession.currentModule,
+      currentQuestionIndex: testSession.currentQuestionIndex,
+      currentTestQuestions: testSession.currentTestQuestions,
+      allDetailedAnswers: testSession.allDetailedAnswers,
+      currentModuleAnswers: testSession.currentModuleAnswers,
+      moduleResults: testSession.moduleResults,
+      assessmentCompleted: testSession.assessmentCompleted,
+      leadData: testSession.leadData,
+      pendingResumeLead: testSession.pendingResumeLead,
+      justCompletedModule: testSession.justCompletedModule,
+      setJustCompletedModule: testSession.setJustCompletedModule,
+      // Quests & branding
+      liveQuests: testSession.liveQuests,
+      questCardImageUrls: testSession.questCardImageUrls,
+      brandingSettings,
+      setBrandingSettings,
+      // KG/Admin content
+      questionBank: testSession.questionBank,
+      setQuestionBank: testSession.setQuestionBank,
+      questConfigs: testSession.questConfigs,
+      setQuestConfigs: testSession.setQuestConfigs,
+      // Overlays
+      showPracticeMode,
+      setShowPracticeMode,
+      showWhatsAppPrompt,
+      setShowWhatsAppPrompt,
+      // Refs
+      parentInitiatedQuestRef: testSession.parentInitiatedQuestRef,
+      pendingQuestStartRef,
+      resolvedSchoolIdRef: testSession.resolvedSchoolIdRef,
+      isResolvingSchool: testSession.isResolvingSchool,
+      // Handlers
+      handleLogin,
+      handleSignup,
+      handleResetPassword,
+      handleLogout,
+      handleStartAdventure: testSession.handleStartAdventure,
+      handleLanguageStart: testSession.handleLanguageStart,
+      handleModuleSelect: testSession.handleModuleSelect,
+      handleAnswer: testSession.handleAnswer,
+      handleNext: testSession.handleNext,
+      handleShare: testSession.handleShare,
+      handleResumeSession: testSession.handleResumeSession,
+      handleStartFresh: testSession.handleStartFresh,
+      persistAssessmentSnapshot: testSession.persistAssessmentSnapshot,
+      setAnswers: testSession.setAnswers,
+      setCurrentQuestionIndex: testSession.setCurrentQuestionIndex,
+      // School resolution
+      resolvedSchoolId: testSession.resolvedSchoolId,
+      setResolvedSchoolId: testSession.setResolvedSchoolId,
+    }),
+    [
+      isAuthenticated,
+      userRole,
+      authScreen,
+      isParentAuthenticated,
+      parentData,
+      currentUserType,
+      testSession.childScreen,
+      testSession.age,
+      testSession.includeMandarinTest,
+      testSession.completedModules,
+      testSession.currentModule,
+      testSession.currentQuestionIndex,
+      testSession.currentTestQuestions,
+      testSession.allDetailedAnswers,
+      testSession.currentModuleAnswers,
+      testSession.moduleResults,
+      testSession.assessmentCompleted,
+      testSession.leadData,
+      testSession.pendingResumeLead,
+      testSession.justCompletedModule,
+      testSession.liveQuests,
+      testSession.questCardImageUrls,
+      testSession.questionBank,
+      testSession.questConfigs,
+      testSession.isResolvingSchool,
+      testSession.resolvedSchoolId,
+      brandingSettings,
+      showPracticeMode,
+      showWhatsAppPrompt,
+    ]
+  );
 
-          {childScreen === 'languageSelect' && (
-            <WelcomeScreen 
-              onStart={handleLanguageStart}
-              brandingSettings={brandingSettings}
-            />
-          )}
+  // ═══════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════
 
-          {childScreen === 'adventureMap' && (
-            <AdventureMapScreen
-              age={age}
-              includeMandarinTest={includeMandarinTest}
-              onModuleSelect={handleModuleSelect}
-              completedModules={completedModules}
-              brandingSettings={brandingSettings}
-            />
-          )}
-
-          {childScreen === 'test' && (
-            <QuestionScreen
-              question={currentTestQuestions[currentQuestionIndex]}
-              questionNumber={currentQuestionIndex + 1}
-              totalQuestions={currentTestQuestions.length}
-              onAnswer={handleAnswer}
-              onNext={handleNext}
-              brandingSettings={brandingSettings}
-            />
-          )}
-
-          {childScreen === 'leadGate' && (
-            <LeadGateScreen onSubmit={handleLeadSubmit} />
-          )}
-
-          {childScreen === 'results' && (
-            <ResultsScreen
-              childName={leadData.childName}
-              score={calculateScore()}
-              totalQuestions={currentTestQuestions.length}
-              onShare={handleShare}
-              brandingSettings={brandingSettings}
-            />
-          )}
-
-          <DevNavigation 
-            currentUserType={currentUserType} 
-            onSwitchUserType={handleSwitchUserType} 
-          />
+  return (
+    <ErrorBoundary>
+      <AppContext.Provider value={contextValue}>
+        <LanguageProvider>
+          <Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-[#1a1a2e]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#c8b88a] mx-auto mb-4" />
+                  <p className="text-[#c8b88a] text-sm font-medium">Loading adventure...</p>
+                </div>
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
+          <DevNavigation currentUserType={currentUserType} onSwitchUserType={handleSwitchUserType} />
           <Toaster />
-        </div>
-      </LanguageProvider>
-    );
-  }
+          <DebugPanel />
+        </LanguageProvider>
+      </AppContext.Provider>
+    </ErrorBoundary>
+  );
+}
 
-  // KINDERGARTEN FLOW (Authentication required)
-  if (currentUserType === 'kindergarten') {
-    if (!isAuthenticated) {
-      return (
-        <div className="relative">
-          {authScreen === 'login' && (
-            <LoginForm
-              userType="kindergarten"
-              onLogin={handleLogin}
-              onSwitchToSignup={() => setAuthScreen('signup')}
-              onSwitchToForgotPassword={() => setAuthScreen('forgotPassword')}
-            />
-          )}
+// ═══════════════════════════════════════════════
+// ROUTER
+// ═══════════════════════════════════════════════
 
-          {authScreen === 'signup' && (
-            <SignupForm
-              userType="kindergarten"
-              onSignup={handleSignup}
-              onSwitchToLogin={() => setAuthScreen('login')}
-            />
-          )}
+const router = createBrowserRouter([
+  {
+    path: '/',
+    Component: MainApp,
+    children: childRoutes,
+  },
+]);
 
-          {authScreen === 'forgotPassword' && (
-            <ForgotPasswordForm
-              userType="kindergarten"
-              onResetPassword={handleResetPassword}
-              onBack={() => setAuthScreen('login')}
-            />
-          )}
-
-          <DevNavigation 
-            currentUserType={currentUserType} 
-            onSwitchUserType={handleSwitchUserType} 
-          />
-          <Toaster />
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative">
-        <KindergartenDashboard 
-          schoolName={brandingSettings.schoolName}
-          onLogout={handleLogout}
-          questionBank={questionBank}
-          setQuestionBank={setQuestionBank}
-          questConfigs={questConfigs}
-          setQuestConfigs={setQuestConfigs}
-          brandingSettings={brandingSettings}
-          setBrandingSettings={setBrandingSettings}
-        />
-
-        <DevNavigation 
-          currentUserType={currentUserType} 
-          onSwitchUserType={handleSwitchUserType} 
-        />
-        <Toaster />
-      </div>
-    );
-  }
-
-  // SUPER ADMIN FLOW (Authentication required)
-  if (currentUserType === 'superadmin') {
-    if (!isAuthenticated) {
-      return (
-        <div className="relative">
-          {authScreen === 'login' && (
-            <LoginForm
-              userType="superadmin"
-              onLogin={handleLogin}
-              onSwitchToSignup={() => setAuthScreen('signup')}
-              onSwitchToForgotPassword={() => setAuthScreen('forgotPassword')}
-            />
-          )}
-
-          {authScreen === 'signup' && (
-            <SignupForm
-              userType="superadmin"
-              onSignup={handleSignup}
-              onSwitchToLogin={() => setAuthScreen('login')}
-            />
-          )}
-
-          {authScreen === 'forgotPassword' && (
-            <ForgotPasswordForm
-              userType="superadmin"
-              onResetPassword={handleResetPassword}
-              onBack={() => setAuthScreen('login')}
-            />
-          )}
-
-          <DevNavigation 
-            currentUserType={currentUserType} 
-            onSwitchUserType={handleSwitchUserType} 
-          />
-          <Toaster />
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative">
-        <SuperAdminDashboard 
-          onLogout={handleLogout}
-          questionBank={questionBank}
-          setQuestionBank={setQuestionBank}
-          questConfigs={questConfigs}
-          setQuestConfigs={setQuestConfigs}
-        />
-
-        <DevNavigation 
-          currentUserType={currentUserType} 
-          onSwitchUserType={handleSwitchUserType} 
-        />
-        <Toaster />
-      </div>
-    );
-  }
-
-  return null;
+export default function App() {
+  return <RouterProvider router={router} />;
 }

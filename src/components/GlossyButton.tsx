@@ -3,7 +3,7 @@ import React from 'react';
 interface GlossyButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  color?: 'white' | 'green' | 'blue' | 'yellow' | 'brown';
+  color?: 'white' | 'green' | 'blue' | 'yellow' | 'brown' | 'gold';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   disabled?: boolean;
@@ -15,7 +15,8 @@ const colorStyles = {
   green: 'bg-[#7cc643] text-white border-4 border-[#9ed963] shadow-[0_6px_0_#5a9431]',
   blue: 'bg-[#4dabf7] text-white border-4 border-[#74c0fc] shadow-[0_6px_0_#2b8bd6]',
   yellow: 'bg-[#ffd43b] text-[#5d4037] border-4 border-[#ffe066] shadow-[0_6px_0_#ddb220]',
-  brown: 'bg-[#6d4c41] text-white border-4 border-[#8d6e63] shadow-[0_6px_0_#4e342e]'
+  brown: 'bg-[#6d4c41] text-white border-4 border-[#8d6e63] shadow-[0_6px_0_#4e342e]',
+  gold: 'bg-gradient-to-r from-[#d4a44a] via-[#f0d078] to-[#d4a44a] text-[#2a1f0e] border-4 border-[#ffeaa7] shadow-[0_6px_0_#a67c2e]',
 };
 
 const sizeStyles = {

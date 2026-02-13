@@ -83,29 +83,31 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ brandingSettings, se
         <p className="text-sm text-gray-500 mt-1">Manage your school and account settings</p>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-        {/* Sidebar Navigation */}
-        <div className="col-span-3">
-          <div className="bg-white border border-gray-200 rounded-lg p-2">
-            {sections.map(section => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  activeSection === section.id
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <section.icon className="w-4 h-4" />
-                {section.label}
-              </button>
-            ))}
+      <div className="flex flex-col md:grid md:grid-cols-12 gap-4 md:gap-6">
+        {/* Section Navigation - horizontal scroll on mobile, sidebar on desktop */}
+        <div className="md:col-span-3">
+          <div className="bg-white border border-gray-200 rounded-lg p-1.5 md:p-2">
+            <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-1 md:pb-0 -mx-1 px-1 md:mx-0 md:px-0">
+              {sections.map(section => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 rounded-lg text-xs md:text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 md:flex-shrink md:w-full ${
+                    activeSection === section.id
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <section.icon className="w-4 h-4 flex-shrink-0" />
+                  {section.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="col-span-9">
+        <div className="md:col-span-9">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             
             {/* School Profile */}
