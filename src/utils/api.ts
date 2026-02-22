@@ -1,6 +1,6 @@
 // API helper functions for Foxy Adventure
 import { projectId, publicAnonKey } from './supabase/info';
-import { getFreshAdminToken } from './supabase-client';
+import { getFreshAdminToken, isJwtExpired } from './supabase-client';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-221a61bc`;
 
@@ -18,10 +18,13 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   if (freshToken) {
     headers['X-User-Token'] = `Bearer ${freshToken}`;
   } else {
-    // Fallback to raw localStorage for backwards compat
+    // Fallback to raw localStorage for backwards compat — but reject expired tokens
     const token = localStorage.getItem('access_token');
-    if (token) {
+    if (token && !isJwtExpired(token)) {
       headers['X-User-Token'] = `Bearer ${token}`;
+    } else if (token) {
+      console.warn('[API] localStorage token is expired, clearing stale session');
+      localStorage.removeItem('access_token');
     }
   }
   
@@ -117,6 +120,7 @@ export async function submitLead(leadData: {
   questResults?: any[];
   agePerformance?: any[];
   status?: string;
+  referralCode?: string;
 }) {
   console.log('Submitting lead:', { schoolId: leadData.schoolId, childName: leadData.childName, phone: leadData.whatsapp, status: leadData.status });
 
@@ -202,6 +206,9 @@ export async function loadLeads() {
     agePerformance: lead.age_performance || [],
     answers: lead.answers || [],
     status: lead.status || 'completed',
+    source: lead.source || 'direct',
+    referralCodeUsed: lead.referral_code_used || null,
+    referredByParentId: lead.referred_by_parent_id || null,
     completedAt: new Date(lead.updated_at || lead.created_at).toLocaleDateString('en-MY', {
       day: '2-digit',
       month: 'short',
@@ -224,6 +231,48 @@ export async function deleteLead(leadId: string) {
   }
 
   return true;
+}
+
+// ===== SHAREABLE REPORTS API =====
+
+export async function createShareableReport(leadId: string): Promise<{ reportId: string; isExisting: boolean }> {
+  console.log(`[API] Creating shareable report for lead: ${leadId}`);
+  const response = await fetch(`${API_BASE}/reports`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ leadId }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    console.error('[API] Create report error:', error);
+    throw new Error(error.error || 'Failed to create report');
+  }
+
+  const data = await response.json();
+  console.log(`[API] Report ${data.isExisting ? 'found' : 'created'}: ${data.reportId}`);
+  return { reportId: data.reportId, isExisting: data.isExisting };
+}
+
+export async function getReportStatus(leadId: string): Promise<{
+  hasReport: boolean;
+  reportId?: string;
+  viewCount?: number;
+  isClaimed?: boolean;
+  firstViewedAt?: string;
+  lastViewedAt?: string;
+  expiresAt?: string;
+}> {
+  const response = await fetch(`${API_BASE}/reports/status/${leadId}`, {
+    headers: { Authorization: `Bearer ${publicAnonKey}` },
+  });
+
+  if (!response.ok) {
+    return { hasReport: false };
+  }
+
+  const data = await response.json();
+  return data;
 }
 
 // ===== KG STRIPE CHECKOUT API =====
@@ -270,6 +319,25 @@ export async function uploadQuestionBank(questions: any[]) {
 
   const data = await response.json();
   console.log('[API] Upload result:', data.message);
+  return data;
+}
+
+export async function uploadMCQImageQuestions(questions: any[]) {
+  console.log(`[API] Uploading ${questions.length} MCQ-image questions to global bank`);
+  const response = await fetch(`${API_BASE}/question-bank/upload-mcq-image`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ questions }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    console.error('[API] Upload MCQ-image error:', error);
+    throw new Error(error.error || 'Failed to upload MCQ-image questions');
+  }
+
+  const data = await response.json();
+  console.log('[API] MCQ-image upload result:', data.message);
   return data;
 }
 
@@ -674,6 +742,7 @@ export async function fetchAdminVideos() {
 export async function createAdminVideo(videoData: {
   title: string;
   youtube_url: string;
+  dyntube_key?: string;
   thumbnail_url?: string;
   category: string;
   duration?: string;
@@ -865,3 +934,228 @@ export async function deleteMarketingArtworkVariant(artworkId: string, platform:
 
   return await response.json();
 }
+
+// ===== REFERRAL NETWORK API =====
+
+// ===== ADMIN: STRIPE ORDERS =====
+
+export async function fetchStripeOrders(cursor?: string): Promise<{
+  orders: any[];
+  has_more: boolean;
+  next_cursor: string | null;
+}> {
+  const params = new URLSearchParams();
+  params.set('limit', '50');
+  if (cursor) params.set('starting_after', cursor);
+
+  console.log(`[API] Fetching Stripe orders (cursor=${cursor || 'none'})`);
+  const response = await fetch(`${API_BASE}/stripe/orders?${params.toString()}`, {
+    method: 'GET',
+    headers: await getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    console.error('[API] Fetch Stripe orders error:', error);
+    throw new Error(error.error || 'Failed to fetch orders');
+  }
+
+  const data = await response.json();
+  console.log(`[API] Stripe orders loaded: ${data.orders?.length} orders, has_more=${data.has_more}`);
+  return data;
+}
+
+export async function fetchSchoolReferralSources() {
+  console.log('[API] Fetching school referral sources');
+  const response = await fetch(`${API_BASE}/referrals/school-sources`, {
+    method: 'GET',
+    headers: await getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    console.error('[API] Fetch referral sources error:', error);
+    throw new Error(error.error || 'Failed to fetch referral sources');
+  }
+
+  const data = await response.json();
+  console.log(`[API] Referral sources: ${data.sources?.total} total, ${data.topReferrers?.length} referrers`);
+  return data;
+}
+
+// ===== MEDIA MANAGER: CATEGORIES & AUDIO TRACKS =====
+
+export async function fetchMediaCategories(): Promise<any[]> {
+  console.log('[API] Fetching media categories');
+  const response = await fetch(`${API_BASE}/media/categories`, {
+    method: 'GET',
+    headers: getPublicHeaders(),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    console.error('[API] Fetch media categories error:', error);
+    throw new Error(error.error || 'Failed to fetch categories');
+  }
+  const data = await response.json();
+  return data.categories || [];
+}
+
+export async function saveMediaCategory(categoryData: {
+  id?: string;
+  name: string;
+  type: 'video' | 'audio';
+  icon?: string;
+  color?: string;
+  order?: number;
+}) {
+  console.log('[API] Saving media category:', categoryData.name);
+  const response = await fetch(`${API_BASE}/media/categories`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify(categoryData),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to save category');
+  }
+  return await response.json();
+}
+
+export async function deleteMediaCategory(categoryId: string) {
+  console.log('[API] Deleting media category:', categoryId);
+  const response = await fetch(`${API_BASE}/media/categories/${categoryId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to delete category');
+  }
+  return await response.json();
+}
+
+export async function fetchAdminAudioTracks(): Promise<any[]> {
+  console.log('[API] Fetching admin audio tracks');
+  const response = await fetch(`${API_BASE}/media/audio`, {
+    method: 'GET',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to fetch audio tracks');
+  }
+  const data = await response.json();
+  return data.tracks || [];
+}
+
+export async function fetchPublicAudioTracks(): Promise<{ tracks: any[]; categories: any[] }> {
+  console.log('[API] Fetching public audio tracks');
+  const response = await fetch(`${API_BASE}/media/audio/public`, {
+    method: 'GET',
+    headers: getPublicHeaders(),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to fetch audio');
+  }
+  return await response.json();
+}
+
+export async function saveAdminAudioTrack(trackData: {
+  id?: string;
+  title: string;
+  artist?: string;
+  album_art?: string;
+  audio_url?: string;
+  duration?: string;
+  duration_sec?: number;
+  category?: string;
+  is_premium?: boolean;
+  is_featured?: boolean;
+  order?: number;
+  status?: string;
+}) {
+  console.log('[API] Saving audio track:', trackData.title);
+  const response = await fetch(`${API_BASE}/media/audio`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify(trackData),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to save audio track');
+  }
+  return await response.json();
+}
+
+export async function deleteAdminAudioTrack(trackId: string) {
+  console.log('[API] Deleting audio track:', trackId);
+  const response = await fetch(`${API_BASE}/media/audio/${trackId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to delete audio track');
+  }
+  return await response.json();
+}
+
+// ── Upload audio file (FormData — no base64 overhead) ──
+export async function uploadAudioFile(file: File): Promise<{ audio_path: string; signed_url: string }> {
+  console.log('[API] Uploading audio file:', file.name, `(${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // Auth headers WITHOUT Content-Type — browser sets multipart boundary automatically
+  const headers = await getAuthHeaders();
+  delete headers['Content-Type'];
+
+  const response = await fetch(`${API_BASE}/media/audio/upload`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to upload audio file');
+  }
+  return await response.json();
+}
+
+// ── Upload album art (FormData — no base64 overhead) ──
+export async function uploadAlbumArt(file: File): Promise<{ image_path: string; signed_url: string }> {
+  console.log('[API] Uploading album art:', file.name, `(${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // Auth headers WITHOUT Content-Type — browser sets multipart boundary automatically
+  const headers = await getAuthHeaders();
+  delete headers['Content-Type'];
+
+  const response = await fetch(`${API_BASE}/media/audio/upload-art`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to upload album art');
+  }
+  return await response.json();
+}
+
+// ── Get signed playback URL for a track ──
+export async function getAudioPlaybackUrl(trackId: string): Promise<{ audio_url: string; album_art: string }> {
+  const response = await fetch(`${API_BASE}/media/audio-url/${trackId}`, {
+    method: 'GET',
+    headers: getPublicHeaders(),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || 'Failed to get audio URL');
+  }
+  return await response.json();
+}
+
+// (fileToBase64 removed — uploads now use FormData instead of base64 JSON)

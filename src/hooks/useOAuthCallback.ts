@@ -8,7 +8,7 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner@2.0.3';
 import { parentAuthClient } from '../utils/supabase-client';
-import { parentOAuthComplete } from '../utils/parent-api';
+import { parentOAuthComplete, saveAssessmentSnapshot, recordUsage } from '../utils/parent-api';
 import { getReferralCookie, clearReferralCookie } from '../utils/referral-cookie';
 
 interface UseOAuthCallbackParams {
@@ -23,6 +23,15 @@ export function useOAuthCallback({
   setParentData,
 }: UseOAuthCallbackParams) {
   useEffect(() => {
+    // ── GUARD: Never run on /reset-password — the ?code= param there is a
+    // password-recovery PKCE code, NOT an OAuth code.  Without this guard the
+    // hook consumes the code, calls parentOAuthComplete (which fails), and
+    // redirects to "/" before ResetPasswordPage can render.
+    if (window.location.pathname === '/reset-password') {
+      console.log('[APP] OAuth hook skipping — on /reset-password');
+      return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const isOAuthReturn = urlParams.get('auth') === 'parent-oauth';
     const authCode = urlParams.get('code');
@@ -76,8 +85,48 @@ export function useOAuthCallback({
       try {
         // Read referral code from the 365-day cookie (set before OAuth redirect)
         const referredBy = getReferralCookie() || undefined;
-        console.log('[APP] OAuth session acquired, completing parent record...', { referredBy: referredBy || '(none)' });
-        const result = await parentOAuthComplete(accessToken, referredBy);
+
+        // Read pending assessment from localStorage (saved before OAuth redirect)
+        let pendingAssessment: any = null;
+        try {
+          const pendingRaw = localStorage.getItem('foxy_pending_assessment');
+          if (pendingRaw) {
+            const parsed = JSON.parse(pendingRaw);
+            // Only use if saved within the last hour (avoid stale data)
+            const savedAt = new Date(parsed.savedAt).getTime();
+            const oneHourAgo = Date.now() - 60 * 60 * 1000;
+            if (savedAt > oneHourAgo) {
+              pendingAssessment = parsed;
+              console.log('[APP] Found pending assessment from pre-signup test', {
+                totalQuestions: parsed.snapshot?.totalQuestions,
+                phone: parsed.leadInfo?.phone ? '***' : '(none)',
+                schoolId: parsed.leadInfo?.schoolId || '(none)',
+              });
+            } else {
+              console.log('[APP] Pending assessment found but expired (>1hr), ignoring');
+              localStorage.removeItem('foxy_pending_assessment');
+            }
+          }
+        } catch (parseErr) {
+          console.warn('[APP] Failed to parse pending assessment:', parseErr);
+        }
+
+        // Derive originTag from pending assessment's schoolId
+        const originTag = pendingAssessment?.leadInfo?.schoolId || undefined;
+        const leadInfo = pendingAssessment?.leadInfo
+          ? {
+              phone: pendingAssessment.leadInfo.phone,
+              childName: pendingAssessment.leadInfo.childName,
+              childAge: pendingAssessment.leadInfo.childAge,
+            }
+          : undefined;
+
+        console.log('[APP] OAuth session acquired, completing parent record...', {
+          referredBy: referredBy || '(none)',
+          originTag: originTag || '(none)',
+          hasLeadInfo: !!leadInfo,
+        });
+        const result = await parentOAuthComplete(accessToken, referredBy, originTag, leadInfo);
 
         if (result.parent) {
           // Clear the referral cookie after successful signup so it doesn't re-apply
@@ -86,6 +135,32 @@ export function useOAuthCallback({
           }
           setIsParentAuthenticated(true);
           setParentData(result.parent);
+
+          // ── Persist pending assessment data (the OAuth bridge) ──
+          if (pendingAssessment?.snapshot) {
+            try {
+              console.log('[APP] Persisting pre-signup assessment snapshot...');
+              const snapshotResult = await saveAssessmentSnapshot(pendingAssessment.snapshot);
+              if (snapshotResult) {
+                console.log('[APP] Pre-signup assessment snapshot saved successfully');
+              }
+
+              // Record usage for the test
+              await recordUsage(
+                'test',
+                pendingAssessment.snapshot.totalQuestions,
+                pendingAssessment.snapshot.totalCorrect,
+              ).catch((err: any) => console.warn('[APP] recordUsage after OAuth failed (non-blocking):', err));
+
+              // Clean up pending data
+              localStorage.removeItem('foxy_pending_assessment');
+              console.log('[APP] Pending assessment persisted and cleaned up');
+            } catch (snapshotErr) {
+              console.error('[APP] Failed to persist pending assessment (non-blocking):', snapshotErr);
+              // Don't block the auth flow — the user is still signed in
+            }
+          }
+
           toast.success(
             result.isNew
               ? `Welcome to Foxy Adventure, ${result.parent.name}!`

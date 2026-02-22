@@ -9,13 +9,12 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { LanguageProvider } from './components/LanguageContext';
 import { parentValidateSession, getStoredParentData } from './utils/parent-api';
-import { DevNavigation, UserType } from './components/DevNavigation';
+import type { UserType } from './components/DevNavigation';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner@2.0.3';
 import { projectId, publicAnonKey } from './utils/supabase/info';
 import { adminAuthClient, getFreshAdminToken } from './utils/supabase-client';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { DebugPanel } from './components/DebugPanel';
 import { createBrowserRouter, RouterProvider, useLocation, useNavigate, Outlet } from 'react-router';
 import { AppContext } from './contexts/AppContext';
 import { childRoutes } from './routes';
@@ -23,6 +22,8 @@ import { useTestSession } from './hooks/useTestSession';
 import { useOAuthCallback } from './hooks/useOAuthCallback';
 import { useCheckoutCallback } from './hooks/useCheckoutCallback';
 import type { AuthScreen, BrandingSettings } from './types/app-types';
+import { PWAMetaTags } from './components/PWAMetaTags';
+import { InstallBanner } from './components/InstallBanner';
 
 function MainApp() {
   const location = useLocation();
@@ -72,6 +73,10 @@ function MainApp() {
     testPageBgColor: '#ffffff',
     mapBackgroundImage: '',
     testBackgroundImage: '',
+    email: '',
+    phone: '',
+    whatsappNo: '',
+    address: '',
   });
 
   // ═══════════════════════════════════════════════
@@ -142,7 +147,16 @@ function MainApp() {
 
         if (data.school?.school_name) {
           localStorage.setItem('school_name', data.school.school_name);
-          setBrandingSettings((prev) => ({ ...prev, schoolName: data.school.school_name }));
+          setBrandingSettings((prev) => ({
+            ...prev,
+            schoolName: data.school.school_name,
+            // Populate contact info from server school record
+            ...(data.school.email && { email: data.school.email }),
+            ...(data.school.phone && { phone: data.school.phone }),
+            ...(data.school.whatsapp_no && { whatsappNo: data.school.whatsapp_no }),
+            ...(data.school.address && { address: data.school.address }),
+            ...(data.school.logo_url && { logoUrl: data.school.logo_url }),
+          }));
         }
 
         if (data.school?.short_code) {
@@ -292,9 +306,26 @@ function MainApp() {
     }
   };
 
-  const handleResetPassword = (email: string) => {
-    console.log('Reset password for:', email);
-    toast.success('Password reset link sent!');
+  const handleResetPassword = async (email: string) => {
+    console.log('[AUTH] Requesting password reset for:', email);
+    try {
+      const { error } = await adminAuthClient.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password?source=admin`,
+      });
+      if (error) {
+        console.error('[AUTH] Password reset error:', error);
+        toast.error(`Failed to send reset link: ${error.message}`);
+        throw error;
+      }
+      console.log('[AUTH] Password reset email sent to:', email);
+      toast.success('Password reset link sent! Check your email.');
+    } catch (err: any) {
+      console.error('[AUTH] Password reset exception:', err);
+      if (!err?.message?.includes('Failed to send')) {
+        toast.error('Something went wrong. Please try again.');
+      }
+      throw err;
+    }
   };
 
   const handleLogout = () => {
@@ -465,9 +496,9 @@ function MainApp() {
           >
             <Outlet />
           </Suspense>
-          <DevNavigation currentUserType={currentUserType} onSwitchUserType={handleSwitchUserType} />
           <Toaster />
-          <DebugPanel />
+          <PWAMetaTags />
+          <InstallBanner />
         </LanguageProvider>
       </AppContext.Provider>
     </ErrorBoundary>

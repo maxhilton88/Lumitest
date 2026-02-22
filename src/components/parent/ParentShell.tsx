@@ -4,6 +4,7 @@ import { SideMenu, type ParentPage } from './SideMenu';
 import { GameDashboard } from './GameDashboard';
 import { MasteryDashboard } from './MasteryDashboard';
 import { VideoLibrary } from './VideoLibrary';
+import { AudioLibrary } from './AudioLibrary';
 import { EarningsHub } from './EarningsHub';
 import { PlanBilling } from './PlanBilling';
 import { AccountProfile } from './AccountProfile';
@@ -12,6 +13,7 @@ import { useLanguage } from '../LanguageContext';
 import type { Language } from '../LanguageContext';
 import { fetchReferralInfo, getStoredParentData } from '../../utils/parent-api';
 import { type DetailedAnswer } from '../../utils/report-calculations';
+import { systemPause, systemResume } from '../../utils/music-service';
 import questMapBg from 'figma:asset/9cb2ea9cdf18b02a3a8d26e99ab2e65f990879b0.png';
 
 interface ParentShellProps {
@@ -59,6 +61,16 @@ export const ParentShell: React.FC<ParentShellProps> = ({
   const [referralCredits, setReferralCredits] = useState(0);
   const [pageTransition, setPageTransition] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [scrollToShare, setScrollToShare] = useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  // ── Initialize language from saved parentData preference ──
+  useEffect(() => {
+    const saved = parentData?.language;
+    if (saved && (saved === 'en' || saved === 'ms' || saved === 'zh')) {
+      setLanguage(saved as Language);
+    }
+  }, [parentData?.language]);
 
   // Sync activePage when the URL-derived initialPage changes (e.g. browser back/forward)
   useEffect(() => {
@@ -79,6 +91,15 @@ export const ParentShell: React.FC<ParentShellProps> = ({
       .catch(() => {});
   }, []);
 
+  // Auto-pause music when entering Video Library or Audio Library, resume when leaving
+  useEffect(() => {
+    if (activePage === 'library' || activePage === 'audio') {
+      systemPause();
+    } else {
+      systemResume();
+    }
+  }, [activePage]);
+
   // Page transition animation + URL sync
   const handleNavigate = (page: ParentPage) => {
     if (page === activePage) return;
@@ -88,6 +109,8 @@ export const ParentShell: React.FC<ParentShellProps> = ({
     setTimeout(() => {
       setActivePage(page);
       setPageTransition(false);
+      // Scroll the content area to top so new page starts from the top
+      contentRef.current?.scrollTo({ top: 0 });
     }, 150);
   };
 
@@ -107,6 +130,7 @@ export const ParentShell: React.FC<ParentShellProps> = ({
             assessmentCompleted={assessmentCompleted}
             onViewResults={() => handleNavigate('mastery')}
             onOpenLibrary={() => handleNavigate('library')}
+            onOpenAudio={() => handleNavigate('audio')}
           />
         );
       case 'mastery':
@@ -119,6 +143,7 @@ export const ParentShell: React.FC<ParentShellProps> = ({
             assessmentCompleted={assessmentCompleted}
             liveQuests={liveQuests}
             parentData={parentData}
+            onShowUpgrade={handleShowUpgrade}
           />
         );
       case 'library':
@@ -128,14 +153,25 @@ export const ParentShell: React.FC<ParentShellProps> = ({
             onShowUpgrade={handleShowUpgrade}
           />
         );
+      case 'audio':
+        return (
+          <AudioLibrary
+            parentData={parentData}
+            onShowUpgrade={handleShowUpgrade}
+          />
+        );
       case 'earnings':
-        return <EarningsHub parentData={parentData} />;
+        return <EarningsHub parentData={parentData} scrollToShare={scrollToShare} onScrollToShareDone={() => setScrollToShare(false)} />;
       case 'plan':
         return (
           <PlanBilling
             parentData={parentData}
             referralCredits={referralCredits}
             onRefreshParent={onRefreshParent}
+            onNavigateToEarnings={() => {
+              setScrollToShare(true);
+              handleNavigate('earnings');
+            }}
           />
         );
       case 'account':
@@ -149,6 +185,7 @@ export const ParentShell: React.FC<ParentShellProps> = ({
             onLogout={onLogout}
             includeMandarinTest={includeMandarinTest}
             onMandarinToggle={onMandarinToggle}
+            onProfileSaved={onRefreshParent}
           />
         );
     }
@@ -172,6 +209,7 @@ export const ParentShell: React.FC<ParentShellProps> = ({
 
       {/* Content Area */}
       <div
+        ref={contentRef}
         className="flex-1 relative z-10 overflow-y-auto"
         style={{
           marginLeft: isMobile ? 0 : '64px',

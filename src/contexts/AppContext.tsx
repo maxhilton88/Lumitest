@@ -75,7 +75,7 @@ export interface AppContextValue {
   // ── Handlers ──
   handleLogin: (email: string, password: string) => Promise<void>;
   handleSignup: (data: { name: string; email: string; password: string; schoolName?: string }) => Promise<void>;
-  handleResetPassword: (email: string) => void;
+  handleResetPassword: (email: string) => Promise<void>;
   handleLogout: () => void;
   handleStartAdventure: () => Promise<void>;
   handleLanguageStart: (childName: string, parentName: string, whatsapp: string, selectedAge: number, selectedIncludeMandarinTest: boolean) => Promise<void>;

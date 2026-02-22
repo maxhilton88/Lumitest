@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Upload, Search, Trash2, Download, AlertCircle, CheckCircle, RefreshCw, Database, ChevronDown, ChevronRight, X, FileText } from 'lucide-react';
 import { Pencil, Save, ImagePlus, Image } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
-import { uploadQuestionBank, fetchQuestionBank, fetchQuestionBankStats, deleteGlobalQuestion, clearQuestionBank, updateGlobalQuestion, uploadQuestionImage } from '../../utils/api';
+import { uploadQuestionBank, uploadMCQImageQuestions, fetchQuestionBank, fetchQuestionBankStats, deleteGlobalQuestion, clearQuestionBank, updateGlobalQuestion, uploadQuestionImage } from '../../utils/api';
 
 interface BankQuestion {
   q_id: string;
@@ -13,6 +13,7 @@ interface BankQuestion {
   question_text_ms: string;
   question_text_zh: string;
   input_type: string;
+  answer_type?: 'mcq-image'; // undefined = text (backward compat)
   options_en: any;
   options_ms: any;
   options_zh: any;
@@ -65,14 +66,23 @@ function parseCSV(text: string): Record<string, string>[] {
   return rows;
 }
 
-// Generate a sample CSV template
-function generateTemplate(): string {
+// Generate sample CSV templates
+function generateTextTemplate(): string {
   const headers = 'age_target,subject,dskp_code,question_text_en,question_text_ms,question_text_zh,input_type,options_en,options_ms,options_zh,correct_answer,visual_prompt,image_url';
   const samples = [
     '4,English,BI 1.1.1,Which letter comes after A?,Huruf mana yang datang selepas A?,哪个字母在A之后?,mcq,B|C|D|Z,B|C|D|Z,B|C|D|Z,a,Cheerful alphabet scene,',
     '5,Math,MA 2.1.1,What is 2 + 3?,Berapakah 2 + 3?,2加3等于多少?,mcq,4|5|6|7,4|5|6|7,4|5|6|7,b,Colorful number blocks,',
     '4,Bahasa Melayu,BM 1.1.1,What colour is the sky?,Apakah warna langit?,天空是什么颜色?,mcq,Red|Blue|Green|Yellow,Merah|Biru|Hijau|Kuning,红色|蓝色|绿色|黄色,b,Bright sky scene,',
     '"6",English,BI 3.2.1,"Put in order: wake up, eat, school, sleep","Susun mengikut urutan: bangun, makan, sekolah, tidur","按顺序排列：起床、吃饭、上学、睡觉",sequence,Wake up|Eat breakfast|Go to school|Sleep,Bangun|Makan pagi|Pergi sekolah|Tidur,起床|吃早餐|去上学|睡觉,"a,b,c,d",Daily routine images,',
+  ];
+  return headers + '\n' + samples.join('\n');
+}
+
+function generateImageTemplate(): string {
+  const headers = 'age_target,subject,dskp_code,question_text_en,question_text_ms,question_text_zh,option_a_image_url,option_b_image_url,option_c_image_url,option_d_image_url,option_labels_en,option_labels_ms,option_labels_zh,correct_answer,visual_prompt,image_url';
+  const samples = [
+    '4,Math,MA 1.1.1,Which shape is a circle?,Bentuk mana yang bulatan?,哪个形状是圆形?,https://example.com/circle.png,https://example.com/square.png,https://example.com/triangle.png,https://example.com/star.png,Circle|Square|Triangle|Star,Bulatan|Segi empat|Segi tiga|Bintang,圆形|正方形|三角形|星形,a,Colourful shapes,',
+    '5,Science,SN 2.1.1,Which animal lives in water?,Haiwan mana yang tinggal di air?,哪种动物生活在水里?,https://example.com/fish.png,https://example.com/cat.png,https://example.com/bird.png,https://example.com/dog.png,Fish|Cat|Bird|Dog,Ikan|Kucing|Burung|Anjing,鱼|猫|鸟|狗,a,Animal habitats,',
   ];
   return headers + '\n' + samples.join('\n');
 }
@@ -90,7 +100,8 @@ export const MasterQuestionBank: React.FC = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<{ stored: number; errors: string[] } | null>(null);
+  const [uploadResult, setUploadResult] = useState<{ stored: number; errors: string[]; imagesProcessed?: number } | null>(null);
+  const [uploadType, setUploadType] = useState<'mcq-text' | 'mcq-image'>('mcq-text');
 
   // Edit state
   const [editingQuestion, setEditingQuestion] = useState<BankQuestion | null>(null);
@@ -171,7 +182,7 @@ export const MasterQuestionBank: React.FC = () => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Handle CSV upload
+  // Handle CSV upload (text MCQ or image MCQ)
   const handleUpload = async () => {
     if (!uploadFile) return;
     setUploading(true);
@@ -187,31 +198,62 @@ export const MasterQuestionBank: React.FC = () => {
         return;
       }
 
-      // Map CSV rows to API format
-      const mapped = rows.map(row => ({
-        age_target: Number(row['age_target'] || row['Age'] || row['age']),
-        subject: row['subject'] || row['Subject'],
-        dskp_code: row['dskp_code'] || row['DSKP'] || '',
-        question_text_en: row['question_text_en'] || row['Question'] || row['question'],
-        question_text_ms: row['question_text_ms'] || '',
-        question_text_zh: row['question_text_zh'] || '',
-        input_type: (row['input_type'] || row['type'] || 'mcq').toLowerCase(),
-        options_en: row['options_en'] || row['Options'] || '',
-        options_ms: row['options_ms'] || '',
-        options_zh: row['options_zh'] || '',
-        correct_answer: row['correct_answer'] || row['Answer'] || row['answer'],
-        visual_prompt: row['visual_prompt'] || '',
-        image_url: row['image_url'] || row['Image'] || '',
-      }));
+      let resultErrors: string[] = [];
 
-      const result = await uploadQuestionBank(mapped);
-      setUploadResult({ stored: result.stored, errors: result.errors || [] });
-      toast.success(`${result.stored} questions uploaded successfully!`);
+      if (uploadType === 'mcq-image') {
+        // MCQ-Image: map CSV rows with image URLs
+        const mapped = rows.map(row => ({
+          age_target: Number(row['age_target'] || row['Age'] || row['age']),
+          subject: row['subject'] || row['Subject'],
+          dskp_code: row['dskp_code'] || row['DSKP'] || '',
+          question_text_en: row['question_text_en'] || row['Question'] || row['question'],
+          question_text_ms: row['question_text_ms'] || '',
+          question_text_zh: row['question_text_zh'] || '',
+          option_a_image_url: row['option_a_image_url'] || '',
+          option_b_image_url: row['option_b_image_url'] || '',
+          option_c_image_url: row['option_c_image_url'] || '',
+          option_d_image_url: row['option_d_image_url'] || '',
+          option_labels_en: row['option_labels_en'] || '',
+          option_labels_ms: row['option_labels_ms'] || '',
+          option_labels_zh: row['option_labels_zh'] || '',
+          correct_answer: row['correct_answer'] || row['Answer'] || row['answer'],
+          visual_prompt: row['visual_prompt'] || '',
+          image_url: row['image_url'] || '',
+        }));
+
+        toast.info(`Processing ${mapped.length} questions (downloading ${mapped.length * 4} images)... This may take up to 60 seconds.`);
+        const result = await uploadMCQImageQuestions(mapped);
+        setUploadResult({ stored: result.stored, errors: result.errors || [], imagesProcessed: result.imagesProcessed });
+        resultErrors = result.errors || [];
+        toast.success(`${result.stored} image-MCQ questions uploaded! (${result.imagesProcessed} images downloaded)`);
+      } else {
+        // Text MCQ: existing flow
+        const mapped = rows.map(row => ({
+          age_target: Number(row['age_target'] || row['Age'] || row['age']),
+          subject: row['subject'] || row['Subject'],
+          dskp_code: row['dskp_code'] || row['DSKP'] || '',
+          question_text_en: row['question_text_en'] || row['Question'] || row['question'],
+          question_text_ms: row['question_text_ms'] || '',
+          question_text_zh: row['question_text_zh'] || '',
+          input_type: (row['input_type'] || row['type'] || 'mcq').toLowerCase(),
+          options_en: row['options_en'] || row['Options'] || '',
+          options_ms: row['options_ms'] || '',
+          options_zh: row['options_zh'] || '',
+          correct_answer: row['correct_answer'] || row['Answer'] || row['answer'],
+          visual_prompt: row['visual_prompt'] || '',
+          image_url: row['image_url'] || row['Image'] || '',
+        }));
+
+        const result = await uploadQuestionBank(mapped);
+        setUploadResult({ stored: result.stored, errors: result.errors || [] });
+        resultErrors = result.errors || [];
+        toast.success(`${result.stored} questions uploaded successfully!`);
+      }
       
       // Refresh data
       await loadData();
       
-      if (result.errors?.length === 0) {
+      if (resultErrors.length === 0) {
         setTimeout(() => { setShowUpload(false); setUploadFile(null); setUploadResult(null); }, 1500);
       }
     } catch (error) {
@@ -252,15 +294,16 @@ export const MasterQuestionBank: React.FC = () => {
   };
 
   // Download CSV template
-  const handleDownloadTemplate = () => {
-    const csv = generateTemplate();
+  const handleDownloadTemplate = (type: 'mcq-text' | 'mcq-image') => {
+    const csv = type === 'mcq-image' ? generateImageTemplate() : generateTextTemplate();
+    const filename = type === 'mcq-image' ? 'mcq_image_template.csv' : 'mcq_text_template.csv';
     // BOM for Excel to correctly read UTF-8 (important for BM & Chinese text)
     const bom = '\uFEFF';
     const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'question_bank_template.csv';
+    a.download = filename;
     // Append to DOM for Safari compatibility
     document.body.appendChild(a);
     a.click();
@@ -312,7 +355,7 @@ export const MasterQuestionBank: React.FC = () => {
             {stats ? `${stats.totalQuestions} questions across ${stats.subjects.length} subjects` : 'Loading...'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={loadData}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1.5"
@@ -321,11 +364,22 @@ export const MasterQuestionBank: React.FC = () => {
             Refresh
           </button>
           <button
-            onClick={handleDownloadTemplate}
+            onClick={() => handleDownloadTemplate('mcq-text')}
             className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-1.5"
+            title="Download MCQ Text CSV template"
           >
             <Download className="w-3.5 h-3.5" />
-            CSV Template
+            <span className="hidden sm:inline">Text Template</span>
+            <span className="sm:hidden">Text</span>
+          </button>
+          <button
+            onClick={() => handleDownloadTemplate('mcq-image')}
+            className="px-3 py-2 text-sm border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 flex items-center gap-1.5"
+            title="Download MCQ Image CSV template"
+          >
+            <ImagePlus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Image Template</span>
+            <span className="sm:hidden">Image</span>
           </button>
           <button
             onClick={() => { setShowUpload(true); setUploadResult(null); setUploadFile(null); }}
@@ -467,11 +521,16 @@ export const MasterQuestionBank: React.FC = () => {
                             <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded">{q.age_target}</span>
                           </td>
                           <td className="px-4 py-2">
-                            <span className={`text-xs px-1.5 py-0.5 rounded ${
-                              q.input_type === 'mcq' ? 'bg-green-50 text-green-700' :
-                              q.input_type === 'sequence' ? 'bg-purple-50 text-purple-700' :
-                              'bg-orange-50 text-orange-700'
-                            }`}>{q.input_type}</span>
+                            <div className="flex items-center gap-1">
+                              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                q.input_type === 'mcq' ? 'bg-green-50 text-green-700' :
+                                q.input_type === 'sequence' ? 'bg-purple-50 text-purple-700' :
+                                'bg-orange-50 text-orange-700'
+                              }`}>{q.input_type}</span>
+                              {q.answer_type === 'mcq-image' && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-700" title="Image-based answer options">img</span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-2 max-w-xs truncate text-gray-900">{q.question_text_en}</td>
                           <td className="px-2 py-2 text-center">
@@ -521,7 +580,7 @@ export const MasterQuestionBank: React.FC = () => {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Upload Question Bank CSV</h3>
                 <p className="text-sm text-gray-500 mt-1">
-                  13-column multilingual format — IDs are auto-generated on upload
+                  Select question type, then upload the matching CSV template
                 </p>
               </div>
               <button onClick={() => { setShowUpload(false); setUploadResult(null); }} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -530,9 +589,55 @@ export const MasterQuestionBank: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-4">
-              {/* File input */}
+              {/* Step 1: Question Type Selector */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Choose CSV File</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Step 1: Select Question Type</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setUploadType('mcq-text'); setUploadFile(null); setUploadResult(null); }}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${
+                      uploadType === 'mcq-text'
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <FileText className="w-4 h-4" />
+                      <span className="text-sm font-semibold text-gray-900">MCQ — Text</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Text answers (A/B/C/D)</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setUploadType('mcq-image'); setUploadFile(null); setUploadResult(null); }}
+                    className={`p-3 rounded-xl border-2 text-left transition-all ${
+                      uploadType === 'mcq-image'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <ImagePlus className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-gray-900">MCQ — Image</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Image answers (URLs)</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Step 2: Download template */}
+              <button
+                onClick={() => handleDownloadTemplate(uploadType)}
+                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download {uploadType === 'mcq-image' ? 'Image MCQ' : 'Text MCQ'} Template
+              </button>
+
+              {/* Step 3: File input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Step 3: Upload Filled CSV</label>
                 <input
                   type="file"
                   accept=".csv"
@@ -545,6 +650,17 @@ export const MasterQuestionBank: React.FC = () => {
                 )}
               </div>
 
+              {/* MCQ-Image warning */}
+              {uploadType === 'mcq-image' && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-800 font-medium mb-1">Image MCQ Processing</p>
+                  <p className="text-xs text-blue-700">
+                    The server will download each answer image from the URL, validate it (must be HTTPS, image format, ≤200KB),
+                    and permanently store it in Supabase Storage. This may take 30-60 seconds for large uploads.
+                  </p>
+                </div>
+              )}
+
               {/* Result */}
               {uploadResult && (
                 <div className={`p-4 rounded-lg border ${uploadResult.errors.length > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
@@ -555,7 +671,10 @@ export const MasterQuestionBank: React.FC = () => {
                       <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                     )}
                     <div>
-                      <p className="text-sm font-medium">{uploadResult.stored} questions stored successfully</p>
+                      <p className="text-sm font-medium">
+                        {uploadResult.stored} questions stored successfully
+                        {uploadResult.imagesProcessed ? ` (${uploadResult.imagesProcessed} images downloaded)` : ''}
+                      </p>
                       {uploadResult.errors.length > 0 && (
                         <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
                           {uploadResult.errors.map((err, i) => (
@@ -568,39 +687,49 @@ export const MasterQuestionBank: React.FC = () => {
                 </div>
               )}
 
-              {/* Instructions */}
+              {/* Instructions — dynamic based on type */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-900 mb-2">CSV Column Format:</p>
-                <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
-                  <span><strong>age_target</strong> — 4, 5, 6, or 7</span>
-                  <span><strong>subject</strong> — English, Math, etc.</span>
-                  <span><strong>dskp_code</strong> — KSSR code</span>
-                  <span><strong>question_text_en</strong> — Question text in English</span>
-                  <span><strong>question_text_ms</strong> — Question text in Bahasa Melayu</span>
-                  <span><strong>question_text_zh</strong> — Question text in Chinese</span>
-                  <span><strong>input_type</strong> — mcq, sequence, hotspot</span>
-                  <span><strong>options_en</strong> — Pipe-separated or JSON in English</span>
-                  <span><strong>options_ms</strong> — Pipe-separated or JSON in Bahasa Melayu</span>
-                  <span><strong>options_zh</strong> — Pipe-separated or JSON in Chinese</span>
-                  <span><strong>correct_answer</strong> — a, b, c, d or a,b,c,d</span>
-                  <span><strong>visual_prompt</strong> — Image description</span>
-                  <span><strong>image_url</strong> — Optional image URL</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-3">
-                  Options format: <code className="bg-gray-200 px-1 rounded">Apple|Banana|Cherry|Date</code> (auto-assigns IDs a,b,c,d)
+                <p className="text-sm font-medium text-gray-900 mb-2">
+                  {uploadType === 'mcq-image' ? 'Image MCQ CSV Columns:' : 'Text MCQ CSV Columns:'}
                 </p>
-                <p className="text-xs text-green-600 mt-2 font-medium">
+                {uploadType === 'mcq-text' ? (
+                  <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                    <span><strong>age_target</strong> — 4, 5, 6, or 7</span>
+                    <span><strong>subject</strong> — English, Math, etc.</span>
+                    <span><strong>dskp_code</strong> — KSSR code</span>
+                    <span><strong>question_text_en</strong> — English</span>
+                    <span><strong>question_text_ms</strong> — BM</span>
+                    <span><strong>question_text_zh</strong> — Chinese</span>
+                    <span><strong>input_type</strong> — mcq, sequence</span>
+                    <span><strong>options_en</strong> — Pipe-separated English</span>
+                    <span><strong>options_ms</strong> — Pipe-separated BM</span>
+                    <span><strong>options_zh</strong> — Pipe-separated Chinese</span>
+                    <span><strong>correct_answer</strong> — a, b, c, or d</span>
+                    <span><strong>visual_prompt</strong> — Prompt text</span>
+                    <span><strong>image_url</strong> — Optional image</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-1 text-xs text-gray-600">
+                    <span><strong>age_target</strong> — 4, 5, 6, or 7</span>
+                    <span><strong>subject</strong> — English, Math, etc.</span>
+                    <span><strong>dskp_code</strong> — KSSR code</span>
+                    <span><strong>question_text_en</strong> — English</span>
+                    <span><strong>question_text_ms</strong> — BM</span>
+                    <span><strong>question_text_zh</strong> — Chinese</span>
+                    <span><strong>option_a_image_url</strong> — HTTPS URL</span>
+                    <span><strong>option_b_image_url</strong> — HTTPS URL</span>
+                    <span><strong>option_c_image_url</strong> — HTTPS URL</span>
+                    <span><strong>option_d_image_url</strong> — HTTPS URL</span>
+                    <span><strong>option_labels_en</strong> — Pipe-separated (opt.)</span>
+                    <span><strong>option_labels_ms</strong> — Pipe-separated (opt.)</span>
+                    <span><strong>option_labels_zh</strong> — Pipe-separated (opt.)</span>
+                    <span><strong>correct_answer</strong> — a, b, c, or d</span>
+                  </div>
+                )}
+                <p className="text-xs text-green-600 mt-3 font-medium">
                   No q_id needed — IDs are auto-generated as SUBJ-AGE-001, SUBJ-AGE-002, etc.
                 </p>
               </div>
-
-              <button
-                onClick={handleDownloadTemplate}
-                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Download Sample CSV Template
-              </button>
             </div>
 
             <div className="flex gap-3 p-6 border-t border-gray-200">
@@ -614,9 +743,21 @@ export const MasterQuestionBank: React.FC = () => {
               <button
                 onClick={handleUpload}
                 disabled={!uploadFile || uploading}
-                className="flex-1 px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 disabled:opacity-50"
+                className={`flex-1 px-4 py-2 text-white rounded-lg text-sm disabled:opacity-50 flex items-center justify-center gap-2 ${
+                  uploadType === 'mcq-image' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-black hover:bg-gray-800'
+                }`}
               >
-                {uploading ? 'Uploading...' : 'Upload & Store'}
+                {uploading ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    {uploadType === 'mcq-image' ? 'Downloading images...' : 'Uploading...'}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-3.5 h-3.5" />
+                    Upload {uploadType === 'mcq-image' ? 'Image MCQ' : 'Text MCQ'}
+                  </>
+                )}
               </button>
             </div>
           </div>

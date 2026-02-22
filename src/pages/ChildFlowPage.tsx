@@ -12,9 +12,22 @@ import { QuestionScreen } from '../components/screens/QuestionScreen';
 import { VictoryScreen } from '../components/screens/VictoryScreen';
 import { FullReportScreen } from '../components/screens/FullReportScreen';
 import { GatedReportScreen } from '../components/screens/GatedReportScreen';
-import { calculateTotalStars } from '../utils/report-calculations';
+import {
+  calculateTotalStars,
+  calculateTP,
+  calculateReadiness,
+  calculateSubjectBreakdowns,
+} from '../utils/report-calculations';
 import { toast } from 'sonner@2.0.3';
 import type { ChildScreen } from '../types/app-types';
+import { setReferralCookie } from '../utils/referral-cookie';
+import { MusicToggle } from '../components/MusicToggle';
+import {
+  playMusic,
+  pauseMusic,
+  isMusicEnabled,
+  isMusicPlaying,
+} from '../utils/music-service';
 
 // ── Step ↔ ChildScreen mapping ──
 const STEP_TO_SCREEN: Record<string, ChildScreen> = {
@@ -43,6 +56,82 @@ export function ChildFlowPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { code, step } = useParams<{ code?: string; step?: string }>();
+
+  // ── Capture parent-to-parent referral code from ?ref= on /t/:code URLs ──
+  // Persist into the 365-day cookie so it survives the entire branded KG
+  // funnel and is available when the visitor eventually signs up at /.
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      console.log('[CHILD-FLOW] Captured referral code from /t/ URL:', refCode);
+      setReferralCookie(refCode);
+    }
+  }, []); // Run once on mount
+
+  // ── Save pending assessment to localStorage when gated results screen shows ──
+  // This data survives the OAuth redirect so it can be persisted after signup.
+  useEffect(() => {
+    if (ctx.childScreen !== 'gatedResults') return;
+    try {
+      const answersData = ctx.allDetailedAnswers;
+      if (answersData.length === 0) return;
+
+      const tp = calculateTP(answersData);
+      const readiness = calculateReadiness(answersData);
+      const stars = calculateTotalStars(ctx.moduleResults);
+
+      const questNameMap: Record<string, { name: string; icon: string }> = {};
+      ctx.liveQuests.forEach((q: any) => {
+        questNameMap[q.id] = { name: q.name?.en || q.subject, icon: q.icon };
+      });
+      new Set(answersData.map((a: any) => a.quest)).forEach((id: string) => {
+        if (!questNameMap[id]) questNameMap[id] = { name: id, icon: '' };
+      });
+
+      const breakdowns = calculateSubjectBreakdowns(answersData, questNameMap);
+      const subjectSummary = breakdowns.map((b: any) => ({
+        name: b.questName,
+        pct: b.overallPercentage,
+        functionalAge: b.functionalAge,
+      }));
+
+      const totalCorrect = answersData.filter((a: any) => a.isCorrect).length;
+      const totalQuestions = answersData.length;
+      const overallPct = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+      const pendingData = {
+        snapshot: {
+          childAge: ctx.age,
+          overallPct,
+          totalStars: stars.earned,
+          maxStars: stars.possible,
+          tpLevel: tp.level,
+          readinessPct: readiness.percentage,
+          totalQuestions,
+          totalCorrect,
+          subjectSummary,
+        },
+        leadInfo: {
+          phone: ctx.leadData.whatsapp,
+          childName: ctx.leadData.childName,
+          parentName: ctx.leadData.parentName,
+          childAge: ctx.age,
+          schoolId: ctx.resolvedSchoolId || null,
+        },
+        savedAt: new Date().toISOString(),
+      };
+
+      localStorage.setItem('foxy_pending_assessment', JSON.stringify(pendingData));
+      console.log('[GATED] Saved pending assessment to localStorage for OAuth bridge', {
+        totalQuestions,
+        overallPct,
+        phone: ctx.leadData.whatsapp ? '***' : '(none)',
+      });
+    } catch (err) {
+      console.error('[GATED] Failed to save pending assessment:', err);
+    }
+  }, [ctx.childScreen]);
 
   // Prevent infinite sync loops
   const syncSource = useRef<'url' | 'state' | null>(null);
@@ -89,9 +178,33 @@ export function ChildFlowPage() {
     }
   }, [ctx.childScreen]);
 
+  // ── Music lifecycle: auto-start after form submit, stop before signup ──
+  const musicScreens = new Set<ChildScreen>(['resumePrompt', 'adventureMap', 'test', 'victory']);
+  const showMusicToggle = musicScreens.has(ctx.childScreen);
+
+  useEffect(() => {
+    // Auto-start music when entering test flow screens (after user gesture from form submit)
+    if (musicScreens.has(ctx.childScreen) && !isMusicPlaying() && isMusicEnabled()) {
+      playMusic();
+    }
+    // Auto-pause music when leaving test flow (entering signup/report)
+    if (ctx.childScreen === 'gatedResults' || ctx.childScreen === 'results') {
+      if (isMusicPlaying()) {
+        pauseMusic();
+      }
+    }
+  }, [ctx.childScreen]);
+
   // ── Render the current screen ──
   return (
     <div className="relative">
+      {/* Floating music toggle — visible during test flow screens */}
+      {showMusicToggle && (
+        <div className="fixed top-4 right-4 z-50">
+          <MusicToggle />
+        </div>
+      )}
+
       {ctx.childScreen === 'childWelcome' && (
         <ChildWelcomePage onStartAdventure={ctx.handleStartAdventure} />
       )}

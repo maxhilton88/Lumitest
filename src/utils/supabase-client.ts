@@ -78,6 +78,37 @@ export const parentAuthClient = createClient(supabaseUrl, publicAnonKey, {
 });
 
 /**
+ * Quick check if a raw JWT string is expired.
+ * Used by fallback paths that read tokens from localStorage.
+ * Returns true if the token is expired or unparseable.
+ */
+export function isJwtExpired(token: string, bufferSeconds = 60): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    // Base64url decode the payload
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const exp = payload.exp;
+    if (typeof exp !== 'number') return true;
+    const now = Math.floor(Date.now() / 1000);
+    return exp - now < bufferSeconds;
+  } catch {
+    return true; // If we can't parse it, treat as expired
+  }
+}
+
+/**
+ * Check if a session's access token is expired or about to expire.
+ * Buffer of 60 seconds ensures we refresh before the server rejects it.
+ */
+function isSessionExpiredOrNearExpiry(session: { expires_at?: number }): boolean {
+  const expiresAt = session.expires_at ?? 0;
+  const now = Math.floor(Date.now() / 1000);
+  const BUFFER_SECONDS = 60;
+  return expiresAt - now < BUFFER_SECONDS;
+}
+
+/**
  * Get a fresh admin access token (auto-refreshes if expired).
  * Returns null silently if no Supabase client session exists —
  * callers fall back to localStorage, which is the normal path for
@@ -87,17 +118,32 @@ export async function getFreshAdminToken(): Promise<string | null> {
   try {
     const { data, error } = await adminAuthClient.auth.getSession();
     if (error) {
-      // Only log actual errors, not "no session" which is expected
       console.error('[AUTH] Admin getSession error:', error.message);
       return null;
     }
     if (!data?.session) {
-      // No session on the Supabase client — silent, callers handle fallback
       return null;
     }
+
+    let session = data.session;
+
+    // Proactively refresh if token is expired or about to expire
+    if (isSessionExpiredOrNearExpiry(session)) {
+      console.log('[AUTH] Admin token expired/near-expiry, refreshing...');
+      const { data: refreshData, error: refreshError } = await adminAuthClient.auth.refreshSession();
+      if (refreshError || !refreshData?.session) {
+        console.error('[AUTH] Admin token refresh failed:', refreshError?.message || 'No session returned');
+        // Clear stale localStorage so callers don't fall back to an expired token
+        localStorage.removeItem('access_token');
+        return null;
+      }
+      session = refreshData.session;
+      console.log('[AUTH] Admin token refreshed successfully, new expiry:', session.expires_at);
+    }
+
     // Keep localStorage in sync for backwards compat
-    localStorage.setItem('access_token', data.session.access_token);
-    return data.session.access_token;
+    localStorage.setItem('access_token', session.access_token);
+    return session.access_token;
   } catch (err) {
     console.error('[AUTH] Failed to get fresh admin token:', err);
     return null;
@@ -114,17 +160,32 @@ export async function getFreshParentToken(): Promise<string | null> {
   try {
     const { data, error } = await parentAuthClient.auth.getSession();
     if (error) {
-      // Only log actual errors, not "no session" which is expected
       console.error('[AUTH] Parent getSession error:', error.message);
       return null;
     }
     if (!data?.session) {
-      // No session on the Supabase client — silent, callers handle fallback
       return null;
     }
+
+    let session = data.session;
+
+    // Proactively refresh if token is expired or about to expire
+    if (isSessionExpiredOrNearExpiry(session)) {
+      console.log('[AUTH] Parent token expired/near-expiry, refreshing...');
+      const { data: refreshData, error: refreshError } = await parentAuthClient.auth.refreshSession();
+      if (refreshError || !refreshData?.session) {
+        console.error('[AUTH] Parent token refresh failed:', refreshError?.message || 'No session returned');
+        // Clear stale localStorage so callers don't fall back to an expired token
+        localStorage.removeItem('parent_access_token');
+        return null;
+      }
+      session = refreshData.session;
+      console.log('[AUTH] Parent token refreshed successfully, new expiry:', session.expires_at);
+    }
+
     // Keep localStorage in sync for backwards compat
-    localStorage.setItem('parent_access_token', data.session.access_token);
-    return data.session.access_token;
+    localStorage.setItem('parent_access_token', session.access_token);
+    return session.access_token;
   } catch (err) {
     console.error('[AUTH] Failed to get fresh parent token:', err);
     return null;

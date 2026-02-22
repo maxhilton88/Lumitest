@@ -1,6 +1,6 @@
 // Parent ecosystem API functions
 import { projectId, publicAnonKey } from './supabase/info';
-import { parentAuthClient, getFreshParentToken } from './supabase-client';
+import { parentAuthClient, getFreshParentToken, isJwtExpired } from './supabase-client';
 
 const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-221a61bc`;
 
@@ -22,10 +22,16 @@ async function getParentAuthHeaders(): Promise<Record<string, string>> {
   if (freshToken) {
     headers['X-User-Token'] = `Bearer ${freshToken}`;
   } else {
-    // Fallback to raw localStorage for backwards compat
+    // Fallback to raw localStorage for backwards compat — but reject expired tokens
     const token = localStorage.getItem('parent_access_token');
-    if (token) {
+    if (token && !isJwtExpired(token)) {
       headers['X-User-Token'] = `Bearer ${token}`;
+    } else if (token) {
+      // Token is expired and refresh failed — clean up stale state
+      console.warn('[PARENT-API] localStorage token is expired, clearing stale session');
+      localStorage.removeItem('parent_access_token');
+      localStorage.removeItem('parent_id');
+      localStorage.removeItem('parent_data');
     }
   }
   return headers;
@@ -154,9 +160,20 @@ export function getStoredParentData() {
  * exists on the server. Creates one for first-time OAuth users, returns existing
  * for returning users. Stores session data in localStorage.
  * @param referredBy - Optional referral code read from the 365-day cookie
+ * @param originTag - Optional origin kindergarten ID (from the /t/:code route)
+ * @param leadInfo - Optional lead info from pre-signup test (phone, child name, etc.)
  */
-export async function parentOAuthComplete(accessToken: string, referredBy?: string) {
-  console.log('[PARENT-API] OAuth complete — ensuring parent record exists', { referredBy: referredBy || '(none)' });
+export async function parentOAuthComplete(
+  accessToken: string,
+  referredBy?: string,
+  originTag?: string,
+  leadInfo?: { phone?: string; childName?: string; childAge?: number },
+) {
+  console.log('[PARENT-API] OAuth complete — ensuring parent record exists', {
+    referredBy: referredBy || '(none)',
+    originTag: originTag || '(none)',
+    hasLeadInfo: !!leadInfo,
+  });
   const response = await fetch(`${API_BASE}/parent/oauth-complete`, {
     method: 'POST',
     headers: {
@@ -164,7 +181,13 @@ export async function parentOAuthComplete(accessToken: string, referredBy?: stri
       'Authorization': `Bearer ${publicAnonKey}`,
       'X-User-Token': `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({ referredBy: referredBy || undefined }),
+    body: JSON.stringify({
+      referredBy: referredBy || undefined,
+      originTag: originTag || undefined,
+      phone: leadInfo?.phone || undefined,
+      child_name: leadInfo?.childName || undefined,
+      child_age: leadInfo?.childAge || undefined,
+    }),
   });
 
   const result = await response.json();
@@ -191,6 +214,7 @@ export async function updateParentProfile(updates: {
   child_age?: number;
   name?: string;
   include_mandarin_test?: boolean;
+  language?: string;
 }) {
   console.log('[PARENT-API] Updating profile:', updates);
   const response = await fetch(`${API_BASE}/parent/profile`, {
@@ -214,10 +238,13 @@ export async function updateParentProfile(updates: {
 
 // ===== USAGE LIMITS =====
 
-export async function recordUsage(type: 'test' | 'watch' | 'practice', questionsAnswered?: number) {
+export async function recordUsage(type: 'test' | 'watch' | 'practice', questionsAnswered?: number, questionsCorrect?: number) {
   const body: any = { type };
   if (questionsAnswered && questionsAnswered > 0) {
     body.questions_answered = questionsAnswered;
+  }
+  if (questionsCorrect !== undefined && questionsCorrect >= 0) {
+    body.questions_correct = questionsCorrect;
   }
   const response = await fetch(`${API_BASE}/parent/use`, {
     method: 'POST',
@@ -247,6 +274,20 @@ export async function fetchReferralInfo() {
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Unknown' }));
     throw new Error(err.error || 'Failed to fetch referrals');
+  }
+
+  return await response.json();
+}
+
+export async function fetchReferralNetwork() {
+  const response = await fetch(`${API_BASE}/parent/referral-network`, {
+    method: 'GET',
+    headers: await getParentAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Unknown' }));
+    throw new Error(err.error || 'Failed to fetch referral network');
   }
 
   return await response.json();

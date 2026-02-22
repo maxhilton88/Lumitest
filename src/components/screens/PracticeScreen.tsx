@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { ArrowLeft, Swords, RotateCcw, Infinity } from 'lucide-react';
+import { ArrowLeft, Swords, RotateCcw, Infinity as InfinityIcon } from 'lucide-react';
 import { QuestionScreen, Question } from './QuestionScreen';
 import { QuestSelector } from './QuestSelector';
 import { useLanguage } from '../LanguageContext';
@@ -305,7 +305,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({
           <span className="text-[10px]" style={{ color: `${PARCHMENT}90` }}>
             R{roundNumber}
           </span>
-          <Infinity className="w-3 h-3" style={{ color: 'rgba(124,198,67,0.5)' }} />
+          <InfinityIcon className="w-3 h-3" style={{ color: 'rgba(124,198,67,0.5)' }} />
         </div>
       </div>
 

@@ -1,91 +1,87 @@
-import React, { useEffect, useState, useRef } from 'react';
+/**
+ * MusicToggle — Floating RPG-styled music toggle button.
+ *
+ * Uses the centralized music-service.ts (single audio element).
+ * Shows Volume2 when playing, VolumeX when muted.
+ * Gold coin-shaped button matching the Foxy Adventure RPG aesthetic.
+ */
+import React, { useEffect, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+import {
+  isMusicPlaying,
+  toggleMusic,
+  subscribe as subscribeMusicState,
+} from '../utils/music-service';
 
 interface MusicToggleProps {
   className?: string;
 }
 
-// Global audio element to persist across component re-renders/remounts
-let globalAudio: HTMLAudioElement | null = null;
-let globalIsPlaying = false;
-
-const MUSIC_URL = 'https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/public/music/Quest%20of%20the%20Little%20Stars.mp3';
+const GOLD = '#d4a44a';
 
 export const MusicToggle: React.FC<MusicToggleProps> = ({ className = '' }) => {
-  const [isPlaying, setIsPlaying] = useState(globalIsPlaying);
+  const [isPlaying, setIsPlaying] = useState(isMusicPlaying());
 
-  // Initialize audio element once globally
+  // Subscribe to music-service state so the icon stays in sync
   useEffect(() => {
-    if (!globalAudio) {
-      const audio = new Audio(MUSIC_URL);
-      audio.loop = true;
-      audio.volume = 0.25; // Low volume for background music
-      audio.preload = 'metadata';
-      globalAudio = audio;
-
-      // Sync state if audio ends unexpectedly
-      audio.addEventListener('pause', () => {
-        if (!audio.loop) {
-          globalIsPlaying = false;
-        }
-      });
-    }
-
-    // Sync local state with global state on mount
-    setIsPlaying(globalIsPlaying);
+    return subscribeMusicState((playing) => {
+      setIsPlaying(playing);
+    });
   }, []);
-
-  const toggleMusic = async () => {
-    if (!globalAudio) return;
-
-    if (isPlaying) {
-      globalAudio.pause();
-      globalIsPlaying = false;
-      setIsPlaying(false);
-    } else {
-      try {
-        await globalAudio.play();
-        globalIsPlaying = true;
-        setIsPlaying(true);
-      } catch (err) {
-        console.warn('Music playback failed (user interaction may be required):', err);
-      }
-    }
-  };
 
   return (
     <button
-      onClick={toggleMusic}
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleMusic();
+      }}
       className={`
         relative
-        w-12 h-12 md:w-14 md:h-14
+        w-11 h-11
         rounded-full
-        bg-gradient-to-b from-[#ffd43b] via-[#d4a017] to-[#b8860b]
-        shadow-[0_6px_16px_rgba(212,160,23,0.4)]
         flex items-center justify-center
         transition-all duration-200
-        active:scale-95
+        active:scale-90
         hover:scale-110
         ${isPlaying ? 'animate-pulse' : ''}
         ${className}
       `}
       style={{
-        boxShadow: '0 6px 16px rgba(212,160,23,0.4), inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.4)'
+        background: isPlaying
+          ? `linear-gradient(135deg, #ffd43b 0%, ${GOLD} 50%, #b8860b 100%)`
+          : 'rgba(42,31,14,0.85)',
+        border: `2px solid ${isPlaying ? '#ffeaa7' : `${GOLD}50`}`,
+        boxShadow: isPlaying
+          ? `0 4px 14px rgba(212,160,23,0.45), inset 0 -2px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.35)`
+          : `0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,184,138,0.1)`,
       }}
+      aria-label={isPlaying ? 'Mute music' : 'Play music'}
     >
       {isPlaying ? (
-        <Volume2 className="w-6 h-6 md:w-7 md:h-7 text-white" />
+        <Volume2 className="w-5 h-5 text-white drop-shadow-sm" />
       ) : (
-        <VolumeX className="w-6 h-6 md:w-7 md:h-7 text-white" />
+        <VolumeX className="w-5 h-5" style={{ color: `${GOLD}90` }} />
       )}
-      
-      {/* Glossy overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-transparent rounded-full" 
-           style={{ height: '50%' }} />
-      
-      {/* Sound waves when playing */}
+
+      {/* Glossy highlight */}
+      <div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, transparent 50%)',
+          height: '50%',
+          borderRadius: '9999px',
+        }}
+      />
+
+      {/* Pulse ring when playing */}
       {isPlaying && (
-        <div className="absolute inset-0 rounded-full border-2 border-yellow-400/40 animate-pulse" />
+        <div
+          className="absolute inset-0 rounded-full animate-ping"
+          style={{
+            border: `2px solid ${GOLD}30`,
+            animationDuration: '2s',
+          }}
+        />
       )}
     </button>
   );

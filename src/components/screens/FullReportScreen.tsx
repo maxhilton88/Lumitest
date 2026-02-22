@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { MusicToggle } from '../MusicToggle';
 import { SpiderWebChart } from '../SpiderWebChart';
 import { FoxyToySection } from '../FoxyToySection';
 import { GlossyButton } from '../GlossyButton';
@@ -309,11 +308,6 @@ export const FullReportScreen: React.FC<FullReportScreenProps> = ({
     <div className="h-[100dvh] relative overflow-hidden flex flex-col">
       {/* Fantasy background */}
       <FantasyBackground bgImage={forestBackground} overlayOpacity={0.75} />
-
-      {/* Music Toggle */}
-      <div className="absolute top-4 right-4 z-20">
-        <MusicToggle />
-      </div>
 
       {/* Scrollable report content */}
       <div className="relative z-10 flex-1 overflow-y-auto">

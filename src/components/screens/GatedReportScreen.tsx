@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../LanguageContext';
-import { MusicToggle } from '../MusicToggle';
 import { SpiderWebChart } from '../SpiderWebChart';
 import {
   FantasyBackground,
@@ -17,8 +16,10 @@ import {
   type DetailedAnswer,
 } from '../../utils/report-calculations';
 import { ParentAuthForm } from '../auth/ParentAuthForm';
-import { Lock, Star, Award, Eye, Sparkles } from 'lucide-react';
+import { getReferralCookie } from '../../utils/referral-cookie';
+import { Lock, Star, Award, Eye, Sparkles, Swords, ShieldCheck, Play, Zap } from 'lucide-react';
 import forestBackground from 'figma:asset/a581931d108e11fed5631f15572c62563a4ab3d4.png';
+import foxyToyImage from 'figma:asset/090998e64822fcc5724f27cbd25c8d9c71bd2ea7.png';
 
 interface GatedReportScreenProps {
   childName: string;
@@ -44,6 +45,8 @@ interface GatedReportScreenProps {
 
 const GOLD = '#d4a44a';
 const GOLD_LIGHT = '#ffeaa7';
+const PARCHMENT = '#c8b88a';
+const LEGENDARY_ORANGE = '#e8722a';
 
 // Short subject labels for radar chart
 const SUBJECT_SHORT_LABELS: Record<string, { en: string; ms: string; zh: string }> = {
@@ -118,9 +121,9 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
       zh: `查看${childName}的详细优势、TP水平、科目分析和个性化建议。`,
     },
     freeAccount: {
-      en: 'Create Free Parent Account',
-      ms: 'Buat Akaun Ibu Bapa Percuma',
-      zh: '创建免费家长账号',
+      en: `Unlock ${childName}'s Report — Free!`,
+      ms: `Buka Laporan ${childName} — Percuma!`,
+      zh: `解锁${childName}的报告 — 免费！`,
     },
     whatsIncluded: {
       en: "What's Included",
@@ -166,12 +169,67 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
     ],
   };
 
+  // Platform feature cards data
+  const platformFeatures = [
+    {
+      icon: <Swords className="w-6 h-6" style={{ color: '#e74c3c' }} />,
+      title: { en: 'Quest Mode', ms: 'Mod Misi', zh: '任务模式' },
+      desc: { en: 'Unlimited KSSR tests', ms: 'Ujian KSSR tanpa had', zh: '无限KSSR测试' },
+      bg: '#e74c3c',
+    },
+    {
+      icon: <ShieldCheck className="w-6 h-6" style={{ color: '#4dabf7' }} />,
+      title: { en: 'Training Mode', ms: 'Mod Latihan', zh: '训练模式' },
+      desc: { en: 'Thousands of questions', ms: 'Ribuan soalan latihan', zh: '数千道练习题' },
+      bg: '#4dabf7',
+    },
+    {
+      icon: <Play className="w-6 h-6" style={{ color: '#7cc643' }} />,
+      title: { en: 'Video Mode', ms: 'Mod Video', zh: '视频模式' },
+      desc: { en: 'Foxy learning videos', ms: 'Video pembelajaran Foxy', zh: 'Foxy学习视频' },
+      bg: '#7cc643',
+    },
+  ];
+
+  // FOXY-o1 promo labels
+  const foxyPromo = {
+    title: { en: 'Bring Home FOXY-o1', ms: 'Bawa Pulang FOXY-o1', zh: '把FOXY-o1带回家' },
+    subtitle: {
+      en: `${childName}'s 24/7 AI Teacher`,
+      ms: `Guru AI 24/7 ${childName}`,
+      zh: `${childName}的24/7 AI老师`,
+    },
+    desc: {
+      en: 'A pocket-sized AI companion that explains concepts, answers questions, and adapts to your child\'s learning level — anytime, anywhere.',
+      ms: 'Teman AI bersaiz poket yang menerangkan konsep, menjawab soalan, dan menyesuaikan diri dengan tahap pembelajaran anak anda — bila-bila masa, di mana sahaja.',
+      zh: '口袋大小的AI伙伴，解释概念、回答问题，并适应您孩子的学习水平 — 随时随地。',
+    },
+    bundle: {
+      en: '1 Year Foxy Adventure + FOXY-o1 Toy',
+      ms: '1 Tahun Foxy Adventure + Mainan FOXY-o1',
+      zh: '1年Foxy Adventure + FOXY-o1玩具',
+    },
+    superPromo: { en: 'Limited Intro Offer', ms: 'Tawaran Intro Terhad', zh: '限时首发优惠' },
+    learnMore: { en: 'Learn More', ms: 'Ketahui Lagi', zh: '了解更多' },
+    earlyAdopter: {
+      en: 'For early adopters only — reverts to full price after first batch.',
+      ms: 'Untuk pengguna awal sahaja — kembali ke harga penuh selepas kumpulan pertama.',
+      zh: '仅限首批尝鲜用户 — 名额满后恢复原价。',
+    },
+    perDay: { en: 'Only RM1/day', ms: 'Hanya RM1/hari', zh: '每天仅RM1' },
+  };
+
   // If showing full auth form overlay
   if (showAuthForm) {
+    // Pass captured referral code: check cookie first (set by ChildFlowPage), then sessionStorage (set by useTestSession)
+    const capturedRef = getReferralCookie() || (() => {
+      try { return sessionStorage.getItem('foxy_ref_code') || undefined; } catch { return undefined; }
+    })() || undefined;
     return (
       <ParentAuthForm
         onSuccess={onParentAuthSuccess}
         onBack={() => setShowAuthForm(false)}
+        defaultReferralCode={capturedRef}
       />
     );
   }
@@ -182,11 +240,6 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
   return (
     <div className="min-h-[100dvh] relative overflow-auto">
       <FantasyBackground bgImage={forestBackground} overlayOpacity={0.65} />
-
-      {/* Music Toggle */}
-      <div className="absolute top-4 right-4 z-20">
-        <MusicToggle />
-      </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-8 md:py-12 space-y-6">
         {/* ── Header ── */}
@@ -377,6 +430,142 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
 
         <GoldOrnament />
 
+        {/* ── FOXY-o1 Toy Promo — Legendary Card ── */}
+        <FantasyPanel className="p-0 overflow-hidden relative">
+          {/* Legendary glow border effect */}
+          <div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              border: `2px solid ${LEGENDARY_ORANGE}50`,
+              boxShadow: `0 0 25px ${LEGENDARY_ORANGE}20, inset 0 0 25px ${LEGENDARY_ORANGE}08`,
+            }}
+          />
+
+          {/* Super Promo ribbon */}
+          <div
+            className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+            style={{
+              background: `linear-gradient(135deg, ${LEGENDARY_ORANGE}, #ff6b35)`,
+              color: '#fff',
+              boxShadow: `0 2px 10px ${LEGENDARY_ORANGE}60`,
+              fontFamily: "'Cinzel Decorative', serif",
+            }}
+          >
+            {foxyPromo.superPromo[lang]}
+          </div>
+
+          <div className="p-5 md:p-6">
+            <div className="flex items-start gap-4">
+              {/* Toy image */}
+              <div className="flex-shrink-0">
+                <div
+                  className="w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, #fff5eb, #ffe8d5)`,
+                    border: `2px solid ${LEGENDARY_ORANGE}30`,
+                    boxShadow: `0 4px 16px rgba(0,0,0,0.2)`,
+                  }}
+                >
+                  <img
+                    src={foxyToyImage}
+                    alt="FOXY-o1 AI Toy"
+                    className="w-full h-full object-contain p-1"
+                  />
+                </div>
+              </div>
+
+              {/* Text content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4" style={{ color: LEGENDARY_ORANGE }} />
+                  <h3
+                    className="text-sm md:text-base font-black tracking-wide"
+                    style={{
+                      fontFamily: "'Cinzel Decorative', serif",
+                      color: GOLD_LIGHT,
+                      textShadow: `0 0 10px ${LEGENDARY_ORANGE}30`,
+                    }}
+                  >
+                    {foxyPromo.title[lang]}
+                  </h3>
+                </div>
+                <p
+                  className="text-xs font-bold mb-1.5"
+                  style={{ color: LEGENDARY_ORANGE }}
+                >
+                  {foxyPromo.subtitle[lang]}
+                </p>
+                <p
+                  className="text-[11px] leading-relaxed"
+                  style={{ color: `${PARCHMENT}bb` }}
+                >
+                  {foxyPromo.desc[lang]}
+                </p>
+              </div>
+            </div>
+
+            {/* Bundle pricing */}
+            <div
+              className="mt-4 p-3 rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${LEGENDARY_ORANGE}12, ${LEGENDARY_ORANGE}06)`,
+                border: `1px solid ${LEGENDARY_ORANGE}25`,
+              }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `${PARCHMENT}90` }}>
+                  {foxyPromo.bundle[lang]}
+                </p>
+                <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+                  <span
+                    className="text-xl md:text-2xl font-black"
+                    style={{
+                      color: LEGENDARY_ORANGE,
+                      fontFamily: "'Cinzel Decorative', serif",
+                      textShadow: `0 0 12px ${LEGENDARY_ORANGE}30`,
+                    }}
+                  >
+                    RM365
+                  </span>
+                  <span
+                    className="text-sm line-through"
+                    style={{ color: `${PARCHMENT}60` }}
+                  >
+                    RM730
+                  </span>
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: `${LEGENDARY_ORANGE}20`,
+                      color: LEGENDARY_ORANGE,
+                    }}
+                  >
+                    -50%
+                  </span>
+                  {/* RM1/day highlight */}
+                  <span
+                    className="text-[11px] font-black px-2 py-0.5 rounded-full"
+                    style={{
+                      background: `linear-gradient(135deg, ${GOLD}, #f0d078)`,
+                      color: '#2a1f0e',
+                      boxShadow: `0 0 10px ${GOLD}40`,
+                    }}
+                  >
+                    {foxyPromo.perDay[lang]}
+                  </span>
+                </div>
+              </div>
+              {/* Early adopter scarcity text */}
+              <p
+                className="text-[10px] mt-2 leading-relaxed"
+                style={{ color: `${PARCHMENT}80` }}
+              >
+                {foxyPromo.earlyAdopter[lang]}
+              </p>
+            </div>
+          </div>
+        </FantasyPanel>
+
         {/* ── Unlock CTA Card ── */}
         <FantasyPanel className="p-6 md:p-8" gold>
           <div className="text-center space-y-4">
@@ -405,16 +594,16 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
               >
                 {labels.unlockTitle[lang]}
               </h2>
-              <p className="text-sm mt-2" style={{ color: '#c8b88a', lineHeight: 1.6 }}>
+              <p className="text-sm mt-2" style={{ color: PARCHMENT, lineHeight: 1.6 }}>
                 {labels.unlockDesc[lang]}
               </p>
             </div>
 
-            {/* What's included checklist */}
+            {/* What's included — Report features */}
             <div className="text-left space-y-2 py-3">
               <p
                 className="text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: `${GOLD}90` }}
+                style={{ color: GOLD_LIGHT }}
               >
                 {labels.whatsIncluded[lang]}
               </p>
@@ -426,11 +615,49 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
                   >
                     <Eye className="w-2.5 h-2.5" style={{ color: GOLD }} />
                   </div>
-                  <span className="text-sm" style={{ color: '#c8b88a' }}>
+                  <span className="text-sm" style={{ color: PARCHMENT }}>
                     {item}
                   </span>
                 </div>
               ))}
+            </div>
+
+            {/* Platform feature cards — Quest / Training / Video */}
+            <div className="pt-2 pb-1">
+              <p
+                className="text-xs font-bold uppercase tracking-widest mb-3 text-left"
+                style={{ color: GOLD_LIGHT }}
+              >
+                {lang === 'en' ? 'Also Included — Free Forever' : lang === 'ms' ? 'Juga Termasuk — Percuma Selamanya' : '同样包含 — 永久免费'}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {platformFeatures.map((feat, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl p-3 text-center space-y-1.5"
+                    style={{
+                      background: `${feat.bg}10`,
+                      border: `1px solid ${feat.bg}30`,
+                    }}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center mx-auto"
+                      style={{
+                        background: `${feat.bg}20`,
+                        border: `1px solid ${feat.bg}40`,
+                      }}
+                    >
+                      {feat.icon}
+                    </div>
+                    <p className="text-xs font-bold" style={{ color: GOLD_LIGHT }}>
+                      {feat.title[lang]}
+                    </p>
+                    <p className="text-[10px] leading-tight" style={{ color: `${PARCHMENT}bb` }}>
+                      {feat.desc[lang]}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* CTA Button */}
@@ -449,7 +676,7 @@ export const GatedReportScreen: React.FC<GatedReportScreenProps> = ({
               {labels.freeAccount[lang]}
             </button>
 
-            <p className="text-xs" style={{ color: `${GOLD}70` }}>
+            <p className="text-xs font-medium" style={{ color: GOLD_LIGHT, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
               {lang === 'en' ? 'Free \u2022 No credit card required \u2022 Takes 30 seconds'
                 : lang === 'ms' ? 'Percuma \u2022 Tiada kad kredit diperlukan \u2022 Ambil 30 saat'
                 : '免费 \u2022 无需信用卡 \u2022 只需30秒'}

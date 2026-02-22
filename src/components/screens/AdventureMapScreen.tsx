@@ -1,6 +1,5 @@
 import React from 'react';
 import mapBackground from 'figma:asset/6159593dc1e129bc0f365325080d4c6d97363b06.png';
-import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 
 interface AdventureMapScreenProps {
@@ -156,11 +155,6 @@ export const AdventureMapScreen: React.FC<AdventureMapScreenProps> = ({
           <div className="text-6xl drop-shadow-2xl">🦊</div>
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/20 rounded-full blur-sm" />
         </div>
-      </div>
-
-      {/* Music Toggle - Top Right */}
-      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-        <MusicToggle />
       </div>
 
       {/* Adventure Modules */}

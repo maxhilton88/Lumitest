@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { GlossyButton } from '../GlossyButton';
 import { FoxyCharacter } from '../FoxyCharacter';
-import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { FantasyBackground, FantasyTitle, FantasyPanel, FantasyFooter, GoldOrnament } from '../FantasyBackground';
@@ -102,11 +101,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, onBack, b
           </span>
         </button>
       )}
-
-      {/* Music Toggle - Top Right */}
-      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-        <MusicToggle />
-      </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center overflow-y-auto p-4 md:p-6 lg:p-8 pb-16 md:pb-20">
         {/* School Logo */}

@@ -3,7 +3,6 @@ import { GlossyButton } from '../GlossyButton';
 import { VoiceButton } from '../VoiceButton';
 import { FoxyCharacter } from '../FoxyCharacter';
 import { ProgressBar } from '../ProgressBar';
-import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { VictoryBurst } from '../VictoryBurst';
@@ -221,11 +220,6 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
 
       {/* Victory Burst */}
       <VictoryBurst isActive={showVictory} />
-
-      {/* Music Toggle */}
-      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-        <MusicToggle />
-      </div>
 
       <div className="relative z-10 flex flex-col h-full max-w-4xl mx-auto w-full overflow-y-auto">
         {/* Progress Bar — hidden in practice mode */}
@@ -925,7 +919,7 @@ export const QuestionScreen: React.FC<QuestionScreenProps> = ({
       </div>
 
       {/* Footer */}
-      <FantasyFooter />
+      <FantasyFooter hideLinks />
     </div>
   );
 };

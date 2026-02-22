@@ -76,6 +76,25 @@ export function useTestSession({
   const [answers, setAnswers] = useState<{ questionId: string; answerId: string }[]>([]);
   const [leadData, setLeadData] = useState({ childName: '', parentName: '', whatsapp: '' });
 
+  // Referral code captured from URL ?ref= param
+  const [capturedReferralCode, setCapturedReferralCode] = useState<string | null>(() => {
+    try {
+      // Check sessionStorage first (survives page navigations within session)
+      const stored = sessionStorage.getItem('foxy_ref_code');
+      if (stored) return stored;
+      // Check URL param
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        sessionStorage.setItem('foxy_ref_code', ref);
+        console.log(`[REFERRAL] Captured ref code from URL: ${ref}`);
+        return ref;
+      }
+    } catch {}
+    return null;
+  });
+  const capturedReferralCodeRef = useRef(capturedReferralCode);
+
   // Resolved school ID for the child test flow
   const [resolvedSchoolId, setResolvedSchoolId] = useState<string | null>(null);
   const [isResolvingSchool, setIsResolvingSchool] = useState(false);
@@ -210,7 +229,7 @@ export function useTestSession({
       const mergedOptions = optionsEn.map((optEn: any, idx: number) => {
         const optMs = optionsMs[idx] || {};
         const optZh = optionsZh[idx] || {};
-        return {
+        const option: any = {
           id: optEn.id || String.fromCharCode(97 + idx),
           text: {
             en: typeof optEn === 'string' ? optEn : (optEn.text || ''),
@@ -218,6 +237,12 @@ export function useTestSession({
             zh: typeof optZh === 'string' ? optZh : (optZh.text || ''),
           },
         };
+        // Pass through image field for mcq-image answer type
+        // The image URL is already a signed URL resolved by the server
+        if (optEn.image) {
+          option.image = optEn.image;
+        }
+        return option;
       });
 
       return {
@@ -400,11 +425,12 @@ export function useTestSession({
         questResults: [],
         agePerformance: [],
         status: 'in_progress',
+        referralCode: capturedReferralCodeRef.current || undefined,
       });
 
       setCurrentLeadId(result.leadId);
       currentLeadIdRef.current = result.leadId;
-      console.log('[LEAD] Early save SUCCESS:', result.leadId, result.isUpdate ? '(retake)' : '(new)');
+      console.log('[LEAD] Early save SUCCESS:', result.leadId, result.isUpdate ? '(retake)' : '(new)', capturedReferralCodeRef.current ? `(ref: ${capturedReferralCodeRef.current})` : '');
     } catch (error) {
       console.error('[LEAD] Early save FAILED:', error);
       toast.error(
@@ -641,6 +667,7 @@ export function useTestSession({
               questResults: reportData.questResults,
               agePerformance: reportData.agePerformance,
               status: isLastModule ? 'completed' : 'in_progress',
+              referralCode: capturedReferralCodeRef.current || undefined,
             });
             currentLeadIdRef.current = result.leadId;
             setCurrentLeadId(result.leadId);
@@ -671,8 +698,8 @@ export function useTestSession({
     const percentage = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
 
     const assessmentUrl = brandingSettings.kindergartenUrl
-      ? `https://projectlumi.org/${brandingSettings.kindergartenUrl}`
-      : 'https://projectlumi.org';
+      ? `https://foxy.projectlumi.org/${brandingSettings.kindergartenUrl}`
+      : 'https://foxy.projectlumi.org';
 
     const shareText = `🎉 ${leadData.childName} scored ${percentage}% on the KSSR readiness test at ${brandingSettings.schoolName}! 🎓\n\nTry the free assessment for your child too: ${assessmentUrl}`;
 

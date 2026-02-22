@@ -1,0 +1,27 @@
+{
+  "name": "Foxy Adventure — KSSR Readiness",
+  "short_name": "Foxy Adventure",
+  "description": "A gamified KSSR readiness assessment for Malaysian kindergartens (ages 4-7). Dark-fantasy RPG card-based quest flow with multilingual support.",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#000000",
+  "background_color": "#0c0814",
+  "lang": "en",
+  "categories": ["education", "kids", "games"],
+  "icons": [
+    {
+      "src": "https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/public/App_icon/Foxy_app_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/public/App_icon/foxy_app_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

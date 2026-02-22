@@ -1,23 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Swords, Compass, Coins, ScrollText, ShieldCheck, BookOpen, type LucideIcon } from 'lucide-react';
+import { X, Swords, Compass, Coins, ScrollText, ShieldCheck, BookOpen, Music, type LucideIcon } from 'lucide-react';
 import { playMenuSelect } from '../../hooks/useSoundEffects';
+import { useLanguage } from '../LanguageContext';
+import { updateParentProfile } from '../../utils/parent-api';
 
-export type ParentPage = 'game' | 'mastery' | 'library' | 'earnings' | 'plan' | 'account';
+export type ParentPage = 'game' | 'mastery' | 'library' | 'audio' | 'earnings' | 'plan' | 'account';
 
 interface MenuItem {
   id: ParentPage;
-  label: string;
-  sublabel: string;
+  labelKey: string;
+  sublabelKey: string;
   icon: LucideIcon;
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { id: 'game', label: 'Game Dashboard', sublabel: 'Practice, Test & Watch', icon: Swords },
-  { id: 'mastery', label: 'Mastery Dashboard', sublabel: 'Performance & Analytics', icon: Compass },
-  { id: 'library', label: 'Video Mode', sublabel: 'Watch & Learn', icon: BookOpen },
-  { id: 'earnings', label: 'Earnings Hub', sublabel: 'Referrals & Credits', icon: Coins },
-  { id: 'plan', label: 'Plan & Billing', sublabel: 'Subscription & Payments', icon: ScrollText },
-  { id: 'account', label: 'Account', sublabel: 'Profile & Settings', icon: ShieldCheck },
+  { id: 'game', labelKey: 'menu.game', sublabelKey: 'menu.game.sub', icon: Swords },
+  { id: 'mastery', labelKey: 'menu.mastery', sublabelKey: 'menu.mastery.sub', icon: Compass },
+  { id: 'library', labelKey: 'menu.library', sublabelKey: 'menu.library.sub', icon: BookOpen },
+  { id: 'audio', labelKey: 'menu.audio', sublabelKey: 'menu.audio.sub', icon: Music },
+  { id: 'earnings', labelKey: 'menu.earnings', sublabelKey: 'menu.earnings.sub', icon: Coins },
+  { id: 'plan', labelKey: 'menu.plan', sublabelKey: 'menu.plan.sub', icon: ScrollText },
+  { id: 'account', labelKey: 'menu.account', sublabelKey: 'menu.account.sub', icon: ShieldCheck },
 ];
 
 const GOLD = '#d4a44a';
@@ -82,6 +85,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
   language,
   onLanguageChange,
 }) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -110,6 +114,16 @@ export const SideMenu: React.FC<SideMenuProps> = ({
     playMenuSelect();
     onNavigate(page);
     if (isMobile) setIsExpanded(false);
+  };
+
+  // Language change handler — update context AND persist to server
+  const handleLanguageSwitch = (lang: string) => {
+    playMenuSelect();
+    onLanguageChange(lang);
+    // Fire-and-forget persist to server
+    updateParentProfile({ language: lang }).catch((err) => {
+      console.warn('[SIDEMENU] Failed to persist language to server:', err);
+    });
   };
 
   // ===== MOBILE: Floating button + overlay =====
@@ -244,13 +258,13 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                           textShadow: isActive ? `0 0 8px ${GOLD}30` : 'none',
                         }}
                       >
-                        {item.label}
+                        {t(item.labelKey)}
                       </p>
                       <p
                         className="text-[10px] mt-0.5 leading-tight"
                         style={{ color: isActive ? `${PARCHMENT}90` : `${PARCHMENT}65` }}
                       >
-                        {item.sublabel}
+                        {t(item.sublabelKey)}
                       </p>
                     </div>
                   </button>
@@ -272,7 +286,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 {['en', 'ms', 'zh'].map((lang) => (
                   <button
                     key={lang}
-                    onClick={() => { playMenuSelect(); onLanguageChange(lang); }}
+                    onClick={() => handleLanguageSwitch(lang)}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider uppercase transition-all"
                     style={{
                       background: language === lang ? `${GOLD}25` : 'transparent',
@@ -295,7 +309,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                   fontFamily: "'Cinzel Decorative', serif",
                 }}
               >
-                Leave the Realm
+                {t('menu.logout')}
               </button>
             </div>
           </div>
@@ -386,7 +400,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                   ? `linear-gradient(90deg, ${GOLD}18, transparent)`
                   : 'transparent',
               }}
-              title={!isExpanded ? item.label : undefined}
+              title={!isExpanded ? t(item.labelKey) : undefined}
             >
               {/* Active indicator */}
               {isActive && (
@@ -415,13 +429,13 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                       textShadow: isActive ? `0 0 8px ${GOLD}30` : 'none',
                     }}
                   >
-                    {item.label}
+                    {t(item.labelKey)}
                   </p>
                   <p
                     className="text-[10px] mt-0.5 leading-tight truncate"
                     style={{ color: isActive ? `${PARCHMENT}90` : `${PARCHMENT}65` }}
                   >
-                    {item.sublabel}
+                    {t(item.sublabelKey)}
                   </p>
                 </div>
               )}
@@ -444,7 +458,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
               {['en', 'ms', 'zh'].map((lang) => (
                 <button
                   key={lang}
-                  onClick={() => { playMenuSelect(); onLanguageChange(lang); }}
+                  onClick={() => handleLanguageSwitch(lang)}
                   className="px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase transition-all"
                   style={{
                     background: language === lang ? `${GOLD}25` : 'transparent',
@@ -466,7 +480,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 fontFamily: "'Cinzel Decorative', serif",
               }}
             >
-              Leave the Realm
+              {t('menu.logout')}
             </button>
           </>
         ) : (
@@ -474,7 +488,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             onClick={() => { playMenuSelect(); onLogout(); }}
             className="w-full flex justify-center py-2 rounded-lg transition-all"
             style={{ color: `${PARCHMENT}65` }}
-            title="Logout"
+            title={t('menu.logout')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

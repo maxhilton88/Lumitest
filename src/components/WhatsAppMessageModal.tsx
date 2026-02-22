@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { MessageCircle, X, Send, Sparkles, FileText, Paperclip } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MessageCircle, X, Send, Sparkles, Link2, Copy, Check, Loader2, ExternalLink } from 'lucide-react';
+import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { getFreshAdminToken } from '../utils/supabase-client';
+import { toast } from 'sonner@2.0.3';
+
+const API_BASE = `https://${projectId}.supabase.co/functions/v1/make-server-221a61bc`;
 
 interface Lead {
+  id: string;
   childName: string;
   parentName: string;
   whatsapp: string;
@@ -11,17 +17,58 @@ interface Lead {
 
 interface WhatsAppMessageModalProps {
   lead: Lead;
+  schoolName?: string;
   onClose: () => void;
 }
 
-export const WhatsAppMessageModal: React.FC<WhatsAppMessageModalProps> = ({ lead, onClose }) => {
+export const WhatsAppMessageModal: React.FC<WhatsAppMessageModalProps> = ({ lead, schoolName, onClose }) => {
   const percentage = Math.round((lead.score / lead.totalQuestions) * 100);
-  
-  // AI-generated message with analysis
+
+  const [reportId, setReportId] = useState<string | null>(null);
+  const [isCreatingReport, setIsCreatingReport] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const reportUrl = reportId ? `${window.location.origin}/report/${reportId}` : null;
+
+  // ── Create shareable report on mount ──
+  useEffect(() => {
+    createShareableReport();
+  }, []);
+
+  const createShareableReport = async () => {
+    setIsCreatingReport(true);
+    try {
+      const token = await getFreshAdminToken();
+      const res = await fetch(`${API_BASE}/reports`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${publicAnonKey}`,
+          'X-User-Token': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ leadId: lead.id }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setReportId(data.reportId);
+        console.log(`[WHATSAPP] Report created/found: ${data.reportId} (existing: ${data.isExisting})`);
+      } else {
+        console.error('[WHATSAPP] Failed to create report:', data.error);
+        toast.error('Could not generate report link. You can still send a text message.');
+      }
+    } catch (err) {
+      console.error('[WHATSAPP] Report creation error:', err);
+      toast.error('Network error creating report link.');
+    } finally {
+      setIsCreatingReport(false);
+    }
+  };
+
+  // ── AI-generated message ──
   const generateMessage = () => {
     let performanceAnalysis = '';
     let recommendation = '';
-    
+
     if (percentage >= 80) {
       performanceAnalysis = `${lead.childName} did exceptionally well! Their strong foundation shows they're ready for Standard 1.`;
       recommendation = `I'd love to discuss how we can nurture this talent further and ensure a smooth transition to primary school.`;
@@ -33,11 +80,16 @@ export const WhatsAppMessageModal: React.FC<WhatsAppMessageModalProps> = ({ lead
       recommendation = `I'd like to offer a complimentary assessment session where we can identify specific areas to focus on and create a tailored improvement plan.`;
     }
 
+    const schoolLine = schoolName ? ` at ${schoolName}` : '';
+    const reportLine = reportUrl
+      ? `\n\nView the full report here:\n${reportUrl}\n\nYou can also download it as PDF from the link above.\nThis link is active for 30 days — sign up free to save it permanently and track ${lead.childName}'s progress over time.`
+      : '';
+
     return `Hi ${lead.parentName}! 👋
 
-${lead.childName} has completed our KSSR readiness assessment and scored ${lead.score}/${lead.totalQuestions} (${percentage}%). 
+${lead.childName} has completed the KSSR readiness assessment${schoolLine} and scored ${lead.score}/${lead.totalQuestions} (${percentage}%).
 
-${performanceAnalysis}
+${performanceAnalysis}${reportLine}
 
 ${recommendation}
 
@@ -46,7 +98,12 @@ Would you be available for a quick 15-minute call this week? I'd be happy to sha
 Looking forward to hearing from you! 🌟`;
   };
 
-  const [message, setMessage] = useState(generateMessage());
+  const [message, setMessage] = useState('');
+
+  // Regenerate message whenever reportUrl becomes available
+  useEffect(() => {
+    setMessage(generateMessage());
+  }, [reportUrl]);
 
   const handleSendWhatsApp = () => {
     const encodedMessage = encodeURIComponent(message);
@@ -57,6 +114,18 @@ Looking forward to hearing from you! 🌟`;
 
   const handleRegenerate = () => {
     setMessage(generateMessage());
+  };
+
+  const handleCopyLink = async () => {
+    if (!reportUrl) return;
+    try {
+      await navigator.clipboard.writeText(reportUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+      toast.success('Report link copied!');
+    } catch {
+      toast.error('Failed to copy link');
+    }
   };
 
   return (
@@ -89,6 +158,57 @@ Looking forward to hearing from you! 🌟`;
             <span className="font-medium">AI-Generated Message</span>
           </div>
 
+          {/* Report Link Section */}
+          <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Link2 className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="text-sm font-semibold text-gray-900">Shareable Report Link</h4>
+                  {isCreatingReport ? (
+                    <span className="flex items-center gap-1 text-xs text-emerald-600">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Generating...
+                    </span>
+                  ) : reportUrl ? (
+                    <span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full font-medium">
+                      Included in message
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-medium">
+                      Unavailable
+                    </span>
+                  )}
+                </div>
+                {reportUrl ? (
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 bg-white border border-emerald-200 rounded-lg px-3 py-2 text-xs text-gray-600 truncate font-mono">
+                      {reportUrl}
+                    </div>
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex items-center gap-1 px-3 py-2 bg-white border border-emerald-200 rounded-lg text-xs font-medium text-emerald-700 hover:bg-emerald-50 transition-colors flex-shrink-0"
+                    >
+                      {linkCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {linkCopied ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                ) : !isCreatingReport ? (
+                  <p className="text-xs text-amber-700 mt-1">
+                    Could not generate report link. The parent will still receive score summary in the text message.
+                  </p>
+                ) : null}
+                {reportUrl && (
+                  <p className="text-xs text-emerald-700 mt-2">
+                    Parent can view the full report online and download as PDF. Link active for 30 days.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Message Editor */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -101,37 +221,8 @@ Looking forward to hearing from you! 🌟`;
               rows={15}
             />
             <p className="text-xs text-gray-500 mt-2">
-              💡 Tip: Personalize the message to make it more engaging
+              Tip: Personalize the message to make it more engaging
             </p>
-          </div>
-
-          {/* Attachment Section */}
-          <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Paperclip className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-sm font-semibold text-gray-900">Attachment</h4>
-                  <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full font-medium">
-                    Auto-attached
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 mt-2">
-                  <div className="flex items-center gap-2 bg-white border border-blue-200 rounded-lg px-3 py-2 flex-1">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Assessment Report - {lead.childName}.pdf</p>
-                      <p className="text-xs text-gray-500">Full performance analysis & recommendations</p>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-blue-700 mt-2">
-                  📎 The detailed report will be automatically attached when you send this message
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Preview Card */}
@@ -150,13 +241,26 @@ Looking forward to hearing from you! 🌟`;
 
         {/* Footer */}
         <div className="p-6 border-t border-gray-100 flex items-center justify-between gap-3">
-          <button
-            onClick={handleRegenerate}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Sparkles className="w-4 h-4" />
-            Regenerate
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRegenerate}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Regenerate
+            </button>
+            {reportUrl && (
+              <a
+                href={reportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Preview Report
+              </a>
+            )}
+          </div>
           
           <div className="flex items-center gap-3">
             <button

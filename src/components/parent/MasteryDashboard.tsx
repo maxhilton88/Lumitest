@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Star, Swords, Eye, Shield, Flame, ChevronLeft, ChevronRight,
-  Trophy, TrendingUp, Target, Crown, Award, Zap, Lock,
+  Trophy, TrendingUp, Target, Crown, Award, Zap, Lock, X, ArrowRight, Sparkles,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -25,6 +26,8 @@ import {
   type SubjectAgeBreakdown,
 } from '../../utils/report-calculations';
 import { fetchActivityTimeline, fetchAssessmentHistory } from '../../utils/parent-api';
+import { useLanguage } from '../LanguageContext';
+import foxyToyImage from 'figma:asset/090998e64822fcc5724f27cbd25c8d9c71bd2ea7.png';
 
 // ===== THEME CONSTANTS =====
 const GOLD = '#d4a44a';
@@ -32,6 +35,7 @@ const GOLD_LIGHT = '#ffeaa7';
 const PARCHMENT = '#c8b88a';
 const CINZEL = "'Cinzel Decorative', serif";
 const DARK_BG = 'linear-gradient(135deg, rgba(26,18,10,0.95) 0%, rgba(35,26,14,0.95) 100%)';
+const LEGENDARY_ORANGE = '#e8722a';
 
 // Chart color palette (RPG-themed)
 const CHART_COLORS = ['#d4a44a', '#e67e22', '#9b59b6', '#27ae60', '#3498db', '#e74c3c'];
@@ -175,7 +179,9 @@ const LockedPreview: React.FC<{
   description: string;
   height?: number;
   children?: React.ReactNode;
-}> = ({ icon, title, subtitle, description, height, children }) => (
+}> = ({ icon, title, subtitle, description, height, children }) => {
+  const { t } = useLanguage();
+  return (
   <FantasyPanel className="p-5 md:p-6 relative overflow-hidden">
     {/* Dim overlay */}
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center"
@@ -193,7 +199,7 @@ const LockedPreview: React.FC<{
         {description}
       </h4>
       <p className="text-[11px] text-center max-w-xs" style={{ color: `${PARCHMENT}70` }}>
-        Complete a quest to unlock this section
+        {t('mastery.unlockSection')}
       </p>
     </div>
     {/* Ghost content behind overlay */}
@@ -206,65 +212,439 @@ const LockedPreview: React.FC<{
       )}
     </div>
   </FantasyPanel>
-);
+  );
+};
 
-// ===== ACTIVITY HEATMAP =====
+// ===== ACTIVITY CALENDAR MAP =====
 interface ActivityDay {
   date: string;
   tests: number;
   watches: number;
   practices: number;
+  questions_total?: number;
+  questions_correct?: number;
 }
 
-const ActivityTimeline: React.FC<{ activities: ActivityDay[] }> = ({ activities }) => {
+const getIntensity = (data: ActivityDay | null): number => {
+  if (!data) return 0;
+  const total = data.tests + data.watches + data.practices;
+  if (total === 0) return 0;
+  if (total === 1) return 1;
+  if (total <= 3) return 2;
+  return 3;
+};
+
+const INTENSITY_COLORS = [
+  `${GOLD}10`,
+  `${GOLD}35`,
+  `${GOLD}65`,
+  GOLD,
+];
+
+// Day detail modal — RPG parchment card style
+const DayDetailModal: React.FC<{
+  date: string;
+  data: ActivityDay | null;
+  isToday: boolean;
+  onClose: () => void;
+}> = ({ date, data, isToday, onClose }) => {
+  const { t } = useLanguage();
+  const total = data ? data.tests + data.watches + data.practices : 0;
+  const dateObj = new Date(date + 'T00:00:00');
+  const formattedDate = dateObj.toLocaleDateString('en-MY', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{
+          background: 'linear-gradient(145deg, #2a1f12 0%, #1a120a 50%, #2a1f12 100%)',
+          border: `2px solid ${GOLD}50`,
+          boxShadow: `0 0 40px rgba(0,0,0,0.6), 0 0 15px ${GOLD}15`,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Decorative top border */}
+        <div className="h-1" style={{ background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)` }} />
+
+        {/* Header */}
+        <div className="px-5 pt-4 pb-3 flex items-start justify-between">
+          <div>
+            <h3
+              className="text-base font-bold"
+              style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}
+            >
+              {formattedDate}
+            </h3>
+            {isToday && (
+              <span
+                className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{ background: `${GOLD}20`, color: GOLD, border: `1px solid ${GOLD}30` }}
+              >
+                {t('mastery.calendarToday')}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+            style={{ background: `${GOLD}10`, border: `1px solid ${GOLD}20` }}
+          >
+            <X className="w-4 h-4" style={{ color: `${PARCHMENT}70` }} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="px-5 pb-5">
+          {total > 0 ? (
+            <>
+              {/* Total badge */}
+              <div
+                className="flex items-center justify-center gap-2 py-3 mb-4 rounded-xl"
+                style={{ background: `${GOLD}12`, border: `1px solid ${GOLD}20` }}
+              >
+                <Flame className="w-5 h-5" style={{ color: '#ff6b35' }} />
+                <span className="text-lg font-bold" style={{ color: GOLD_LIGHT }}>
+                  {total}
+                </span>
+                <span className="text-sm" style={{ color: `${PARCHMENT}80` }}>
+                  {t('mastery.calendarAdventures')}
+                </span>
+              </div>
+
+              {/* Breakdown */}
+              <div className="space-y-2.5">
+                {data!.tests > 0 && (
+                  <div
+                    className="flex items-center justify-between px-3.5 py-2.5 rounded-lg"
+                    style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}12` }}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Swords className="w-4 h-4" style={{ color: '#e74c3c' }} />
+                      <span className="text-sm" style={{ color: `${PARCHMENT}90` }}>
+                        {t('mastery.quests')}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold" style={{ color: GOLD_LIGHT }}>
+                      {data!.tests}
+                    </span>
+                  </div>
+                )}
+                {data!.watches > 0 && (
+                  <div
+                    className="flex items-center justify-between px-3.5 py-2.5 rounded-lg"
+                    style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}12` }}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Eye className="w-4 h-4" style={{ color: '#3498db' }} />
+                      <span className="text-sm" style={{ color: `${PARCHMENT}90` }}>
+                        {t('mastery.videos')}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold" style={{ color: GOLD_LIGHT }}>
+                      {data!.watches}
+                    </span>
+                  </div>
+                )}
+                {data!.practices > 0 && (
+                  <div
+                    className="flex items-center justify-between px-3.5 py-2.5 rounded-lg"
+                    style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}12` }}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Shield className="w-4 h-4" style={{ color: '#27ae60' }} />
+                      <span className="text-sm" style={{ color: `${PARCHMENT}90` }}>
+                        {t('mastery.training')}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold" style={{ color: GOLD_LIGHT }}>
+                      {data!.practices}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Questions breakdown — ROI for parents */}
+              {(data!.questions_total ?? 0) > 0 && (() => {
+                const qTotal = data!.questions_total!;
+                const qCorrect = data!.questions_correct ?? 0;
+                const qWrong = qTotal - qCorrect;
+                const pct = Math.round((qCorrect / qTotal) * 100);
+                return (
+                  <div
+                    className="mt-4 rounded-xl overflow-hidden"
+                    style={{ border: `1px solid ${GOLD}20` }}
+                  >
+                    {/* Mini header */}
+                    <div
+                      className="px-3.5 py-2 flex items-center gap-2"
+                      style={{ background: `${GOLD}10` }}
+                    >
+                      <Target className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                      <span className="text-xs font-bold" style={{ color: GOLD_LIGHT }}>
+                        {t('mastery.calendarQuestions')}
+                      </span>
+                    </div>
+
+                    {/* Score bar */}
+                    <div className="px-3.5 pt-3 pb-2">
+                      <div className="flex items-baseline justify-between mb-2">
+                        <span className="text-2xl font-bold" style={{ color: GOLD_LIGHT }}>
+                          {qTotal}
+                        </span>
+                        <span
+                          className="text-sm font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            background: pct >= 70 ? 'rgba(39,174,96,0.15)' : pct >= 40 ? 'rgba(230,126,34,0.15)' : 'rgba(231,76,60,0.15)',
+                            color: pct >= 70 ? '#4cbb7a' : pct >= 40 ? '#e67e22' : '#e74c3c',
+                          }}
+                        >
+                          {pct}%
+                        </span>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div
+                        className="h-2.5 rounded-full overflow-hidden mb-3"
+                        style={{ background: `${GOLD}10` }}
+                      >
+                        <div className="h-full flex">
+                          <div
+                            className="h-full transition-all"
+                            style={{
+                              width: `${(qCorrect / qTotal) * 100}%`,
+                              background: 'linear-gradient(90deg, #27ae60, #4cbb7a)',
+                              borderRadius: qWrong > 0 ? '9999px 0 0 9999px' : '9999px',
+                            }}
+                          />
+                          {qWrong > 0 && (
+                            <div
+                              className="h-full transition-all"
+                              style={{
+                                width: `${(qWrong / qTotal) * 100}%`,
+                                background: 'linear-gradient(90deg, #c0392b, #e74c3c)',
+                                borderRadius: qCorrect > 0 ? '0 9999px 9999px 0' : '9999px',
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Correct / Wrong pills */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#4cbb7a' }} />
+                          <span className="text-xs" style={{ color: `${PARCHMENT}70` }}>
+                            {t('mastery.calendarCorrect')}
+                          </span>
+                          <span className="text-xs font-bold" style={{ color: '#4cbb7a' }}>
+                            {qCorrect}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#e74c3c' }} />
+                          <span className="text-xs" style={{ color: `${PARCHMENT}70` }}>
+                            {t('mastery.calendarWrong')}
+                          </span>
+                          <span className="text-xs font-bold" style={{ color: '#e74c3c' }}>
+                            {qWrong}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <div className="text-3xl mb-3" style={{ opacity: 0.5 }}>&#x1F319;</div>
+              <p className="text-sm" style={{ color: `${PARCHMENT}60` }}>
+                {t('mastery.calendarRestDay')}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom border */}
+        <div className="h-1" style={{ background: `linear-gradient(90deg, transparent, ${GOLD}40, transparent)` }} />
+      </div>
+    </div>
+  );
+};
+
+// Single calendar month grid
+const CalendarMonth: React.FC<{
+  year: number;
+  month: number; // 0-indexed
+  activities: ActivityDay[];
+  onDayClick: (date: string, data: ActivityDay | null, isToday: boolean) => void;
+}> = ({ year, month, activities, onDayClick }) => {
   const today = new Date();
-  const days: { date: string; data: ActivityDay | null; isToday: boolean }[] = [];
+  const todayStr = today.toISOString().split('T')[0];
 
-  for (let i = 34; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const data = activities.find(a => a.date === dateStr) || null;
-    days.push({ date: dateStr, data, isToday: i === 0 });
-  }
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Monday-first: 0=Mon, 6=Sun
+  const startDow = (firstDay.getDay() + 6) % 7;
 
-  const getIntensity = (data: ActivityDay | null): number => {
-    if (!data) return 0;
-    const total = data.tests + data.watches + data.practices;
-    if (total === 0) return 0;
-    if (total === 1) return 1;
-    if (total <= 3) return 2;
-    return 3;
+  const dayHeaders = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return (
+    <div>
+      {/* Day-of-week headers */}
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {dayHeaders.map((dh) => (
+          <div key={dh} className="text-center text-[10px] py-1" style={{ color: `${PARCHMENT}50` }}>
+            {dh}
+          </div>
+        ))}
+      </div>
+
+      {/* Day cells */}
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((day, idx) => {
+          if (day === null) {
+            return <div key={`empty-${idx}`} className="aspect-square" />;
+          }
+
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const isToday = dateStr === todayStr;
+          const isFuture = dateStr > todayStr;
+          const data = activities.find((a) => a.date === dateStr) || null;
+          const intensity = isFuture ? -1 : getIntensity(data);
+          const total = data ? data.tests + data.watches + data.practices : 0;
+
+          return (
+            <button
+              key={dateStr}
+              onClick={() => !isFuture && onDayClick(dateStr, data, isToday)}
+              disabled={isFuture}
+              className="aspect-square rounded-lg flex items-center justify-center relative transition-all"
+              style={{
+                background: isFuture ? `${GOLD}05` : INTENSITY_COLORS[Math.max(intensity, 0)],
+                border: isToday
+                  ? `2px solid ${GOLD_LIGHT}`
+                  : `1px solid ${isFuture ? `${GOLD}08` : `${GOLD}15`}`,
+                boxShadow: intensity === 3 ? `0 0 8px ${GOLD}30` : 'none',
+                cursor: isFuture ? 'default' : 'pointer',
+                opacity: isFuture ? 0.35 : 1,
+              }}
+            >
+              <span
+                className="text-[11px] font-medium leading-none"
+                style={{
+                  color: isToday
+                    ? GOLD_LIGHT
+                    : intensity > 0
+                      ? '#1a120a'
+                      : `${PARCHMENT}${isFuture ? '30' : '55'}`,
+                  fontWeight: isToday ? 800 : intensity > 0 ? 700 : 500,
+                }}
+              >
+                {day}
+              </span>
+              {/* Tiny activity dot for days with data */}
+              {total > 0 && !isFuture && (
+                <div
+                  className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                  style={{ background: intensity >= 2 ? '#1a120a' : GOLD }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ActivityTimeline: React.FC<{ activities: ActivityDay[] }> = ({ activities }) => {
+  const { t, language } = useLanguage();
+  const today = new Date();
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [selectedDay, setSelectedDay] = useState<{
+    date: string;
+    data: ActivityDay | null;
+    isToday: boolean;
+  } | null>(null);
+
+  // Calculate streak from today backwards across ALL activity data
+  const streak = (() => {
+    let s = 0;
+    for (let i = 0; ; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const data = activities.find((a) => a.date === dateStr) || null;
+      if (getIntensity(data) > 0) s++;
+      else break;
+    }
+    return s;
+  })();
+
+  // Navigation
+  const goBack = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(viewYear - 1);
+    } else {
+      setViewMonth(viewMonth - 1);
+    }
+  };
+  const goForward = () => {
+    const isCurrentMonth = viewMonth === today.getMonth() && viewYear === today.getFullYear();
+    if (isCurrentMonth) return; // Don't go past current month
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(viewYear + 1);
+    } else {
+      setViewMonth(viewMonth + 1);
+    }
   };
 
-  const intensityColors = [
-    `${GOLD}10`,
-    `${GOLD}35`,
-    `${GOLD}65`,
-    GOLD,
-  ];
+  const isCurrentMonth = viewMonth === today.getMonth() && viewYear === today.getFullYear();
 
-  let streak = 0;
-  for (let i = days.length - 1; i >= 0; i--) {
-    if (getIntensity(days[i].data) > 0) streak++;
-    else break;
+  // Month name in current language locale
+  const monthLocale = language === 'ms' ? 'ms-MY' : language === 'zh' ? 'zh-CN' : 'en-MY';
+  const monthName = new Date(viewYear, viewMonth, 1).toLocaleDateString(monthLocale, {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  // Count active days this month
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  let activeDaysThisMonth = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const data = activities.find((a) => a.date === dateStr) || null;
+    if (getIntensity(data) > 0) activeDaysThisMonth++;
   }
-
-  const weeks: typeof days[] = [];
-  for (let i = 0; i < days.length; i += 7) {
-    weeks.push(days.slice(i, i + 7));
-  }
-
-  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   return (
     <FantasyPanel className="p-5" gold>
       <SectionHeader
         icon={<Flame className="w-5 h-5" style={{ color: '#ff6b35' }} />}
-        title="Adventure Timeline"
-        subtitle="Last 5 weeks of activity"
+        title={t('mastery.timeline')}
+        subtitle={t('mastery.timelineSub')}
       />
 
+      {/* Streak badge */}
       {streak > 0 && (
         <div className="flex justify-center mb-4">
           <div
@@ -273,77 +653,79 @@ const ActivityTimeline: React.FC<{ activities: ActivityDay[] }> = ({ activities 
           >
             <Flame className="w-4 h-4" style={{ color: '#ff6b35' }} />
             <span className="text-sm font-bold" style={{ color: GOLD_LIGHT }}>
-              {streak}-day streak!
+              {streak}{t('mastery.streak')}
             </span>
           </div>
         </div>
       )}
 
-      <div className="flex gap-1 justify-center">
-        <div className="flex flex-col gap-1 mr-1 pt-0">
-          {dayLabels.map((label, idx) => (
-            <div key={idx} className="h-7 flex items-center justify-end pr-1">
-              <span className="text-[9px]" style={{ color: `${PARCHMENT}65` }}>{label}</span>
-            </div>
-          ))}
+      {/* Month navigator */}
+      <div className="flex items-center justify-between mb-3">
+        <button
+          onClick={goBack}
+          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+          style={{ background: `${GOLD}10`, border: `1px solid ${GOLD}20` }}
+        >
+          <ChevronLeft className="w-4 h-4" style={{ color: GOLD }} />
+        </button>
+
+        <div className="text-center">
+          <h4
+            className="text-sm font-bold capitalize"
+            style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}
+          >
+            {monthName}
+          </h4>
+          <p className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}50` }}>
+            {activeDaysThisMonth} {t('mastery.calendarAdventures')}
+          </p>
         </div>
-        {weeks.map((week, wIdx) => (
-          <div key={wIdx} className="flex flex-col gap-1">
-            {week.map((day) => {
-              const intensity = getIntensity(day.data);
-              const total = day.data ? day.data.tests + day.data.watches + day.data.practices : 0;
-              return (
-                <div
-                  key={day.date}
-                  className="w-7 h-7 rounded-md relative group cursor-default transition-all hover:scale-110"
-                  style={{
-                    background: intensityColors[intensity],
-                    border: day.isToday ? `2px solid ${GOLD_LIGHT}` : `1px solid ${GOLD}15`,
-                    boxShadow: intensity === 3 ? `0 0 8px ${GOLD}40` : 'none',
-                  }}
-                  title={`${day.date}: ${total} activities`}
-                >
-                  <div
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20"
-                    style={{ minWidth: 120 }}
-                  >
-                    <div
-                      className="px-2.5 py-2 rounded-lg text-[10px] leading-relaxed"
-                      style={{ background: '#1a120a', border: `1px solid ${GOLD}40`, color: `${PARCHMENT}80` }}
-                    >
-                      <div className="font-bold mb-1" style={{ color: GOLD_LIGHT }}>
-                        {new Date(day.date).toLocaleDateString('en-MY', { day: '2-digit', month: 'short' })}
-                      </div>
-                      {day.data ? (
-                        <>
-                          {day.data.tests > 0 && <div>Quests: {day.data.tests}</div>}
-                          {day.data.watches > 0 && <div>Videos: {day.data.watches}</div>}
-                          {day.data.practices > 0 && <div>Training: {day.data.practices}</div>}
-                          {total === 0 && <div>No activity</div>}
-                        </>
-                      ) : (
-                        <div>No activity</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+
+        <button
+          onClick={goForward}
+          disabled={isCurrentMonth}
+          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+          style={{
+            background: `${GOLD}10`,
+            border: `1px solid ${GOLD}20`,
+            opacity: isCurrentMonth ? 0.3 : 1,
+          }}
+        >
+          <ChevronRight className="w-4 h-4" style={{ color: GOLD }} />
+        </button>
       </div>
 
+      {/* Calendar grid */}
+      <CalendarMonth
+        year={viewYear}
+        month={viewMonth}
+        activities={activities}
+        onDayClick={(date, data, isToday) => setSelectedDay({ date, data, isToday })}
+      />
+
+      {/* Legend */}
       <div className="flex items-center justify-center gap-3 mt-4">
-        <span className="text-[10px]" style={{ color: `${PARCHMENT}65` }}>Less</span>
-        {intensityColors.map((color, idx) => (
+        <span className="text-[10px]" style={{ color: `${PARCHMENT}65` }}>{t('mastery.less')}</span>
+        {INTENSITY_COLORS.map((color, idx) => (
           <div
             key={idx}
             className="w-4 h-4 rounded"
             style={{ background: color, border: `1px solid ${GOLD}15` }}
           />
         ))}
-        <span className="text-[10px]" style={{ color: `${PARCHMENT}65` }}>More</span>
+        <span className="text-[10px]" style={{ color: `${PARCHMENT}65` }}>{t('mastery.more')}</span>
       </div>
+
+      {/* Day detail modal — portaled to body so it's always viewport-centered */}
+      {selectedDay && createPortal(
+        <DayDetailModal
+          date={selectedDay.date}
+          data={selectedDay.data}
+          isToday={selectedDay.isToday}
+          onClose={() => setSelectedDay(null)}
+        />,
+        document.body
+      )}
     </FantasyPanel>
   );
 };
@@ -444,6 +826,7 @@ const SubjectCard: React.FC<{
 
 // ===== SUBJECT COMPARISON BAR CHART =====
 const SubjectComparisonChart: React.FC<{ breakdowns: SubjectAgeBreakdown[] }> = ({ breakdowns }) => {
+  const { t } = useLanguage();
   const data = breakdowns.map((b, idx) => ({
     name: b.questName.length > 10 ? b.questName.slice(0, 9) + '..' : b.questName,
     fullName: b.questName,
@@ -455,8 +838,8 @@ const SubjectComparisonChart: React.FC<{ breakdowns: SubjectAgeBreakdown[] }> = 
     <FantasyPanel className="p-5">
       <SectionHeader
         icon={<Target className="w-5 h-5" style={{ color: GOLD }} />}
-        title="Subject Comparison"
-        subtitle="Score percentage per quest realm"
+        title={t('mastery.subjectComparison')}
+        subtitle={t('mastery.subjectComparisonSub')}
       />
       <div style={{ height: 220 }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -494,6 +877,7 @@ const SubjectComparisonChart: React.FC<{ breakdowns: SubjectAgeBreakdown[] }> = 
 
 // ===== AGE DISTRIBUTION DONUT CHART =====
 const AgeDistributionChart: React.FC<{ answers: DetailedAnswer[] }> = ({ answers }) => {
+  const { t } = useLanguage();
   const ageGroups: Record<number, { total: number; correct: number }> = {};
   answers.forEach(a => {
     const age = a.ageDifficulty || 4;
@@ -518,8 +902,8 @@ const AgeDistributionChart: React.FC<{ answers: DetailedAnswer[] }> = ({ answers
     <FantasyPanel className="p-5">
       <SectionHeader
         icon={<Crown className="w-5 h-5" style={{ color: '#e67e22' }} />}
-        title="Age Level Split"
-        subtitle="Questions by difficulty tier"
+        title={t('mastery.ageLevelSplit')}
+        subtitle={t('mastery.ageLevelSplitSub')}
       />
       <div className="flex items-center gap-4" style={{ height: 200 }}>
         <div style={{ width: '55%', height: '100%' }}>
@@ -582,6 +966,7 @@ const AgeDistributionChart: React.FC<{ answers: DetailedAnswer[] }> = ({ answers
 
 // ===== ACCURACY BY AGE LEVEL GROUPED BAR =====
 const AccuracyByAgeChart: React.FC<{ breakdowns: SubjectAgeBreakdown[] }> = ({ breakdowns }) => {
+  const { t } = useLanguage();
   // Build data: one row per age level, columns per subject
   const ages = [4, 5, 6, 7];
   const data = ages.map(age => {
@@ -604,8 +989,8 @@ const AccuracyByAgeChart: React.FC<{ breakdowns: SubjectAgeBreakdown[] }> = ({ b
     <FantasyPanel className="p-5">
       <SectionHeader
         icon={<TrendingUp className="w-5 h-5" style={{ color: '#27ae60' }} />}
-        title="Accuracy by Age Level"
-        subtitle="Performance across difficulty tiers per subject"
+        title={t('mastery.accuracyByAge')}
+        subtitle={t('mastery.accuracyByAgeSub')}
       />
       <div style={{ height: 240 }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -660,6 +1045,7 @@ interface AssessmentSnapshot {
 }
 
 const ProgressOverTimeChart: React.FC<{ history: AssessmentSnapshot[] }> = ({ history }) => {
+  const { t } = useLanguage();
   if (history.length < 2) return null;
 
   const data = history.map((h, idx) => ({
@@ -674,8 +1060,8 @@ const ProgressOverTimeChart: React.FC<{ history: AssessmentSnapshot[] }> = ({ hi
     <FantasyPanel className="p-5" gold>
       <SectionHeader
         icon={<TrendingUp className="w-5 h-5" style={{ color: '#3498db' }} />}
-        title="Progress Over Time"
-        subtitle="Your hero's growth across assessments"
+        title={t('mastery.progressOverTime')}
+        subtitle={t('mastery.progressOverTimeSub')}
       />
       <div style={{ height: 240 }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -703,7 +1089,7 @@ const ProgressOverTimeChart: React.FC<{ history: AssessmentSnapshot[] }> = ({ hi
             <Line
               type="monotone"
               dataKey="score"
-              name="Overall Score"
+              name={t('mastery.overallScore')}
               stroke={GOLD}
               strokeWidth={2.5}
               dot={{ fill: GOLD_LIGHT, stroke: GOLD, strokeWidth: 2, r: 4 }}
@@ -712,7 +1098,7 @@ const ProgressOverTimeChart: React.FC<{ history: AssessmentSnapshot[] }> = ({ hi
             <Line
               type="monotone"
               dataKey="readiness"
-              name="Readiness"
+              name={t('mastery.readiness')}
               stroke="#27ae60"
               strokeWidth={2}
               dot={{ fill: '#27ae60', stroke: '#1e8449', strokeWidth: 2, r: 3 }}
@@ -737,6 +1123,7 @@ interface MasteryDashboardProps {
   assessmentCompleted?: boolean;
   liveQuests: any[];
   parentData?: any;
+  onShowUpgrade?: () => void;
 }
 
 export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
@@ -747,10 +1134,15 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
   assessmentCompleted = false,
   liveQuests,
   parentData,
+  onShowUpgrade,
 }) => {
+  const { t } = useLanguage();
   const [activityData, setActivityData] = useState<ActivityDay[]>([]);
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentSnapshot[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Determine if parent already has Plan B
+  const isPaidPlanB = parentData?.subscription_status === 'active' && (parentData?.subscription_plan || '').toUpperCase() === 'B';
 
   // Load activity timeline + assessment history
   useEffect(() => {
@@ -890,9 +1282,9 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
   // Age comparison helper
   const getAgeDiffLabel = (functionalAge: number) => {
     const diff = functionalAge - childAge;
-    if (diff > 0) return { text: `+${diff} yr${diff > 1 ? 's' : ''} ahead`, color: '#7cc643' };
-    if (diff < 0) return { text: `${Math.abs(diff)} yr${Math.abs(diff) > 1 ? 's' : ''} behind`, color: '#e74c3c' };
-    return { text: 'On track', color: GOLD };
+    if (diff > 0) return { text: `+${diff} ${t('mastery.ahead')}`, color: '#7cc643' };
+    if (diff < 0) return { text: `${Math.abs(diff)} ${t('mastery.behind')}`, color: '#e74c3c' };
+    return { text: t('mastery.onTrack'), color: GOLD };
   };
 
   return (
@@ -902,9 +1294,9 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
          ═══════════════════════════════════════════ */}
       <div className="text-center relative">
         <SparkleParticles />
-        <FantasyTitle size="md">Mastery Dashboard</FantasyTitle>
+        <FantasyTitle size="md">{t('mastery.title')}</FantasyTitle>
         <p className="mt-1 text-sm" style={{ color: `${PARCHMENT}70` }}>
-          {childName}'s KSSR Readiness Overview {'\u2014'} Age {childAge}
+          {childName}{t('mastery.subtitle')} {'\u2014'} {t('mastery.age')} {childAge}
         </p>
         <GoldOrnament className="mt-3" />
       </div>
@@ -918,12 +1310,12 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
             <div className="inline-flex items-center gap-2 mb-1">
               <Crown className="w-5 h-5" style={{ color: GOLD }} />
               <h2 className="text-lg md:text-xl font-bold" style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}>
-                Readiness Radar
+                {t('mastery.readinessRadar')}
               </h2>
               <Crown className="w-5 h-5" style={{ color: GOLD }} />
             </div>
             <p className="text-[11px]" style={{ color: `${PARCHMENT}80` }}>
-              Each axis = one subject {'\u2022'} Rings = Age 4 {'\u2192'} 7 {'\u2022'} Shaded area = {childName}'s functional level
+              {t('mastery.radarDesc')} {'\u2022'} {t('mastery.radarRings')} {'\u2022'} {t('mastery.shadedArea')} = {childName}
             </p>
           </div>
 
@@ -935,7 +1327,7 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
           {/* Subject age comparison — the money insight */}
           <div className="mt-5 space-y-2">
             <p className="text-center text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: `${PARCHMENT}75` }}>
-              {childName} (Age {childAge}) {'\u2014'} Functional Age Per Subject
+              {childName} ({t('mastery.age')} {childAge}) {'\u2014'} {t('mastery.functionalAge')}
             </p>
             {subjectBreakdowns.map((sb) => {
               const diff = getAgeDiffLabel(sb.functionalAge);
@@ -956,7 +1348,7 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
                       {sb.questName}
                     </span>
                     <div className="text-[10px]" style={{ color: `${PARCHMENT}70` }}>
-                      {sb.overallPercentage}% overall
+                      {sb.overallPercentage}% {t('mastery.overall')}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
@@ -992,9 +1384,9 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
       ) : (
         <LockedPreview
           icon={<Crown className="w-5 h-5" style={{ color: GOLD }} />}
-          title="Readiness Radar"
-          subtitle="Spider web chart showing functional age per subject"
-          description="Readiness Radar"
+          title={t('mastery.readinessRadar')}
+          subtitle={t('mastery.functionalAge')}
+          description={t('mastery.readinessRadar')}
           height={350}
         >
           <div className="flex flex-col items-center gap-4">
@@ -1053,8 +1445,8 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
         <FantasyPanel className="p-5 md:p-6" gold>
           <SectionHeader
             icon={<Award className="w-5 h-5" style={{ color: tpColor }} />}
-            title="Proficiency Level (TP)"
-            subtitle="Tahap Penguasaan \u2014 from Age 7 questions only"
+            title={t('mastery.proficiency')}
+            subtitle={t('mastery.proficiencyDesc')}
           />
 
           <div className="flex items-start gap-4 md:gap-5">
@@ -1116,13 +1508,13 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
                 <div className="text-xl font-black" style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}>
                   <AnimatedCounter target={overallPct} suffix="%" />
                 </div>
-                <div className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}75` }}>Overall Score</div>
+                <div className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}75` }}>{t('mastery.overallScore')}</div>
               </div>
               <div className="text-center">
                 <div className="text-xl font-black" style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}>
                   <AnimatedCounter target={readinessResult.percentage} suffix="%" />
                 </div>
-                <div className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}75` }}>Readiness</div>
+                <div className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}75` }}>{t('mastery.readiness')}</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1">
@@ -1132,7 +1524,7 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
                   </span>
                   <span className="text-sm" style={{ color: `${PARCHMENT}65` }}>/{maxStars}</span>
                 </div>
-                <div className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}75` }}>Stars</div>
+                <div className="text-[10px] mt-0.5" style={{ color: `${PARCHMENT}75` }}>{t('mastery.totalStars')}</div>
               </div>
             </div>
           )}
@@ -1206,7 +1598,7 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
               {childName || 'Explorer'}
             </h2>
             <p className="text-[11px]" style={{ color: `${PARCHMENT}75` }}>
-              Age {childAge} Adventurer {'\u2022'} {totalStars}/{maxStars} Stars
+              {t('mastery.age')} {childAge} {'\u2022'} {totalStars}/{maxStars} {t('mastery.totalStars')}
             </p>
           </div>
         </div>
@@ -1218,8 +1610,8 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
       <div>
         <SectionHeader
           icon={<Trophy className="w-5 h-5" style={{ color: GOLD }} />}
-          title="Adventure Stats"
-          subtitle="Lifetime achievements and today's progress"
+          title={t('mastery.stats')}
+          subtitle={t('mastery.statsSub')}
         />
         <div className="grid grid-cols-3 gap-3">
           {/* Quests */}
@@ -1237,12 +1629,12 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
                 <AnimatedCounter target={totalTests} />
               </div>
               <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: `${PARCHMENT}75` }}>
-                Battles Won
+                {t('mastery.totalQuests')}
               </p>
               {todayTests > 0 && (
                 <p className="text-[10px] mt-1.5 px-2 py-0.5 rounded-full inline-block"
                   style={{ background: 'rgba(255,107,53,0.1)', color: '#ff8c5a', border: '1px solid rgba(255,107,53,0.2)' }}>
-                  +{todayTests} today
+                  +{todayTests} {t('game.today')}
                 </p>
               )}
             </div>
@@ -1263,12 +1655,12 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
                 <AnimatedCounter target={totalWatches} />
               </div>
               <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: `${PARCHMENT}75` }}>
-                Visions Seen
+                {t('mastery.totalVideos')}
               </p>
               {todayWatches > 0 && (
                 <p className="text-[10px] mt-1.5 px-2 py-0.5 rounded-full inline-block"
                   style={{ background: 'rgba(155,89,182,0.1)', color: '#b07cc8', border: '1px solid rgba(155,89,182,0.2)' }}>
-                  +{todayWatches} today
+                  +{todayWatches} {t('game.today')}
                 </p>
               )}
             </div>
@@ -1289,20 +1681,20 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
                 <AnimatedCounter target={totalPractices} />
               </div>
               <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: `${PARCHMENT}75` }}>
-                Skills Honed
+                {t('mastery.totalTraining')}
               </p>
               {/* Show both sessions and questions */}
               <div className="mt-1.5 space-y-1">
                 {totalPracticeQuestions > 0 && (
                   <p className="text-[10px] px-2 py-0.5 rounded-full inline-block"
                     style={{ background: 'rgba(39,174,96,0.08)', color: '#4cbb7a', border: '1px solid rgba(39,174,96,0.15)' }}>
-                    {totalPracticeQuestions} Qs answered
+                    {totalPracticeQuestions} {t('mastery.questionsAnswered')}
                   </p>
                 )}
                 {todayPractices > 0 && (
                   <p className="text-[10px] px-2 py-0.5 rounded-full inline-block"
                     style={{ background: 'rgba(39,174,96,0.1)', color: '#4cbb7a', border: '1px solid rgba(39,174,96,0.2)' }}>
-                    +{todayPractices} today
+                    +{todayPractices} {t('game.today')}
                   </p>
                 )}
               </div>
@@ -1316,7 +1708,7 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
         <div className="space-y-4">
           <div className="text-center">
             <h2 className="text-lg font-bold" style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}>
-              Performance Analytics
+              {t('mastery.subjectComparison')}
             </h2>
             <GoldOrnament className="mt-2" />
           </div>
@@ -1329,9 +1721,9 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
             ) : (
               <LockedPreview
                 icon={<Crown className="w-5 h-5" style={{ color: '#e67e22' }} />}
-                title="Age Level Split"
-                subtitle="Questions by difficulty tier"
-                description="Start a new quest to see detailed breakdown"
+                title={t('mastery.ageLevelSplit')}
+                subtitle={t('mastery.ageLevelSplitSub')}
+                description={t('mastery.ageLevelSplit')}
                 height={200}
               />
             )}
@@ -1349,31 +1741,31 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
         <div className="space-y-4">
           <div className="text-center">
             <h2 className="text-lg font-bold" style={{ fontFamily: CINZEL, color: GOLD_LIGHT, opacity: 0.4 }}>
-              Performance Analytics
+              {t('mastery.subjectComparison')}
             </h2>
             <GoldOrnament className="mt-2" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <LockedPreview
               icon={<Target className="w-5 h-5" style={{ color: GOLD }} />}
-              title="Subject Comparison"
-              subtitle="Score percentage per quest realm"
-              description="Subject Comparison"
+              title={t('mastery.subjectComparison')}
+              subtitle={t('mastery.subjectComparisonSub')}
+              description={t('mastery.subjectComparison')}
               height={200}
             />
             <LockedPreview
               icon={<Crown className="w-5 h-5" style={{ color: '#e67e22' }} />}
-              title="Age Level Split"
-              subtitle="Questions by difficulty tier"
-              description="Age Level Split"
+              title={t('mastery.ageLevelSplit')}
+              subtitle={t('mastery.ageLevelSplitSub')}
+              description={t('mastery.ageLevelSplit')}
               height={200}
             />
           </div>
           <LockedPreview
             icon={<TrendingUp className="w-5 h-5" style={{ color: '#27ae60' }} />}
-            title="Accuracy by Age Level"
-            subtitle="Performance across difficulty tiers per subject"
-            description="Accuracy by Age Level"
+            title={t('mastery.accuracyByAge')}
+            subtitle={t('mastery.accuracyByAgeSub')}
+            description={t('mastery.accuracyByAge')}
             height={220}
           />
         </div>
@@ -1385,8 +1777,8 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
           <div className="flex items-center justify-between mb-3">
             <SectionHeader
               icon={<Star className="w-5 h-5" style={{ color: '#ffd700' }} />}
-              title="Subject Mastery"
-              subtitle="Detailed per-quest breakdown"
+              title={t('mastery.subjectMastery')}
+              subtitle={t('mastery.subjectMasterySub')}
             />
             {subjectBreakdowns.length > 2 && (
               <div className="flex items-center gap-1">
@@ -1428,9 +1820,9 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
       ) : (
         <LockedPreview
           icon={<Star className="w-5 h-5" style={{ color: '#ffd700' }} />}
-          title="Subject Mastery"
-          subtitle="Detailed per-quest breakdown"
-          description="Subject Mastery Cards"
+          title={t('mastery.subjectMastery')}
+          subtitle={t('mastery.subjectMasterySub')}
+          description={t('mastery.subjectMastery')}
         >
           <div className="flex gap-3 overflow-hidden">
             {Object.values(questNameMap).slice(0, 4).map((q, i) => (
@@ -1453,13 +1845,165 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
       {/* ===== SECTION 8: ACTIVITY TIMELINE HEATMAP ===== */}
       <ActivityTimeline activities={activityData} />
 
+      {/* ===== FOXY-o1 PROMO CARD (only if not on Plan B) ===== */}
+      {!isPaidPlanB && (
+        <FantasyPanel className="p-0 overflow-hidden relative">
+          {/* Legendary glow border effect */}
+          <div
+            className="absolute inset-0 rounded-2xl pointer-events-none"
+            style={{
+              border: `2px solid ${LEGENDARY_ORANGE}50`,
+              boxShadow: `0 0 25px ${LEGENDARY_ORANGE}20, inset 0 0 25px ${LEGENDARY_ORANGE}08`,
+            }}
+          />
+
+          {/* Limited Intro Offer ribbon */}
+          <div
+            className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+            style={{
+              background: `linear-gradient(135deg, ${LEGENDARY_ORANGE}, #ff6b35)`,
+              color: '#fff',
+              boxShadow: `0 2px 10px ${LEGENDARY_ORANGE}60`,
+              fontFamily: CINZEL,
+            }}
+          >
+            {t('plan.limitedIntro')}
+          </div>
+
+          <div className="p-5 md:p-6">
+            <div className="flex items-start gap-4">
+              {/* Toy image */}
+              <div className="flex-shrink-0">
+                <div
+                  className="w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, #fff5eb, #ffe8d5)`,
+                    border: `2px solid ${LEGENDARY_ORANGE}30`,
+                    boxShadow: `0 4px 16px rgba(0,0,0,0.2)`,
+                  }}
+                >
+                  <img
+                    src={foxyToyImage}
+                    alt="FOXY-o1 AI Toy"
+                    className="w-full h-full object-contain p-1"
+                  />
+                </div>
+              </div>
+
+              {/* Text content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4" style={{ color: LEGENDARY_ORANGE }} />
+                  <h3
+                    className="text-sm md:text-base font-black tracking-wide"
+                    style={{
+                      fontFamily: CINZEL,
+                      color: GOLD_LIGHT,
+                      textShadow: `0 0 10px ${LEGENDARY_ORANGE}30`,
+                    }}
+                  >
+                    {t('plan.foxyTitle')}
+                  </h3>
+                </div>
+                <p
+                  className="text-xs font-bold mb-1.5"
+                  style={{ color: LEGENDARY_ORANGE }}
+                >
+                  {t('plan.foxySubtitle')}
+                </p>
+                <p
+                  className="text-[11px] leading-relaxed"
+                  style={{ color: `${PARCHMENT}bb` }}
+                >
+                  {t('plan.foxyDesc')}
+                </p>
+              </div>
+            </div>
+
+            {/* Bundle pricing */}
+            <div
+              className="mt-4 p-3 rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${LEGENDARY_ORANGE}12, ${LEGENDARY_ORANGE}06)`,
+                border: `1px solid ${LEGENDARY_ORANGE}25`,
+              }}
+            >
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `${PARCHMENT}90` }}>
+                  {t('plan.foxyBundle')}
+                </p>
+                <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+                  <span
+                    className="text-xl md:text-2xl font-black"
+                    style={{
+                      color: LEGENDARY_ORANGE,
+                      fontFamily: CINZEL,
+                      textShadow: `0 0 12px ${LEGENDARY_ORANGE}30`,
+                    }}
+                  >
+                    RM365
+                  </span>
+                  <span
+                    className="text-sm line-through"
+                    style={{ color: `${PARCHMENT}60` }}
+                  >
+                    RM730
+                  </span>
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: `${LEGENDARY_ORANGE}20`,
+                      color: LEGENDARY_ORANGE,
+                    }}
+                  >
+                    -50%
+                  </span>
+                  <span
+                    className="text-[11px] font-black px-2 py-0.5 rounded-full"
+                    style={{
+                      background: `linear-gradient(135deg, ${GOLD}, #f0d078)`,
+                      color: '#2a1f0e',
+                      boxShadow: `0 0 10px ${GOLD}40`,
+                    }}
+                  >
+                    {t('plan.perDay')}
+                  </span>
+                </div>
+              </div>
+              <p
+                className="text-[10px] mt-2 leading-relaxed"
+                style={{ color: `${PARCHMENT}80` }}
+              >
+                {t('plan.earlyAdopter')}
+              </p>
+            </div>
+
+            {/* CTA Button — navigates to Plan & Billing */}
+            <button
+              onClick={onShowUpgrade}
+              className="w-full mt-4 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all hover:brightness-110"
+              style={{
+                background: `linear-gradient(135deg, ${LEGENDARY_ORANGE}, #ff6b35)`,
+                color: '#fff',
+                fontFamily: CINZEL,
+                boxShadow: `0 4px 20px ${LEGENDARY_ORANGE}50`,
+              }}
+            >
+              <Sparkles className="w-4 h-4" />
+              {t('plan.foxyCta')}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </FantasyPanel>
+      )}
+
       {/* ===== SECTION 9: QUEST TIPS / RECOMMENDATIONS ===== */}
       {recommendations.length > 0 ? (
         <FantasyPanel className="p-5">
           <SectionHeader
             icon={<Target className="w-5 h-5" style={{ color: '#3498db' }} />}
-            title="Quest Tips"
-            subtitle="Personalized guidance for your hero's next steps"
+            title={t('mastery.recommendations')}
+            subtitle={t('mastery.recommendationsSub')}
           />
           <div className="space-y-3">
             {recommendations.map((rec, idx) => (
@@ -1484,9 +2028,9 @@ export const MasteryDashboard: React.FC<MasteryDashboardProps> = ({
       ) : (
         <LockedPreview
           icon={<Target className="w-5 h-5" style={{ color: '#3498db' }} />}
-          title="Quest Tips"
-          subtitle="Personalized guidance for your hero's next steps"
-          description="Quest Tips"
+          title={t('mastery.recommendations')}
+          subtitle={t('mastery.recommendationsSub')}
+          description={t('mastery.recommendations')}
         >
           <div className="space-y-2">
             {[0, 1, 2].map(i => (

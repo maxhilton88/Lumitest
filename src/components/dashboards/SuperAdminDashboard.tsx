@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { MasterQuestionBank } from './MasterQuestionBank';
 import { QuestManager } from '../admin/QuestManager';
 import { MarketingManager } from '../admin/MarketingManager';
+import { MediaManager } from '../admin/MediaManager';
 import { Question } from '../screens/QuestionScreen';
 import { fetchPlatformStats } from '../../utils/api';
-import { fetchAllUsers, updateUserAdmin, fetchAdminVideos, createAdminVideo, updateAdminVideo, deleteAdminVideo, uploadVideoThumbnail, deleteUserAdmin } from '../../utils/api';
+import { fetchAllUsers, updateUserAdmin, fetchAdminVideos, createAdminVideo, updateAdminVideo, deleteAdminVideo, uploadVideoThumbnail, deleteUserAdmin, fetchStripeOrders } from '../../utils/api';
 import { toast } from 'sonner@2.0.3';
 import { 
   LayoutDashboard, 
@@ -41,6 +42,10 @@ import {
   Star,
   Trash2,
   Image,
+  ShoppingCart,
+  MapPin,
+  Package,
+  Music,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -172,6 +177,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     title: '',
     subtitle: '',
     youtube_url: '',
+    dyntube_key: '',
     thumbnail_url: '',
     category: 'english',
     duration: '',
@@ -187,6 +193,33 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
   const thumbInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Orders tab state
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersHasMore, setOrdersHasMore] = useState(false);
+  const [ordersCursor, setOrdersCursor] = useState<string | null>(null);
+  const [orderSearch, setOrderSearch] = useState('');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const loadOrders = useCallback(async (cursor?: string) => {
+    setOrdersLoading(true);
+    try {
+      const data = await fetchStripeOrders(cursor);
+      if (cursor) {
+        setOrders(prev => [...prev, ...(data.orders || [])]);
+      } else {
+        setOrders(data.orders || []);
+      }
+      setOrdersHasMore(data.has_more);
+      setOrdersCursor(data.next_cursor);
+    } catch (error) {
+      console.error('[SUPER-ADMIN] Failed to load orders:', error);
+      toast.error('Failed to load orders.');
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, []);
+
   const loadVideos = useCallback(async () => {
     setVideosLoading(true);
     try {
@@ -201,7 +234,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   }, []);
 
   const resetVideoForm = () => {
-    setVideoForm({ title: '', subtitle: '', youtube_url: '', thumbnail_url: '', category: 'english', duration: '', episode: '', is_premium: false, is_featured: false, order: 0 });
+    setVideoForm({ title: '', subtitle: '', youtube_url: '', dyntube_key: '', thumbnail_url: '', category: 'english', duration: '', episode: '', is_premium: false, is_featured: false, order: 0 });
     setEditingVideoId(null);
     setShowVideoForm(false);
     setThumbPreview(null);
@@ -329,6 +362,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
       title: v.title || '',
       subtitle: v.subtitle || '',
       youtube_url: v.youtube_url || '',
+      dyntube_key: v.dyntube_key || '',
       thumbnail_url: v.thumbnail_url || '',
       category: v.category || 'english',
       duration: v.duration || '',
@@ -343,8 +377,8 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
   };
 
   const handleSaveVideo = async () => {
-    if (!videoForm.title || !videoForm.youtube_url || !videoForm.category) {
-      toast.error('Title, YouTube URL, and Category are required.');
+    if (!videoForm.title || (!videoForm.youtube_url && !videoForm.dyntube_key) || !videoForm.category) {
+      toast.error('Title, Category, and either YouTube URL or DynTube Key are required.');
       return;
     }
     setIsSavingVideo(true);
@@ -483,7 +517,8 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     loadPlatformData();
     loadUsers();
     loadVideos();
-  }, [loadPlatformData, loadUsers, loadVideos]);
+    loadOrders();
+  }, [loadPlatformData, loadUsers, loadVideos, loadOrders]);
 
   // Derived data
   const schoolNameMap = schools.reduce((acc, s) => {
@@ -587,7 +622,9 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
     { id: 'islands', icon: Map, label: 'Quest Manager' },
     { id: 'questions', icon: BookOpen, label: 'Question Bank' },
     { id: 'videos', icon: Play, label: 'Video Manager' },
+    { id: 'media', icon: Music, label: 'Media Manager' },
     { id: 'marketing', icon: Image, label: 'Marketing' },
+    { id: 'orders', icon: ShoppingCart, label: 'Orders' },
     { id: 'billing', icon: CreditCard, label: 'Billing' },
     { id: 'settings', icon: Settings, label: 'Settings' },
   ];
@@ -1218,7 +1255,7 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">YouTube URL *</label>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">YouTube URL</label>
                       <input
                         type="text"
                         value={videoForm.youtube_url}
@@ -1226,6 +1263,17 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
                         placeholder="https://youtube.com/watch?v=..."
                         className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">DynTube Key <span className="text-gray-400 font-normal">(HLS)</span></label>
+                      <input
+                        type="text"
+                        value={videoForm.dyntube_key}
+                        onChange={(e) => setVideoForm({ ...videoForm, dyntube_key: e.target.value })}
+                        placeholder="e.g. abc123def456"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">If set, custom HLS player is used instead of YouTube.</p>
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Thumbnail</label>
@@ -1475,9 +1523,271 @@ export const SuperAdminDashboard: React.FC<SuperAdminDashboardProps> = ({
             </div>
           )}
 
+          {/* ===== MEDIA MANAGER TAB (Audio + Categories) ===== */}
+          {activeMenu === 'media' && (
+            <MediaManager />
+          )}
+
           {/* ===== MARKETING TAB ===== */}
           {activeMenu === 'marketing' && (
             <MarketingManager />
+          )}
+
+          {/* ===== ORDERS TAB ===== */}
+          {activeMenu === 'orders' && (
+            <div className="space-y-4">
+              {/* Header row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900">Stripe Orders</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    All completed checkout sessions with billing & shipping addresses
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search name, email..."
+                      value={orderSearch}
+                      onChange={(e) => setOrderSearch(e.target.value)}
+                      className="pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg w-56 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                    />
+                  </div>
+                  <button
+                    onClick={() => loadOrders()}
+                    disabled={ordersLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${ordersLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </button>
+                  <button
+                    onClick={() => {
+                      const headers = ['Date', 'Email', 'Name', 'Plan', 'Amount', 'Billing Address', 'Shipping Address'];
+                      const filteredOrders = orders.filter(o => {
+                        if (!orderSearch) return true;
+                        const q = orderSearch.toLowerCase();
+                        return (o.email?.toLowerCase().includes(q) || o.name?.toLowerCase().includes(q) || o.plan?.toLowerCase().includes(q));
+                      });
+                      const rows = filteredOrders.map((o: any) => [
+                        formatDate(o.created_at),
+                        o.email,
+                        o.name,
+                        o.plan,
+                        `${o.currency} ${o.amount_total.toFixed(2)}`,
+                        o.billing_address || '—',
+                        o.shipping_address || '—',
+                      ]);
+                      const csvContent = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `foxy-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success(`Exported ${filteredOrders.length} orders`);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    CSV
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl border border-gray-200/80 p-4">
+                  <div className="text-xs text-gray-500 mb-1">Total Orders</div>
+                  <div className="text-xl font-bold text-gray-900">{orders.length}{ordersHasMore ? '+' : ''}</div>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200/80 p-4">
+                  <div className="text-xs text-gray-500 mb-1">Plan A</div>
+                  <div className="text-xl font-bold text-blue-600">{orders.filter(o => o.plan === 'A').length}</div>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200/80 p-4">
+                  <div className="text-xs text-gray-500 mb-1">Plan B</div>
+                  <div className="text-xl font-bold text-purple-600">{orders.filter(o => o.plan === 'B').length}</div>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200/80 p-4">
+                  <div className="text-xs text-gray-500 mb-1">KG Pro</div>
+                  <div className="text-xl font-bold text-emerald-600">{orders.filter(o => o.plan === 'kg_pro').length}</div>
+                </div>
+              </div>
+
+              {/* Orders table */}
+              <div className="bg-white border border-gray-200/80 rounded-xl overflow-hidden">
+                {ordersLoading && orders.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <RefreshCw className="w-6 h-6 text-gray-300 animate-spin mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">Loading orders from Stripe...</p>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <ShoppingCart className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                    <p className="text-sm text-gray-400">No paid orders yet</p>
+                  </div>
+                ) : (
+                  <>
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gray-50/80 border-b border-gray-200/80">
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
+                          <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Billing Address</th>
+                          <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Shipping</th>
+                          <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {orders
+                          .filter(o => {
+                            if (!orderSearch) return true;
+                            const q = orderSearch.toLowerCase();
+                            return (o.email?.toLowerCase().includes(q) || o.name?.toLowerCase().includes(q) || o.plan?.toLowerCase().includes(q));
+                          })
+                          .map((order: any) => {
+                            const isExpanded = expandedOrderId === order.id;
+                            const planLabel = order.plan === 'A' ? 'Plan A' : order.plan === 'B' ? 'Plan B' : order.plan === 'kg_pro' ? 'KG Pro' : order.plan;
+                            const planColor = order.plan === 'A' ? 'bg-blue-50 text-blue-700' : order.plan === 'B' ? 'bg-purple-50 text-purple-700' : order.plan === 'kg_pro' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-50 text-gray-600';
+                            return (
+                              <React.Fragment key={order.id}>
+                                <tr
+                                  className="hover:bg-gray-50/50 cursor-pointer transition-colors"
+                                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                                >
+                                  <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{formatDate(order.created_at)}</td>
+                                  <td className="px-4 py-3">
+                                    <div className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{order.name}</div>
+                                    <div className="text-xs text-gray-400 truncate max-w-[180px]">{order.email}</div>
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${planColor}`}>
+                                      {planLabel}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-right text-sm font-medium text-gray-900 whitespace-nowrap">
+                                    {order.currency} {order.amount_total.toFixed(2)}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    {order.billing_address ? (
+                                      <div className="flex items-start gap-1.5 max-w-[220px]">
+                                        <MapPin className="w-3 h-3 text-gray-400 mt-0.5 flex-shrink-0" />
+                                        <span className="text-xs text-gray-600 line-clamp-2">{order.billing_address}</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-gray-300">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    {order.shipping_address ? (
+                                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-medium">
+                                        <Package className="w-3 h-3" />
+                                        Yes
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-gray-300">—</span>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                                  </td>
+                                </tr>
+                                {isExpanded && (
+                                  <tr>
+                                    <td colSpan={7} className="bg-gray-50/80 px-6 py-4 border-b border-gray-200/60">
+                                      <div className="grid grid-cols-2 gap-6">
+                                        {/* Billing details */}
+                                        <div>
+                                          <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Billing Address</h4>
+                                          {order.billing_raw ? (
+                                            <div className="text-xs text-gray-700 space-y-0.5">
+                                              <div>{order.name}</div>
+                                              {order.billing_raw.line1 && <div>{order.billing_raw.line1}</div>}
+                                              {order.billing_raw.line2 && <div>{order.billing_raw.line2}</div>}
+                                              <div>{[order.billing_raw.city, order.billing_raw.state, order.billing_raw.postal_code].filter(Boolean).join(', ')}</div>
+                                              <div>{order.billing_raw.country}</div>
+                                            </div>
+                                          ) : (
+                                            <p className="text-xs text-gray-400 italic">No billing address collected</p>
+                                          )}
+                                          {order.phone && order.phone !== '—' && (
+                                            <div className="mt-2 text-xs text-gray-500">Phone: {order.phone}</div>
+                                          )}
+                                        </div>
+
+                                        {/* Shipping details */}
+                                        <div>
+                                          <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Shipping Address</h4>
+                                          {order.shipping_raw ? (
+                                            <div className="text-xs text-gray-700 space-y-0.5">
+                                              {order.shipping_name && <div className="font-medium">{order.shipping_name}</div>}
+                                              {order.shipping_raw.line1 && <div>{order.shipping_raw.line1}</div>}
+                                              {order.shipping_raw.line2 && <div>{order.shipping_raw.line2}</div>}
+                                              <div>{[order.shipping_raw.city, order.shipping_raw.state, order.shipping_raw.postal_code].filter(Boolean).join(', ')}</div>
+                                              <div>{order.shipping_raw.country}</div>
+                                            </div>
+                                          ) : (
+                                            <p className="text-xs text-gray-400 italic">No shipping address (Plan A — digital only)</p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Line items */}
+                                      {order.items && order.items.length > 0 && (
+                                        <div className="mt-4 pt-3 border-t border-gray-200/60">
+                                          <h4 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Line Items</h4>
+                                          <div className="space-y-1">
+                                            {order.items.map((item: any, idx: number) => (
+                                              <div key={idx} className="flex items-center justify-between text-xs">
+                                                <span className="text-gray-700">{item.description} × {item.quantity}</span>
+                                                <span className="text-gray-900 font-medium">{item.currency} {item.amount.toFixed(2)}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Stripe ID */}
+                                      <div className="mt-3 pt-2 border-t border-gray-200/60 flex items-center gap-2">
+                                        <span className="text-[10px] text-gray-400 font-mono">{order.id}</span>
+                                        <button
+                                          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(order.id); toast.success('Session ID copied'); }}
+                                          className="text-gray-400 hover:text-gray-600"
+                                        >
+                                          <Copy className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+
+                    {/* Load more */}
+                    {ordersHasMore && (
+                      <div className="px-5 py-3 border-t border-gray-100 text-center">
+                        <button
+                          onClick={() => ordersCursor && loadOrders(ordersCursor)}
+                          disabled={ordersLoading}
+                          className="text-xs font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                        >
+                          {ordersLoading ? 'Loading...' : 'Load more orders'}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           )}
 
           {/* ===== BILLING TAB ===== */}

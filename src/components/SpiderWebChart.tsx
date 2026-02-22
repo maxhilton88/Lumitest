@@ -16,10 +16,18 @@ interface SpiderWebChartProps {
   chartHeight?: number;
   /** Optional: override max width (default 380) */
   maxWidth?: number;
+  /** Theme: 'dark' = gold on dark bg (default), 'light' = black on white bg */
+  theme?: 'dark' | 'light';
 }
 
 const GOLD = '#d4a44a';
 const GOLD_LIGHT = '#ffeaa7';
+
+// Light-theme palette (minimalist)
+const LIGHT_TEXT = '#1a1a1a';
+const LIGHT_MUTED = '#9ca3af';
+const LIGHT_GRID = '#e5e7eb';
+const LIGHT_SPOKE = '#d1d5db';
 
 /**
  * Spider Web / Radar chart with concentric AGE rings (4, 5, 6, 7).
@@ -30,7 +38,10 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
   childAge,
   chartHeight = 320,
   maxWidth = 380,
+  theme = 'dark',
 }) => {
+  const isLight = theme === 'light';
+
   // Custom tick for angle axis (subject names) — pushed outward to avoid overlapping age labels
   const renderSubjectTick = (props: any) => {
     const { x, y, cx, cy, payload } = props;
@@ -52,10 +63,10 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
         y={oy}
         textAnchor="middle"
         dominantBaseline="central"
-        fill={GOLD_LIGHT}
+        fill={isLight ? LIGHT_TEXT : GOLD_LIGHT}
         fontSize={11}
-        fontWeight={700}
-        style={{
+        fontWeight={isLight ? 600 : 700}
+        style={isLight ? { fontFamily: 'system-ui, -apple-system, sans-serif' } : {
           textShadow: '0 1px 3px rgba(0,0,0,0.8)',
           fontFamily: "'Cinzel Decorative', serif",
         }}
@@ -73,6 +84,20 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
     if (ageValue < 4 || ageValue > 7) return null;
 
     const isChildAge = childAge && ageValue === childAge;
+
+    if (isLight) {
+      return (
+        <text
+          x={x + 6}
+          y={y - 6}
+          fill={isChildAge ? LIGHT_TEXT : LIGHT_MUTED}
+          fontSize={isChildAge ? 11 : 9}
+          fontWeight={isChildAge ? 700 : 400}
+        >
+          {`Age ${ageValue}`}
+        </text>
+      );
+    }
 
     return (
       <text
@@ -99,7 +124,7 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
         <RadarChart cx="50%" cy="50%" outerRadius="65%" data={data}>
           {/* Concentric rings for age levels */}
           <PolarGrid
-            stroke="rgba(212,164,74,0.2)"
+            stroke={isLight ? LIGHT_GRID : 'rgba(212,164,74,0.2)'}
             gridType="polygon"
           />
 
@@ -107,7 +132,7 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
           <PolarAngleAxis
             dataKey="subject"
             tick={renderSubjectTick}
-            stroke="rgba(212,164,74,0.3)"
+            stroke={isLight ? LIGHT_SPOKE : 'rgba(212,164,74,0.3)'}
           />
 
           {/* Age scale (3 to 7, so ring at 4, 5, 6, 7) */}
@@ -115,7 +140,7 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
             domain={[3, 7]}
             tickCount={5}
             tick={renderAgeTick}
-            stroke="rgba(212,164,74,0.15)"
+            stroke={isLight ? LIGHT_GRID : 'rgba(212,164,74,0.15)'}
             axisLine={false}
           />
 
@@ -123,11 +148,16 @@ export const SpiderWebChart: React.FC<SpiderWebChartProps> = ({
           <Radar
             name="Functional Age"
             dataKey="functionalAge"
-            stroke={GOLD}
-            fill={GOLD}
-            fillOpacity={0.25}
+            stroke={isLight ? LIGHT_TEXT : GOLD}
+            fill={isLight ? LIGHT_TEXT : GOLD}
+            fillOpacity={isLight ? 0.08 : 0.25}
             strokeWidth={2}
-            dot={{
+            dot={isLight ? {
+              r: 4,
+              fill: LIGHT_TEXT,
+              stroke: '#fff',
+              strokeWidth: 2,
+            } : {
               r: 5,
               fill: GOLD_LIGHT,
               stroke: GOLD,

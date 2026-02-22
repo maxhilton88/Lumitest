@@ -1,5 +1,4 @@
 import React from 'react';
-import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 import { FantasyBackground, GoldOrnament, FantasyTitle, FantasyFooter } from '../FantasyBackground';
 import { playMenuSelect } from '../../hooks/useSoundEffects';
@@ -16,11 +15,6 @@ export const ChildWelcomePage: React.FC<ChildWelcomePageProps> = ({ onStartAdven
     <div className="h-[100dvh] relative overflow-hidden flex flex-col items-center justify-center p-4 md:p-8">
       {/* Fantasy background with fox forest image */}
       <FantasyBackground bgImage={forestWithFox} overlayOpacity={0.5} />
-
-      {/* Music Toggle - Top Right */}
-      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-        <MusicToggle />
-      </div>
 
       {/* Content */}
       <div className="relative z-10 text-center space-y-4 md:space-y-8 max-w-4xl w-full">
@@ -151,7 +145,7 @@ export const ChildWelcomePage: React.FC<ChildWelcomePageProps> = ({ onStartAdven
 
       {/* Footer */}
       <div className="absolute bottom-0 left-0 right-0">
-        <FantasyFooter />
+        <FantasyFooter hideLinks />
       </div>
     </div>
   );

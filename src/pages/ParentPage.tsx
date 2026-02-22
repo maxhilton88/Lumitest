@@ -1,5 +1,5 @@
 // ParentPage — Route component for / (root)
-// Handles parent auth guard + ParentShell rendering.
+// Handles parent auth guard + ParentShell rendering
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useAppContext } from '../contexts/AppContext';
@@ -12,6 +12,7 @@ import { resolveSchool } from '../utils/api';
 import { setReferralCookie, getReferralCookie } from '../utils/referral-cookie';
 import { toast } from 'sonner@2.0.3';
 import type { ParentPage as ParentPageType } from '../components/parent/SideMenu';
+import { playMusic, isMusicEnabled } from '../utils/music-service';
 
 // Dev mode: always store leads under hey@pitchdeck.my's kindergarten
 const DEV_KINDERGARTEN_EMAIL = 'hey@pitchdeck.my';
@@ -42,6 +43,8 @@ export function ParentPage() {
           onSuccess={(pd: any) => {
             ctx.setIsParentAuthenticated(true);
             ctx.setParentData(pd);
+            // Auto-play RPG music on sign-in if user preference is enabled
+            if (isMusicEnabled()) playMusic();
             navigate('/game', { replace: true });
           }}
           onBack={() => ctx.handleSwitchUserType('child')}
@@ -69,7 +72,7 @@ export function ParentPage() {
   // Root paths: /game, /mastery, /plan, etc. (no /parent prefix)
   const parentSubPath = location.pathname.replace(/^\//, '') || 'game';
   const parentPageFromUrl = (
-    ['game', 'mastery', 'library', 'earnings', 'plan', 'account'].includes(parentSubPath)
+    ['game', 'mastery', 'library', 'audio', 'earnings', 'plan', 'account'].includes(parentSubPath)
       ? parentSubPath
       : 'game'
   ) as ParentPageType;

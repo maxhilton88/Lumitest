@@ -12,6 +12,11 @@ export interface BrandingSettings {
   testPageBgColor: string;
   mapBackgroundImage: string;
   testBackgroundImage: string;
+  // Contact info (persisted to school KV record)
+  email: string;
+  phone: string;
+  whatsappNo: string;
+  address: string;
 }
 
 export interface DetailedAnswer {

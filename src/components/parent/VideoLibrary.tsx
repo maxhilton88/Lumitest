@@ -5,6 +5,7 @@ import { FantasyTitle, GoldOrnament } from '../FantasyBackground';
 import { playMenuSelect } from '../../hooks/useSoundEffects';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { fetchVideos } from '../../utils/parent-api';
+import { useLanguage } from '../LanguageContext';
 
 // ===== THEME CONSTANTS =====
 const GOLD = '#d4a44a';
@@ -22,6 +23,7 @@ interface Video {
   episode?: number | null;
   isPremium: boolean;
   youtubeUrl?: string;
+  dyntubeKey?: string;
   isNew?: boolean;
   isFeatured?: boolean;
 }
@@ -117,6 +119,7 @@ const ScrollRow: React.FC<{
   isPaid: boolean;
   onPlay: (video: Video, category: VideoCategory) => void;
 }> = ({ category, isPaid, onPlay }) => {
+  const { t } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -163,7 +166,7 @@ const ScrollRow: React.FC<{
           className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
           style={{ color: category.color, border: `1px solid ${category.color}40`, background: `${category.color}10` }}
         >
-          {category.videos.length} episodes
+          {category.videos.length} {t('video.episodes')}
         </div>
       </div>
 
@@ -255,14 +258,14 @@ const ScrollRow: React.FC<{
                       style={{ background: `linear-gradient(135deg, ${GOLD}, #f0d078)`, color: '#2a1f0e' }}
                     >
                       <Sparkles className="w-2.5 h-2.5" />
-                      New
+                      {t('video.new')}
                     </div>
                   )}
 
                   {locked && (
                     <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: 'rgba(0,0,0,0.7)', color: GOLD_LIGHT }}>
                       <Crown className="w-2.5 h-2.5" />
-                      Premium
+                      {t('video.premium')}
                     </div>
                   )}
 
@@ -305,8 +308,11 @@ const VideoPlayerModal: React.FC<{
   isPaid: boolean;
   onUpgrade: () => void;
 }> = ({ video, category, onClose, isPaid, onUpgrade }) => {
+  const { t } = useLanguage();
   const [showControls, setShowControls] = useState(true);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hlsVideoRef = useRef<HTMLVideoElement>(null);
+  const hlsInstanceRef = useRef<any>(null);
 
   // Auto-hide close button after 3s of no mouse movement (only for playing video)
   const resetHideTimer = useCallback(() => {
@@ -329,9 +335,79 @@ const VideoPlayerModal: React.FC<{
     return () => window.removeEventListener('keydown', handleKey);
   }, [video, onClose]);
 
+  // HLS.js setup for DynTube streams — loaded from CDN
+  useEffect(() => {
+    if (!video?.dyntubeKey || !hlsVideoRef.current) return;
+    const locked = video.isPremium && !isPaid;
+    if (locked) return;
+
+    const hlsUrl = `https://d1q2j7hk3rn5v4.dyntube.com/${video.dyntubeKey}/playlist.m3u8`;
+
+    // Helper: load hls.js from CDN if not already loaded
+    const loadHls = (): Promise<any> => {
+      const w = window as any;
+      if (w.Hls) return Promise.resolve(w.Hls);
+      return new Promise((resolve, reject) => {
+        const existing = document.getElementById('hls-js-cdn');
+        if (existing) {
+          existing.addEventListener('load', () => resolve(w.Hls));
+          existing.addEventListener('error', reject);
+          if (w.Hls) resolve(w.Hls);
+          return;
+        }
+        const script = document.createElement('script');
+        script.id = 'hls-js-cdn';
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js';
+        script.onload = () => resolve(w.Hls);
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    };
+
+    loadHls().then((Hls: any) => {
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
+          startLevel: -1, // auto
+        });
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(hlsVideoRef.current!);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          hlsVideoRef.current?.play().catch(() => {});
+        });
+        hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+          if (data.fatal) {
+            console.error('[HLS] Fatal error:', data);
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            }
+          }
+        });
+        hlsInstanceRef.current = hls;
+      } else if (hlsVideoRef.current!.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari)
+        hlsVideoRef.current!.src = hlsUrl;
+        hlsVideoRef.current!.play().catch(() => {});
+      }
+    }).catch((err: any) => {
+      console.error('[HLS] Failed to load hls.js from CDN:', err);
+    });
+
+    return () => {
+      if (hlsInstanceRef.current) {
+        hlsInstanceRef.current.destroy();
+        hlsInstanceRef.current = null;
+      }
+    };
+  }, [video?.dyntubeKey, video?.isPremium, isPaid]);
+
   if (!video) return null;
   const locked = video.isPremium && !isPaid;
-  const ytId = video.youtubeUrl ? extractYouTubeId(video.youtubeUrl) : null;
+  const hasDyntube = !!video.dyntubeKey;
+  const ytId = !hasDyntube && video.youtubeUrl ? extractYouTubeId(video.youtubeUrl) : null;
 
   // YouTube params: minimal UI, no related vids, no annotations, privacy-enhanced
   const ytParams = new URLSearchParams({
@@ -389,10 +465,10 @@ const VideoPlayerModal: React.FC<{
               <Lock className="w-8 h-8" style={{ color: GOLD }} />
             </div>
             <h3 className="text-xl md:text-2xl font-bold" style={{ fontFamily: CINZEL, color: GOLD_LIGHT }}>
-              Premium Content
+              {t('video.premiumContent')}
             </h3>
             <p className="text-sm md:text-base max-w-md" style={{ color: `${PARCHMENT}90` }}>
-              Upgrade to unlock <span style={{ color: GOLD_LIGHT }}>{video.title}</span> and all premium adventures.
+              {t('video.upgradeToUnlock')} <span style={{ color: GOLD_LIGHT }}>{video.title}</span> {t('video.andAllPremium')}
             </p>
             <button
               onClick={() => { playMenuSelect(); onUpgrade(); onClose(); }}
@@ -406,10 +482,24 @@ const VideoPlayerModal: React.FC<{
               }}
             >
               <Crown className="w-4 h-4 inline mr-1.5 -mt-0.5" />
-              Upgrade Now
+              {t('video.upgradeNow')}
             </button>
           </div>
         </div>
+      ) : hasDyntube ? (
+        /* ── DynTube HLS Player ── */
+        <video
+          ref={hlsVideoRef}
+          className="absolute inset-0 w-full h-full"
+          controls
+          autoPlay
+          playsInline
+          poster={video.thumbnail}
+          style={{
+            background: '#000',
+            outline: 'none',
+          }}
+        />
       ) : ytId ? (
         /* ── Fullscreen YouTube embed ── */
         <iframe
@@ -438,7 +528,7 @@ const VideoPlayerModal: React.FC<{
               {video.title}
             </p>
             <p className="text-sm" style={{ color: `${PARCHMENT}80` }}>
-              Coming soon — Foxy is still filming!
+              {t('video.comingSoon')}
             </p>
           </div>
         </div>
@@ -478,6 +568,7 @@ const HeroBanner: React.FC<{
   categories: VideoCategory[];
   onPlay: (video: Video, category: VideoCategory) => void;
 }> = ({ categories, onPlay }) => {
+  const { t } = useLanguage();
   // Priority: 1) is_featured from admin, 2) isNew demo flag, 3) first video overall
   const featured = categories.flatMap(c => c.videos.filter(v => v.isFeatured).map(v => ({ video: v, category: c })))[0]
     || categories.flatMap(c => c.videos.filter(v => v.isNew).map(v => ({ video: v, category: c })))[0]
@@ -503,7 +594,7 @@ const HeroBanner: React.FC<{
               {featured.category.name}
             </span>
             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider" style={{ background: GOLD, color: '#2a1f0e' }}>
-              Featured
+              {t('video.featured')}
             </span>
           </div>
 
@@ -531,12 +622,12 @@ const HeroBanner: React.FC<{
               }}
             >
               <Play className="w-4 h-4" />
-              Watch Now
+              {t('video.watchNow')}
             </button>
 
             <span className="text-[10px] md:text-xs flex items-center gap-1" style={{ color: `${PARCHMENT}70` }}>
               <Clock className="w-3 h-3" /> {featured.video.duration}
-              {featured.video.episode && <> &middot; Episode {featured.video.episode}</>}
+              {featured.video.episode && <> &middot; {t('video.episode')} {featured.video.episode}</>}
             </span>
           </div>
         </div>
@@ -556,6 +647,7 @@ const CategoryFilter: React.FC<{
   activeFilter: string | null;
   onFilter: (id: string | null) => void;
 }> = ({ categories, activeFilter, onFilter }) => {
+  const { t } = useLanguage();
   return (
     <div
       className="flex gap-2 overflow-x-auto pb-2 mb-4 md:mb-6 scrollbar-hide"
@@ -572,7 +664,7 @@ const CategoryFilter: React.FC<{
         }}
       >
         <Star className="w-3 h-3 inline mr-1 -mt-0.5" />
-        All
+        {t('video.all')}
       </button>
 
       {categories.map((cat) => (
@@ -603,6 +695,7 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({
   parentData,
   onShowUpgrade,
 }) => {
+  const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [playingVideo, setPlayingVideo] = useState<Video | null>(null);
   const [playingCategory, setPlayingCategory] = useState<VideoCategory | null>(null);
@@ -647,6 +740,7 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({
           episode: v.episode || null,
           isPremium: v.is_premium || false,
           youtubeUrl: v.youtube_url || '',
+          dyntubeKey: v.dyntube_key || '',
           isNew: false,
           isFeatured: v.is_featured || false,
         }));
@@ -684,14 +778,14 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
       <div className="text-center">
-        <FantasyTitle size="md">Video Mode</FantasyTitle>
+        <FantasyTitle size="md">{t('video.title')}</FantasyTitle>
         <p className="mt-2 text-sm" style={{ color: `${PARCHMENT}80` }}>
-          {isLoading ? 'Loading...' : (
+          {isLoading ? t('common.loading') : (
             <>
-              {totalVideos} enchanted episodes across {categories.length} realms
+              {totalVideos} {t('video.enchantedEpisodes')} {categories.length} {t('video.realms')}
               {!isPaid && (
                 <span className="ml-2 text-[11px]" style={{ color: `${GOLD}90` }}>
-                  &middot; {freeVideos} free
+                  &middot; {freeVideos} {t('video.free')}
                 </span>
               )}
             </>

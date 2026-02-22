@@ -1,8 +1,8 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 import questMapBg from 'figma:asset/9cb2ea9cdf18b02a3a8d26e99ab2e65f990879b0.png';
 
 /**
- * Shared dark-fantasy background used across all child-facing screens.
+ * FantasyBackground — Shared dark-fantasy background used across all child-facing screens.
  * Provides: background image, dark warm overlay, vignette, floating sparkles.
  *
  * PERF: Wrapped in React.memo — the background never changes during a question,
@@ -194,18 +194,38 @@ export function FantasyTitle({
 }
 
 /** Gold-styled footer */
-export function FantasyFooter() {
+export function FantasyFooter({ hideLinks = false }: { hideLinks?: boolean }) {
+  const linkStyle = { color: '#c8b88a88' };
+  const separatorStyle = { color: '#c8b88a44' };
+
   return (
-    <div className="relative z-10 pb-4 text-center">
-      <p className="text-xs md:text-sm" style={{ color: '#c8b88a77' }}>
+    <div className="relative z-10 pb-4 text-center space-y-1.5">
+      {/* Nav links — hidden on child-facing screens */}
+      {!hideLinks && (
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <a href="/store" className="text-[10px] md:text-xs hover:underline transition-colors" style={linkStyle}>
+            Pricing
+          </a>
+          <span className="text-[10px]" style={separatorStyle}>&middot;</span>
+          <a href="/privacy" className="text-[10px] md:text-xs hover:underline transition-colors" style={linkStyle}>
+            Privacy Policy
+          </a>
+          <span className="text-[10px]" style={separatorStyle}>&middot;</span>
+          <a href="/terms" className="text-[10px] md:text-xs hover:underline transition-colors" style={linkStyle}>
+            Terms of Service
+          </a>
+        </div>
+      )}
+      {/* Copyright */}
+      <p className="text-[10px] md:text-xs" style={{ color: '#c8b88a55' }}>
         <a
           href="https://projectlumi.org/"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:underline transition-colors"
-          style={{ color: '#c8b88a99' }}
+          style={{ color: '#c8b88a77' }}
         >
-          &copy; Project Lumi
+          &copy; 2026 Project Lumi
         </a>
         {' . All Rights Reserved.'}
       </p>

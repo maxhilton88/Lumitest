@@ -5,6 +5,17 @@ import * as kv from "./kv_store.tsx";
 import { supabaseAdmin, verifyToken, getSchoolForUser } from "./auth.tsx";
 import { stripeRoutes } from "./stripe.tsx";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  uploadToR2,
+  deleteFromR2,
+  deleteMultipleFromR2,
+  r2PublicUrl,
+  isR2Key,
+  extractR2Key,
+  unresolveR2Url,
+  R2_AUDIO_PREFIX,
+  R2_ART_PREFIX,
+} from "./r2.tsx";
 
 // ===== SUPER ADMIN ROLE GUARD =====
 // Emails in this whitelist get role: 'superadmin' on login/session.
@@ -23,11 +34,13 @@ const app = new Hono();
 
 // ===== STORAGE BUCKET SETUP =====
 const QUEST_IMAGE_BUCKET = 'make-221a61bc-quest-images';
+const ANSWER_IMAGE_BUCKET = 'make-221a61bc-answer-images';
 
-// Idempotently create the quest images bucket on startup
+// Idempotently create storage buckets on startup
 (async () => {
   try {
     const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+    // Quest images bucket
     const bucketExists = buckets?.some(bucket => bucket.name === QUEST_IMAGE_BUCKET);
     if (!bucketExists) {
       await supabaseAdmin.storage.createBucket(QUEST_IMAGE_BUCKET, { public: false });
@@ -35,8 +48,16 @@ const QUEST_IMAGE_BUCKET = 'make-221a61bc-quest-images';
     } else {
       console.log(`[STORAGE] Bucket already exists: ${QUEST_IMAGE_BUCKET}`);
     }
+    // Answer images bucket (for MCQ-image answer options)
+    const answerBucketExists = buckets?.some(bucket => bucket.name === ANSWER_IMAGE_BUCKET);
+    if (!answerBucketExists) {
+      await supabaseAdmin.storage.createBucket(ANSWER_IMAGE_BUCKET, { public: false });
+      console.log(`[STORAGE] Created bucket: ${ANSWER_IMAGE_BUCKET}`);
+    } else {
+      console.log(`[STORAGE] Bucket already exists: ${ANSWER_IMAGE_BUCKET}`);
+    }
   } catch (err) {
-    console.error('[STORAGE] Failed to create bucket:', err);
+    console.error('[STORAGE] Failed to create buckets:', err);
   }
 })();
 
@@ -406,6 +427,71 @@ app.get("/make-server-221a61bc/auth/session", async (c) => {
   }
 });
 
+// ===== SCHOOL SETTINGS (self-service by KG owner) =====
+app.put("/make-server-221a61bc/school/settings", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) {
+      return c.json({ error: `Unauthorized: ${authError || 'No user'}` }, 401);
+    }
+
+    const { error: schoolError, school } = await getSchoolForUser(user.id);
+    if (schoolError || !school) {
+      return c.json({ error: `School not found for user: ${schoolError || 'No school'}` }, 404);
+    }
+
+    const updates = await c.req.json();
+    console.log(`[SCHOOL-SETTINGS] Saving settings for school ${school.id}:`, Object.keys(updates));
+
+    // Whitelist of self-service editable fields
+    const allowedFields = [
+      'school_name', 'logo_url', 'primary_color',
+      'email', 'phone', 'whatsapp_no', 'address',
+    ];
+
+    const merged = { ...school };
+    for (const key of allowedFields) {
+      if (updates[key] !== undefined) {
+        merged[key] = updates[key];
+      }
+    }
+    merged.updated_at = new Date().toISOString();
+
+    await kv.set(`school_by_id:${school.id}`, merged);
+
+    // Also update related KV keys
+    if (school.email) {
+      try {
+        const emailRecord = await kv.get(`school_by_email:${school.email}`);
+        if (emailRecord) {
+          await kv.set(`school_by_email:${school.email}`, { ...emailRecord, ...merged });
+        }
+      } catch (_) {}
+    }
+    if (school.kindergarten_url) {
+      try {
+        await kv.set(`school_by_url:${school.kindergarten_url}`, merged);
+      } catch (_) {}
+    }
+    if (school.short_code) {
+      try {
+        await kv.set(`school_by_code:${school.short_code}`, merged);
+      } catch (_) {}
+    }
+    // Also update the school:{userId} key
+    try {
+      await kv.set(`school:${user.id}`, merged);
+    } catch (_) {}
+
+    console.log(`[SCHOOL-SETTINGS] School ${school.id} settings saved successfully`);
+    return c.json({ success: true, school: merged });
+  } catch (error) {
+    console.error('[SCHOOL-SETTINGS] Save error:', error);
+    return c.json({ error: `Failed to save settings: ${error.message}` }, 500);
+  }
+});
+
 // ===== QUESTION BANK MANAGEMENT =====
 
 // Save/Update question
@@ -646,7 +732,8 @@ app.post("/make-server-221a61bc/leads", async (c) => {
       totalQuestions,
       questResults,
       agePerformance,
-      status
+      status,
+      referralCode
     } = body;
 
     if (!schoolId || !childName || !parentName || !whatsapp) {
@@ -681,7 +768,7 @@ app.post("/make-server-221a61bc/leads", async (c) => {
     }
 
     const now = new Date().toISOString();
-    const leadData = {
+    const leadData: Record<string, any> = {
       id: leadId,
       school_id: schoolId,
       child_name: childName,
@@ -695,9 +782,34 @@ app.post("/make-server-221a61bc/leads", async (c) => {
       quest_results: questResults || [],
       age_performance: agePerformance || [],
       status: status || 'in_progress',
+      source: referralCode ? 'referral' : 'direct',
+      referral_code_used: referralCode || null,
+      referred_by_parent_id: null,
       created_at: isUpdate ? (await kv.get(`lead:${leadId}`))?.created_at || now : now,
       updated_at: now
     };
+
+    // Resolve referral code → parent ID if provided (only on new leads)
+    if (referralCode && !isUpdate) {
+      try {
+        const referrerParentId = await kv.get(`referral_code:${referralCode}`);
+        if (referrerParentId) {
+          leadData.referred_by_parent_id = referrerParentId;
+          // Append to referrals-by-parent list
+          const listKey = `referrals_by_parent:${referrerParentId}`;
+          const existing = await kv.get(listKey) || [];
+          if (!existing.includes(leadId)) {
+            existing.push(leadId);
+            await kv.set(listKey, existing);
+          }
+          console.log(`[LEAD] Referral attributed: code=${referralCode} → parent=${referrerParentId}`);
+        } else {
+          console.warn(`[LEAD] Referral code not found: ${referralCode}`);
+        }
+      } catch (refErr) {
+        console.error(`[LEAD] Referral resolution failed:`, refErr);
+      }
+    }
 
     // Write to all KV keys
     await kv.set(`lead:${leadId}`, leadData);
@@ -1011,6 +1123,233 @@ app.post("/make-server-221a61bc/question-bank/upload", async (c) => {
   }
 });
 
+// ===== MCQ-IMAGE UPLOAD: Download answer images from URLs, re-upload to Storage =====
+// CSV has image URLs for answer options; server downloads, validates, stores permanently
+app.post("/make-server-221a61bc/question-bank/upload-mcq-image", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const body = await c.req.json();
+    const { questions } = body;
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return c.json({ error: 'Questions array is required and must not be empty' }, 400);
+    }
+
+    console.log(`[MCQ-IMAGE] Uploading ${questions.length} image-MCQ questions by user ${user.id}`);
+
+    // Fetch existing questions for auto-ID generation
+    const existingQuestions = await kv.getByPrefix('gq:');
+    const counterMap: Record<string, number> = {};
+    for (const eq of existingQuestions) {
+      if (!eq.q_id) continue;
+      const parts = eq.q_id.split('-');
+      if (parts.length >= 3) {
+        const num = parseInt(parts[parts.length - 1], 10);
+        const prefix = parts.slice(0, -1).join('-');
+        if (!isNaN(num) && (!counterMap[prefix] || num > counterMap[prefix])) {
+          counterMap[prefix] = num;
+        }
+      }
+    }
+
+    const subjectAbbrev = (subject: string): string => {
+      const map: Record<string, string> = {
+        'english': 'ENG', 'math': 'MATH', 'mathematics': 'MATH',
+        'bahasa melayu': 'BM', 'science': 'SCI', 'moral': 'MORAL',
+        'pendidikan moral': 'MORAL', 'chinese': 'ZH', 'mandarin': 'ZH',
+        'bahasa cina': 'ZH', 'music': 'MUS', 'art': 'ART',
+        'seni': 'ART', 'pendidikan seni visual': 'ART',
+        'health': 'HLTH', 'pendidikan kesihatan': 'HLTH',
+        'physical education': 'PE', 'pendidikan jasmani': 'PE',
+      };
+      return map[subject.toLowerCase()] || subject.toUpperCase().replace(/\s+/g, '').substring(0, 4);
+    };
+
+    // Helper: download image from URL → upload to Supabase Storage
+    const downloadAndStore = async (imageUrl: string, qId: string, optionId: string): Promise<{ storagePath: string } | { error: string }> => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+        const response = await fetch(imageUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          return { error: `HTTP ${response.status} for ${imageUrl}` };
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.startsWith('image/')) {
+          return { error: `Not an image (${contentType}) for ${imageUrl}` };
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+
+        // Validate size (max 200KB)
+        if (bytes.length > 200 * 1024) {
+          return { error: `Image too large (${(bytes.length / 1024).toFixed(0)}KB > 200KB) for ${imageUrl}` };
+        }
+
+        // Determine extension from content-type
+        const extMap: Record<string, string> = {
+          'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg',
+          'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg',
+        };
+        const ext = extMap[contentType] || 'png';
+        const storagePath = `${qId}/${optionId}.${ext}`;
+
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from(ANSWER_IMAGE_BUCKET)
+          .upload(storagePath, bytes, { contentType, upsert: true });
+
+        if (uploadError) {
+          return { error: `Storage upload failed for ${optionId}: ${uploadError.message}` };
+        }
+
+        return { storagePath };
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          return { error: `Download timeout (>10s) for ${imageUrl}` };
+        }
+        return { error: `Download failed for ${imageUrl}: ${err.message}` };
+      }
+    };
+
+    const errors: string[] = [];
+    const validQuestions: any[] = [];
+    let imagesProcessed = 0;
+    const totalImages = questions.length * 4; // 4 options per question
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const rowNum = i + 1;
+
+      // Validate required fields
+      if (!q.age_target || ![4, 5, 6, 7].includes(Number(q.age_target))) {
+        errors.push(`Row ${rowNum}: age_target must be 4, 5, 6, or 7`); continue;
+      }
+      if (!q.subject) { errors.push(`Row ${rowNum}: Missing subject`); continue; }
+      if (!q.question_text_en) { errors.push(`Row ${rowNum}: Missing question_text_en`); continue; }
+      if (!q.question_text_ms) { errors.push(`Row ${rowNum}: Missing question_text_ms`); continue; }
+      if (!q.correct_answer && q.correct_answer !== 0) {
+        errors.push(`Row ${rowNum}: Missing correct_answer`); continue;
+      }
+
+      // Validate all 4 image URLs present
+      const imageUrls = [q.option_a_image_url, q.option_b_image_url, q.option_c_image_url, q.option_d_image_url];
+      const missingImages = ['a', 'b', 'c', 'd'].filter((_, idx) => !imageUrls[idx]?.trim());
+      if (missingImages.length > 0) {
+        errors.push(`Row ${rowNum}: Missing image URL(s) for option(s) ${missingImages.join(', ')}`); continue;
+      }
+
+      // Validate URLs are HTTPS
+      const invalidUrls = imageUrls.filter(url => url && !url.trim().startsWith('https://'));
+      if (invalidUrls.length > 0) {
+        errors.push(`Row ${rowNum}: Image URLs must start with https://`); continue;
+      }
+
+      // Auto-generate q_id
+      const age = Number(q.age_target);
+      const abbrev = subjectAbbrev(q.subject);
+      const prefix = `${abbrev}-${age}`;
+      const currentMax = counterMap[prefix] || 0;
+      const nextNum = currentMax + 1;
+      counterMap[prefix] = nextNum;
+      const generatedId = `${prefix}-${String(nextNum).padStart(3, '0')}`;
+
+      // Download and store all 4 answer images
+      console.log(`[MCQ-IMAGE] Processing row ${rowNum}/${questions.length}: ${generatedId} (images ${imagesProcessed + 1}-${imagesProcessed + 4}/${totalImages})`);
+
+      const optionIds = ['a', 'b', 'c', 'd'];
+      const imagePaths: Record<string, string> = {};
+      let rowHasError = false;
+
+      for (let j = 0; j < 4; j++) {
+        const result = await downloadAndStore(imageUrls[j].trim(), generatedId, optionIds[j]);
+        imagesProcessed++;
+        if ('error' in result) {
+          errors.push(`Row ${rowNum}, option ${optionIds[j]}: ${result.error}`);
+          rowHasError = true;
+          break;
+        }
+        imagePaths[optionIds[j]] = result.storagePath;
+      }
+
+      if (rowHasError) continue;
+
+      // Build options arrays with image storage paths (same images for all languages)
+      const buildOptions = (labels?: string[]) => {
+        return optionIds.map((id, idx) => ({
+          id,
+          text: labels?.[idx]?.trim() || '',
+          image: imagePaths[id],
+        }));
+      };
+
+      // Parse optional labels (pipe-delimited)
+      const parseLabels = (raw: string | undefined): string[] | undefined => {
+        if (!raw || !raw.trim()) return undefined;
+        return raw.split('|').map(l => l.trim());
+      };
+
+      const labelsEn = parseLabels(q.option_labels_en);
+      const labelsMs = parseLabels(q.option_labels_ms);
+      const labelsZh = parseLabels(q.option_labels_zh);
+
+      validQuestions.push({
+        q_id: generatedId,
+        age_target: age,
+        subject: q.subject.trim(),
+        dskp_code: q.dskp_code || '',
+        question_text_en: q.question_text_en.trim(),
+        question_text_ms: q.question_text_ms.trim(),
+        question_text_zh: (q.question_text_zh || '').trim(),
+        input_type: 'mcq',
+        answer_type: 'mcq-image', // Distinguishes from text MCQ
+        options_en: buildOptions(labelsEn),
+        options_ms: buildOptions(labelsMs),
+        options_zh: buildOptions(labelsZh),
+        correct_answer: String(q.correct_answer).trim(),
+        visual_prompt: q.visual_prompt || '',
+        image_url: q.image_url || '',
+        uploaded_by: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      console.log(`[MCQ-IMAGE] Row ${rowNum} OK: ${generatedId}, 4 images stored`);
+    }
+
+    if (errors.length > 0 && validQuestions.length === 0) {
+      return c.json({ success: false, error: 'All rows had errors', errors }, 400);
+    }
+
+    // Store each valid question
+    const kvKeys = validQuestions.map(q => `gq:${q.q_id}`);
+    const kvValues = validQuestions.map(q => q);
+    await kv.mset(kvKeys, kvValues);
+
+    console.log(`[MCQ-IMAGE] Stored ${validQuestions.length} questions (${imagesProcessed} images processed), ${errors.length} errors`);
+
+    return c.json({
+      success: true,
+      stored: validQuestions.length,
+      imagesProcessed,
+      errors,
+      message: `${validQuestions.length} image-MCQ questions stored (${imagesProcessed} images downloaded)${errors.length > 0 ? `, ${errors.length} rows had errors` : ''}`
+    });
+  } catch (error) {
+    console.error('[MCQ-IMAGE] Upload error:', error);
+    return c.json({ error: `MCQ-image upload failed: ${error.message}` }, 500);
+  }
+});
+
 // Clear all global questions (auth required) — POST for safety
 app.post("/make-server-221a61bc/question-bank/clear-all", async (c) => {
   try {
@@ -1094,19 +1433,44 @@ app.get("/make-server-221a61bc/question-bank", async (c) => {
       filtered = filtered.filter((q: any) => String(q.age_target) === ageTarget);
     }
 
-    // Resolve storage paths to signed URLs for image_url fields
+    // Resolve storage paths to signed URLs for image_url fields AND answer images
     const resolvedQuestions = await Promise.all(filtered.map(async (q: any) => {
+      const resolved = { ...q };
+
+      // Resolve question image_url if it's a storage path
       if (q.image_url && !q.image_url.startsWith('http')) {
         try {
           const { data: urlData } = await supabaseAdmin.storage
             .from(QUEST_IMAGE_BUCKET)
             .createSignedUrl(q.image_url, 3600);
-          return { ...q, image_url: urlData?.signedUrl || q.image_url };
-        } catch {
-          return q;
-        }
+          resolved.image_url = urlData?.signedUrl || q.image_url;
+        } catch {}
       }
-      return q;
+
+      // Resolve answer images for mcq-image type questions
+      if (q.answer_type === 'mcq-image') {
+        const resolveOptionsImages = async (options: any[]): Promise<any[]> => {
+          if (!Array.isArray(options)) return options;
+          return Promise.all(options.map(async (opt: any) => {
+            if (opt.image && !opt.image.startsWith('http')) {
+              try {
+                const { data } = await supabaseAdmin.storage
+                  .from(ANSWER_IMAGE_BUCKET)
+                  .createSignedUrl(opt.image, 3600);
+                return { ...opt, image: data?.signedUrl || opt.image };
+              } catch {
+                return opt;
+              }
+            }
+            return opt;
+          }));
+        };
+        if (resolved.options_en) resolved.options_en = await resolveOptionsImages(resolved.options_en);
+        if (resolved.options_ms) resolved.options_ms = await resolveOptionsImages(resolved.options_ms);
+        if (resolved.options_zh) resolved.options_zh = await resolveOptionsImages(resolved.options_zh);
+      }
+
+      return resolved;
     }));
 
     console.log(`[QUESTION-BANK] Returning ${resolvedQuestions.length} of ${allQuestions.length} questions`);
@@ -2153,16 +2517,24 @@ app.post("/make-server-221a61bc/parent/oauth-complete", async (c) => {
       return c.json({ error: authError || "Invalid token", valid: false }, 401);
     }
 
-    // Parse optional referral code from request body
+    // Parse optional fields from request body
     let referredBy: string | null = null;
+    let directOriginTag: string | null = null;
+    let leadPhone: string | null = null;
+    let leadChildName: string | null = null;
+    let leadChildAge: number | null = null;
     try {
       const body = await c.req.json();
       referredBy = body?.referredBy || null;
+      directOriginTag = body?.originTag || null;
+      leadPhone = body?.phone || null;
+      leadChildName = body?.child_name || null;
+      leadChildAge = body?.child_age || null;
     } catch {
-      // No body or invalid JSON — that's fine, referredBy stays null
+      // No body or invalid JSON — that's fine, all fields stay null
     }
 
-    console.log(`[PARENT-OAUTH] OAuth complete for user ${user.id} (${user.email}), referredBy: ${referredBy || '(none)'}`);
+    console.log(`[PARENT-OAUTH] OAuth complete for user ${user.id} (${user.email}), referredBy: ${referredBy || '(none)'}, originTag: ${directOriginTag || '(none)'}, phone: ${leadPhone ? '***' : '(none)'}`);
 
     // Check if parent record already exists (returning OAuth user)
     let parentData = await kv.get(`parent:${user.id}`);
@@ -2212,11 +2584,19 @@ app.post("/make-server-221a61bc/parent/oauth-complete", async (c) => {
         console.warn(`[PARENT-OAUTH] Referral code ${referredBy} not found in KV — storing anyway`);
       }
     }
+    // If no origin resolved from referral chain, use direct originTag from the /t/:code test funnel
+    if (!resolvedOriginTag && directOriginTag) {
+      resolvedOriginTag = directOriginTag;
+      console.log(`[PARENT-OAUTH] Using direct origin_tag from test funnel: ${resolvedOriginTag}`);
+    }
 
     parentData = {
       id: user.id,
       email: user.email,
       name: userName,
+      phone: leadPhone || null,
+      child_name: leadChildName || null,
+      child_age: leadChildAge || null,
       avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
       role: "parent",
       auth_provider: user.app_metadata?.provider || "oauth",
@@ -2326,7 +2706,7 @@ app.put("/make-server-221a61bc/parent/profile", async (c) => {
     if (authError || !user) return c.json({ error: `Unauthorized: ${authError || 'No user'}` }, 401);
 
     const body = await c.req.json();
-    const { phone, child_name, child_age, name, include_mandarin_test } = body;
+    const { phone, child_name, child_age, name, include_mandarin_test, language } = body;
 
     const parentData = await kv.get(`parent:${user.id}`);
     if (!parentData) return c.json({ error: "Parent not found" }, 404);
@@ -2337,6 +2717,7 @@ app.put("/make-server-221a61bc/parent/profile", async (c) => {
     if (child_age !== undefined) parentData.child_age = child_age;
     if (name !== undefined) parentData.name = name;
     if (include_mandarin_test !== undefined) parentData.include_mandarin_test = include_mandarin_test;
+    if (language !== undefined) parentData.language = language;
     parentData.updated_at = new Date().toISOString();
 
     await kv.set(`parent:${user.id}`, parentData);
@@ -2345,7 +2726,7 @@ app.put("/make-server-221a61bc/parent/profile", async (c) => {
       await kv.set(`parent_by_email:${parentData.email}`, parentData);
     }
 
-    console.log(`[PARENT] Profile updated for ${user.id}:`, { phone, child_name, child_age, name, include_mandarin_test });
+    console.log(`[PARENT] Profile updated for ${user.id}:`, { phone, child_name, child_age, name, include_mandarin_test, language });
 
     return c.json({ success: true, parent: parentData });
   } catch (error) {
@@ -2442,7 +2823,7 @@ app.post("/make-server-221a61bc/parent/use", async (c) => {
     const { error: authError, user } = await verifyToken(userTokenHeader);
     if (authError || !user) return c.json({ error: "Unauthorized" }, 401);
 
-    const { type, questions_answered } = await c.req.json(); // "test", "watch", or "practice"
+    const { type, questions_answered, questions_correct } = await c.req.json(); // "test", "watch", or "practice"
     if (!["test", "watch", "practice"].includes(type)) {
       return c.json({ error: "type must be 'test', 'watch', or 'practice'" }, 400);
     }
@@ -2502,10 +2883,22 @@ app.post("/make-server-221a61bc/parent/use", async (c) => {
 
     // Log activity for timeline heatmap
     const activityKey = `parent_activity:${user.id}:${today}`;
-    const existingActivity = await kv.get(activityKey) || { date: today, tests: 0, watches: 0, practices: 0 };
+    const existingActivity = await kv.get(activityKey) || { date: today, tests: 0, watches: 0, practices: 0, questions_total: 0, questions_correct: 0 };
+    // Ensure new fields exist on legacy records
+    if (existingActivity.questions_total === undefined) existingActivity.questions_total = 0;
+    if (existingActivity.questions_correct === undefined) existingActivity.questions_correct = 0;
     if (type === "test") existingActivity.tests++;
     else if (type === "watch") existingActivity.watches++;
-    else existingActivity.practices++;
+    else {
+      existingActivity.practices++;
+      // Accumulate practice question counts if provided
+      if (questions_answered && typeof questions_answered === 'number' && questions_answered > 0) {
+        existingActivity.questions_total += questions_answered;
+      }
+      if (questions_correct && typeof questions_correct === 'number' && questions_correct > 0) {
+        existingActivity.questions_correct += questions_correct;
+      }
+    }
     await kv.set(activityKey, existingActivity);
 
     const countMap: Record<string, number> = {
@@ -2581,8 +2974,8 @@ app.post("/make-server-221a61bc/admin/videos", async (c) => {
     if (authError || !user) return c.json({ error: "Unauthorized" }, 401);
 
     const body = await c.req.json();
-    const { title, subtitle, youtube_url, thumbnail_url, category, duration, episode, is_premium, is_featured, order } = body;
-    if (!title || !youtube_url) return c.json({ error: "title and youtube_url required" }, 400);
+    const { title, subtitle, youtube_url, dyntube_key, thumbnail_url, category, duration, episode, is_premium, is_featured, order } = body;
+    if (!title || (!youtube_url && !dyntube_key)) return c.json({ error: "title and either youtube_url or dyntube_key required" }, 400);
     if (!category) return c.json({ error: "category is required" }, 400);
 
     const videoId = crypto.randomUUID();
@@ -2590,7 +2983,8 @@ app.post("/make-server-221a61bc/admin/videos", async (c) => {
       id: videoId,
       title,
       subtitle: subtitle || "",
-      youtube_url,
+      youtube_url: youtube_url || "",
+      dyntube_key: dyntube_key || "",
       thumbnail_url: thumbnail_url || "",
       category: category || "english",
       duration: duration || "0:00",
@@ -2835,6 +3229,17 @@ app.post("/make-server-221a61bc/parent/save-assessment", async (c) => {
     const key = `parent_assessment:${user.id}:${timestamp}`;
     await kv.set(key, snapshot);
 
+    // Also accumulate question counts into the daily activity record
+    try {
+      const activityKey = `parent_activity:${user.id}:${dateStr}`;
+      const existingActivity = await kv.get(activityKey) || { date: dateStr, tests: 0, watches: 0, practices: 0, questions_total: 0, questions_correct: 0 };
+      existingActivity.questions_total = (existingActivity.questions_total || 0) + (totalQuestions || 0);
+      existingActivity.questions_correct = (existingActivity.questions_correct || 0) + (totalCorrect || 0);
+      await kv.set(activityKey, existingActivity);
+    } catch (e) {
+      console.warn('[PARENT] Failed to update daily activity with question counts:', e);
+    }
+
     console.log(`[PARENT] Saved assessment snapshot for ${user.id} at ${dateStr}`);
     return c.json({ success: true, snapshot });
   } catch (error) {
@@ -3056,5 +3461,803 @@ app.delete("/make-server-221a61bc/admin/marketing/artwork/:id/variant/:platform"
     return c.json({ error: `Failed: ${error.message}` }, 500);
   }
 });
+
+// ===== SHAREABLE REPORTS =====
+// Public shareable report links for kindergarten → parent funnel.
+// Reports expire after 30 days unless claimed by a parent account.
+// KV key patterns:
+//   report:{reportId}         — full report data
+//   report_by_lead:{leadId}   — maps lead → reportId (dedup)
+
+// Create a shareable report from a completed lead
+app.post("/make-server-221a61bc/reports", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) {
+      return c.json({ error: `Unauthorized: ${authError || 'No user'}` }, 401);
+    }
+
+    const body = await c.req.json();
+    const { leadId } = body;
+
+    if (!leadId) {
+      return c.json({ error: 'Missing required field: leadId' }, 400);
+    }
+
+    // Check if a report already exists for this lead (dedup)
+    const existingReportId = await kv.get(`report_by_lead:${leadId}`);
+    if (existingReportId) {
+      const existingReport = await kv.get(`report:${existingReportId}`);
+      if (existingReport) {
+        console.log(`[REPORT] Existing report found for lead ${leadId}: ${existingReportId}`);
+        return c.json({
+          success: true,
+          reportId: existingReportId,
+          isExisting: true,
+          report: existingReport,
+        });
+      }
+    }
+
+    // Fetch the lead data
+    const leadData = await kv.get(`lead:${leadId}`);
+    if (!leadData) {
+      return c.json({ error: `Lead not found: ${leadId}` }, 404);
+    }
+
+    if (leadData.status !== 'completed') {
+      return c.json({ error: 'Cannot create report for incomplete assessment' }, 400);
+    }
+
+    // Fetch school data for branding
+    const schoolData = leadData.school_id ? await kv.get(`school_by_id:${leadData.school_id}`) : null;
+
+    // Fetch quest configs for name/icon mapping
+    const allQuests = await kv.getByPrefix('quest_config:');
+    const questInfo = allQuests
+      .filter((q: any) => q.status === 'live')
+      .map((q: any) => ({
+        id: q.id,
+        subject: q.subject,
+        name: q.name,
+        icon: q.icon,
+        is_mandarin: q.is_mandarin || false,
+      }));
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const reportId = crypto.randomUUID();
+
+    const reportData = {
+      id: reportId,
+      leadId: leadData.id,
+      childName: leadData.child_name,
+      childAge: leadData.child_age || 5,
+      parentName: leadData.parent_name,
+      parentPhone: leadData.whatsapp,
+      schoolId: leadData.school_id,
+      schoolName: schoolData?.school_name || 'Kindergarten',
+      schoolLogoUrl: schoolData?.logo_url || '',
+      schoolShortCode: schoolData?.short_code || '',
+      schoolEmail: schoolData?.email || '',
+      schoolPhone: schoolData?.phone || '',
+      schoolWhatsApp: schoolData?.whatsapp_no || '',
+      schoolAddress: schoolData?.address || '',
+      answers: leadData.answers || [],
+      moduleResults: leadData.quest_results || [],
+      score: leadData.score || 0,
+      totalQuestions: leadData.total_questions || 0,
+      questInfo,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      claimedBy: null,
+      viewCount: 0,
+      firstViewedAt: null,
+      lastViewedAt: null,
+    };
+
+    await kv.set(`report:${reportId}`, reportData);
+    await kv.set(`report_by_lead:${leadId}`, reportId);
+
+    console.log(`[REPORT] Created report ${reportId} for lead ${leadId}, expires ${expiresAt.toISOString()}`);
+
+    return c.json({
+      success: true,
+      reportId,
+      isExisting: false,
+      report: reportData,
+    });
+  } catch (error) {
+    console.error('[REPORT] Create error:', error);
+    return c.json({ error: `Failed to create report: ${error.message}` }, 500);
+  }
+});
+
+// Get report status for KG dashboard (view count, claimed, etc.)
+// IMPORTANT: This static-prefix route MUST be defined BEFORE the dynamic :reportId route
+app.get("/make-server-221a61bc/reports/status/:leadId", async (c) => {
+  try {
+    const leadId = c.req.param('leadId');
+    const reportId = await kv.get(`report_by_lead:${leadId}`);
+
+    if (!reportId) {
+      return c.json({ success: true, hasReport: false });
+    }
+
+    const reportData = await kv.get(`report:${reportId}`);
+    if (!reportData) {
+      return c.json({ success: true, hasReport: false });
+    }
+
+    return c.json({
+      success: true,
+      hasReport: true,
+      reportId: reportData.id,
+      viewCount: reportData.viewCount || 0,
+      firstViewedAt: reportData.firstViewedAt,
+      lastViewedAt: reportData.lastViewedAt,
+      isClaimed: !!reportData.claimedBy,
+      claimedAt: reportData.claimedAt || null,
+      expiresAt: reportData.expiresAt,
+    });
+  } catch (error) {
+    console.error('[REPORT] Status error:', error);
+    return c.json({ error: `Failed to get report status: ${error.message}` }, 500);
+  }
+});
+
+// Get a shareable report (PUBLIC — no auth required)
+app.get("/make-server-221a61bc/reports/:reportId", async (c) => {
+  try {
+    const reportId = c.req.param('reportId');
+    if (!reportId) {
+      return c.json({ error: 'Missing reportId' }, 400);
+    }
+
+    const reportData = await kv.get(`report:${reportId}`);
+    if (!reportData) {
+      return c.json({ error: 'Report not found' }, 404);
+    }
+
+    // Check expiry (only for unclaimed reports)
+    const now = new Date();
+    const expiresAt = new Date(reportData.expiresAt);
+    const isExpired = !reportData.claimedBy && now > expiresAt;
+    const daysRemaining = reportData.claimedBy
+      ? null
+      : Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    // Increment view count (fire-and-forget)
+    const updatedReport = {
+      ...reportData,
+      viewCount: (reportData.viewCount || 0) + 1,
+      firstViewedAt: reportData.firstViewedAt || now.toISOString(),
+      lastViewedAt: now.toISOString(),
+    };
+    kv.set(`report:${reportId}`, updatedReport).catch((err: any) =>
+      console.error(`[REPORT] Failed to update view count for ${reportId}:`, err)
+    );
+
+    if (isExpired) {
+      // Return expired status with minimal info (enough for the expired page)
+      return c.json({
+        success: true,
+        expired: true,
+        report: {
+          id: reportData.id,
+          childName: reportData.childName,
+          schoolName: reportData.schoolName,
+          schoolShortCode: reportData.schoolShortCode,
+          expiresAt: reportData.expiresAt,
+          createdAt: reportData.createdAt,
+        },
+      });
+    }
+
+    return c.json({
+      success: true,
+      expired: false,
+      daysRemaining,
+      isClaimed: !!reportData.claimedBy,
+      report: reportData,
+    });
+  } catch (error) {
+    console.error('[REPORT] Fetch error:', error);
+    return c.json({ error: `Failed to fetch report: ${error.message}` }, 500);
+  }
+});
+
+// Claim a report (link to parent account permanently)
+app.post("/make-server-221a61bc/reports/:reportId/claim", async (c) => {
+  try {
+    const reportId = c.req.param('reportId');
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+
+    if (authError || !user) {
+      return c.json({ error: `Unauthorized: ${authError || 'No user'}` }, 401);
+    }
+
+    const reportData = await kv.get(`report:${reportId}`);
+    if (!reportData) {
+      return c.json({ error: 'Report not found' }, 404);
+    }
+
+    if (reportData.claimedBy && reportData.claimedBy !== user.id) {
+      return c.json({ error: 'Report already claimed by another user' }, 409);
+    }
+
+    // Claim the report
+    const updatedReport = {
+      ...reportData,
+      claimedBy: user.id,
+      claimedAt: new Date().toISOString(),
+    };
+    await kv.set(`report:${reportId}`, updatedReport);
+
+    // Also link to parent profile
+    const parentData = await kv.get(`parent:${user.id}`);
+    if (parentData) {
+      const reports = parentData.claimed_reports || [];
+      if (!reports.includes(reportId)) {
+        reports.push(reportId);
+        await kv.set(`parent:${user.id}`, {
+          ...parentData,
+          claimed_reports: reports,
+          child_name: parentData.child_name || reportData.childName,
+          child_age: parentData.child_age || reportData.childAge,
+          updated_at: new Date().toISOString(),
+        });
+      }
+    }
+
+    console.log(`[REPORT] Report ${reportId} claimed by parent ${user.id}`);
+
+    return c.json({ success: true, report: updatedReport });
+  } catch (error) {
+    console.error('[REPORT] Claim error:', error);
+    return c.json({ error: `Failed to claim report: ${error.message}` }, 500);
+  }
+});
+
+// ===== KG REFERRAL SOURCES (for KG Dashboard) =====
+app.get("/make-server-221a61bc/referrals/school-sources", async (c) => {
+  try {
+    const userTokenHeader = c.req.header("X-User-Token");
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { error: schoolError, school } = await getSchoolForUser(user.id);
+    if (schoolError || !school) return c.json({ error: "No school found for user" }, 404);
+
+    const schoolId = school.id;
+
+    // Get all leads for this school
+    const allLeads = await kv.getByPrefix(`school_lead:${schoolId}:`);
+    console.log(`[REFERRAL] Fetching sources for school ${schoolId}: ${allLeads.length} leads`);
+
+    let directCount = 0;
+    let referralCount = 0;
+    const referrerMap: Record<string, { parentId: string; count: number; convertedCount: number; lastReferralAt: string }> = {};
+
+    for (const lead of allLeads) {
+      if (lead.source === 'referral' && lead.referred_by_parent_id) {
+        referralCount++;
+        const pid = lead.referred_by_parent_id;
+        if (!referrerMap[pid]) {
+          referrerMap[pid] = { parentId: pid, count: 0, convertedCount: 0, lastReferralAt: '' };
+        }
+        referrerMap[pid].count++;
+        // Check if this lead's parent signed up (report claimed)
+        if (lead.status === 'claimed' || lead.is_claimed) {
+          referrerMap[pid].convertedCount++;
+        }
+        const leadDate = lead.created_at || lead.updated_at || '';
+        if (leadDate > referrerMap[pid].lastReferralAt) {
+          referrerMap[pid].lastReferralAt = leadDate;
+        }
+      } else {
+        directCount++;
+      }
+    }
+
+    // Resolve parent names for top referrers
+    const topReferrers = Object.values(referrerMap)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    const enrichedReferrers = [];
+    for (const ref of topReferrers) {
+      let parentName = 'Unknown Parent';
+      try {
+        const parentData = await kv.get(`parent:${ref.parentId}`);
+        if (parentData?.name) parentName = parentData.name;
+      } catch (_) {}
+
+      // Also check report statuses for conversion
+      const referredLeads = allLeads.filter((l: any) => l.referred_by_parent_id === ref.parentId);
+      let signedUp = 0;
+      for (const rl of referredLeads) {
+        try {
+          const reportId = await kv.get(`report_by_lead:${rl.id}`);
+          if (reportId) {
+            const report = await kv.get(`report:${reportId}`);
+            if (report?.is_claimed) signedUp++;
+          }
+        } catch (_) {}
+      }
+
+      enrichedReferrers.push({
+        parentId: ref.parentId,
+        parentName,
+        referrals: ref.count,
+        signedUp,
+        lastReferralAt: ref.lastReferralAt,
+      });
+    }
+
+    return c.json({
+      success: true,
+      sources: {
+        total: allLeads.length,
+        direct: directCount,
+        referral: referralCount,
+      },
+      topReferrers: enrichedReferrers,
+    });
+  } catch (error) {
+    console.error("[REFERRAL] School sources error:", error);
+    return c.json({ error: `Failed: ${error.message}` }, 500);
+  }
+});
+
+// ===== PARENT: ENHANCED REFERRAL NETWORK =====
+app.get("/make-server-221a61bc/parent/referral-network", async (c) => {
+  try {
+    const userTokenHeader = c.req.header("X-User-Token");
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: "Unauthorized" }, 401);
+
+    const parentData = await kv.get(`parent:${user.id}`);
+    if (!parentData) return c.json({ error: "Parent not found" }, 404);
+
+    // 1. Who referred me
+    let referredByInfo = null;
+    if (parentData.referred_by) {
+      try {
+        const referrerParentId = await kv.get(`referral_code:${parentData.referred_by}`);
+        if (referrerParentId) {
+          const referrerData = await kv.get(`parent:${referrerParentId}`);
+          if (referrerData) {
+            // Find which KG the referrer is from
+            let kgName = null;
+            if (referrerData.origin_tag) {
+              const kgData = await kv.get(`school_by_id:${referrerData.origin_tag}`);
+              if (kgData) kgName = kgData.school_name || kgData.name;
+            }
+            referredByInfo = {
+              name: referrerData.name || 'A fellow parent',
+              kindergarten: kgName,
+            };
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 2. People I've referred (from referrals_by_parent list)
+    const myReferrals: any[] = [];
+    try {
+      const referredLeadIds = await kv.get(`referrals_by_parent:${user.id}`) || [];
+      for (const leadId of referredLeadIds) {
+        try {
+          const lead = await kv.get(`lead:${leadId}`);
+          if (!lead) continue;
+          // Determine status
+          let status = 'test_started';
+          if (lead.status === 'completed') status = 'test_completed';
+          // Check if report exists and was viewed/claimed
+          try {
+            const reportId = await kv.get(`report_by_lead:${leadId}`);
+            if (reportId) {
+              const report = await kv.get(`report:${reportId}`);
+              if (report?.is_claimed) status = 'signed_up';
+              else if (report?.view_count > 0) status = 'report_viewed';
+              else status = 'report_sent';
+            }
+          } catch (_) {}
+
+          myReferrals.push({
+            leadId,
+            childName: lead.child_name,
+            parentName: lead.parent_name,
+            status,
+            date: lead.created_at,
+          });
+        } catch (_) {}
+      }
+    } catch (_) {}
+
+    // 3. Summary stats
+    const totalReferred = myReferrals.length;
+    const signedUpCount = myReferrals.filter(r => r.status === 'signed_up').length;
+
+    return c.json({
+      success: true,
+      referredBy: referredByInfo,
+      referralCode: parentData.referral_code,
+      myReferrals,
+      stats: { totalReferred, signedUpCount },
+    });
+  } catch (error) {
+    console.error("[PARENT] Referral network error:", error);
+    return c.json({ error: `Failed: ${error.message}` }, 500);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// MEDIA MANAGER — Audio Tracks & Dynamic Categories
+// ═══════════════════════════════════════════════════════════
+// KV key patterns:
+//   media_category:{id}       — category metadata (type: 'video' | 'audio')
+//   media_audio:{id}          — audio track metadata
+
+// ── List all media categories ──
+app.get("/make-server-221a61bc/media/categories", async (c) => {
+  try {
+    const categories = await kv.getByPrefix('media_category:');
+    categories.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+    return c.json({ success: true, categories });
+  } catch (error) {
+    console.error('[MEDIA] Fetch categories error:', error);
+    return c.json({ error: `Failed to fetch categories: ${error.message}` }, 500);
+  }
+});
+
+// ── Create / update a media category (auth required) ──
+app.post("/make-server-221a61bc/media/categories", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const body = await c.req.json();
+    const { id, name, type, icon, color, order } = body;
+
+    if (!name || !type || !['video', 'audio'].includes(type)) {
+      return c.json({ error: 'name and type (video|audio) are required' }, 400);
+    }
+
+    const catId = id || crypto.randomUUID();
+    const existing = id ? await kv.get(`media_category:${id}`) : null;
+
+    const categoryData = {
+      id: catId,
+      name: name.trim(),
+      type,
+      icon: icon || '🎵',
+      color: color || '#d4a44a',
+      order: order ?? (existing?.order ?? 0),
+      created_at: existing?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    await kv.set(`media_category:${catId}`, categoryData);
+    console.log(`[MEDIA] Category saved: ${catId} (${name}, ${type})`);
+    return c.json({ success: true, category: categoryData });
+  } catch (error) {
+    console.error('[MEDIA] Save category error:', error);
+    return c.json({ error: `Failed to save category: ${error.message}` }, 500);
+  }
+});
+
+// ── Delete a media category (auth required) ──
+app.delete("/make-server-221a61bc/media/categories/:id", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const catId = c.req.param('id');
+    await kv.del(`media_category:${catId}`);
+    console.log(`[MEDIA] Category deleted: ${catId}`);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('[MEDIA] Delete category error:', error);
+    return c.json({ error: `Failed to delete category: ${error.message}` }, 500);
+  }
+});
+
+// ── List all audio tracks (admin, auth required) ──
+app.get("/make-server-221a61bc/media/audio", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const tracks = await kv.getByPrefix('media_audio:');
+    tracks.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+    // Resolve r2: / Supabase Storage paths to displayable URLs for the admin UI
+    const resolved = await resolveAudioUrls(tracks);
+    console.log(`[MEDIA] Admin audio tracks: ${resolved.length}`);
+    return c.json({ success: true, tracks: resolved });
+  } catch (error) {
+    console.error('[MEDIA] Fetch audio tracks error:', error);
+    return c.json({ error: `Failed to fetch audio: ${error.message}` }, 500);
+  }
+});
+
+// ── Public audio tracks (for parent browsing, no auth) ──
+app.get("/make-server-221a61bc/media/audio/public", async (c) => {
+  try {
+    const tracks = await kv.getByPrefix('media_audio:');
+    const publicTracks = tracks
+      .filter((t: any) => t.status !== 'draft')
+      .map((t: any) => ({
+        id: t.id,
+        title: t.title,
+        artist: t.artist,
+        album_art: t.album_art,
+        audio_url: t.audio_url,
+        duration: t.duration,
+        duration_sec: t.duration_sec,
+        category: t.category,
+        is_premium: t.is_premium,
+        is_featured: t.is_featured,
+        order: t.order,
+      }))
+      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+    // Resolve storage paths to signed URLs for playback
+    const resolved = await resolveAudioUrls(publicTracks);
+
+    const categories = (await kv.getByPrefix('media_category:'))
+      .filter((c: any) => c.type === 'audio')
+      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
+    return c.json({ success: true, tracks: resolved, categories });
+  } catch (error) {
+    console.error('[MEDIA] Public audio error:', error);
+    return c.json({ error: `Failed: ${error.message}` }, 500);
+  }
+});
+
+// ── Create / update audio track (auth required) ──
+app.post("/make-server-221a61bc/media/audio", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const body = await c.req.json();
+    const { id, title, artist, album_art, audio_url, duration, duration_sec, category, is_premium, is_featured, order, status } = body;
+
+    if (!title) return c.json({ error: 'title is required' }, 400);
+
+    const trackId = id || crypto.randomUUID();
+    const existing = id ? await kv.get(`media_audio:${id}`) : null;
+
+    const trackData = {
+      id: trackId,
+      title: title.trim(),
+      artist: (artist || 'Foxy & Friends').trim(),
+      album_art: unresolveR2Url(album_art || ''),
+      audio_url: unresolveR2Url(audio_url || ''),
+      duration: duration || '0:00',
+      duration_sec: duration_sec || 0,
+      category: category || 'general',
+      is_premium: is_premium || false,
+      is_featured: is_featured || false,
+      order: order ?? (existing?.order ?? 0),
+      status: status || 'active',
+      created_by: existing?.created_by || user.id,
+      created_at: existing?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    await kv.set(`media_audio:${trackId}`, trackData);
+    console.log(`[MEDIA] Audio track saved: ${trackId} (${title})`);
+    return c.json({ success: true, track: trackData });
+  } catch (error) {
+    console.error('[MEDIA] Save audio track error:', error);
+    return c.json({ error: `Failed to save track: ${error.message}` }, 500);
+  }
+});
+
+// ── Delete audio track (auth required) ──
+app.delete("/make-server-221a61bc/media/audio/:id", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const trackId = c.req.param('id');
+    // Clean up storage files (R2 + legacy Supabase Storage)
+    const existing = await kv.get(`media_audio:${trackId}`);
+    if (existing) {
+      const r2KeysToDelete: string[] = [];
+      const supabasePathsToDelete: string[] = [];
+
+      // Audio file
+      if (existing.audio_url) {
+        if (isR2Key(existing.audio_url)) {
+          r2KeysToDelete.push(extractR2Key(existing.audio_url));
+        } else if (existing.audio_url.startsWith('audio-files/')) {
+          supabasePathsToDelete.push(existing.audio_url);
+        }
+      }
+      // Album art
+      if (existing.album_art) {
+        if (isR2Key(existing.album_art)) {
+          r2KeysToDelete.push(extractR2Key(existing.album_art));
+        } else if (existing.album_art.startsWith('audio-art/')) {
+          supabasePathsToDelete.push(existing.album_art);
+        }
+      }
+
+      if (r2KeysToDelete.length > 0) {
+        await deleteMultipleFromR2(r2KeysToDelete);
+        console.log(`[MEDIA] Cleaned up R2 for track ${trackId}:`, r2KeysToDelete);
+      }
+      if (supabasePathsToDelete.length > 0) {
+        await supabaseAdmin.storage.from(QUEST_IMAGE_BUCKET).remove(supabasePathsToDelete);
+        console.log(`[MEDIA] Cleaned up Supabase Storage for track ${trackId}:`, supabasePathsToDelete);
+      }
+    }
+    await kv.del(`media_audio:${trackId}`);
+    console.log(`[MEDIA] Audio track deleted: ${trackId}`);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('[MEDIA] Delete audio track error:', error);
+    return c.json({ error: `Failed to delete track: ${error.message}` }, 500);
+  }
+});
+
+// ── Upload audio file to Cloudflare R2 (admin only) ──
+// Accepts multipart FormData with a 'file' field (no base64 overhead)
+app.post("/make-server-221a61bc/media/audio/upload", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const formData = await c.req.formData();
+    const file = formData.get('file') as File | null;
+    if (!file) {
+      return c.json({ error: 'Missing file in form data' }, 400);
+    }
+
+    const contentType = file.type || 'audio/mpeg';
+    if (!contentType.startsWith('audio/')) {
+      return c.json({ error: `Invalid type: ${contentType}. Must be audio/*` }, 400);
+    }
+
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes.length > 50 * 1024 * 1024) {
+      return c.json({ error: 'Audio file too large. Max 50MB.' }, 400);
+    }
+
+    const ext = (file.name || 'track.mp3').split('.').pop() || 'mp3';
+    const r2Key = `audio/${crypto.randomUUID()}.${ext}`;
+    console.log(`[AUDIO-UPLOAD] Uploading to R2: ${r2Key} (${contentType}, ${bytes.length} bytes)`);
+
+    const { publicUrl } = await uploadToR2(r2Key, bytes, contentType);
+
+    const storedPath = `r2:${r2Key}`;
+    console.log(`[AUDIO-UPLOAD] R2 success: ${storedPath} → ${publicUrl}`);
+    return c.json({ success: true, audio_path: storedPath, signed_url: publicUrl });
+  } catch (error: any) {
+    console.error('[AUDIO-UPLOAD] Error:', error);
+    return c.json({ error: `Audio upload failed: ${error.message}` }, 500);
+  }
+});
+
+// ── Upload album art to Cloudflare R2 (admin only) ──
+// Accepts multipart FormData with a 'file' field (no base64 overhead)
+app.post("/make-server-221a61bc/media/audio/upload-art", async (c) => {
+  try {
+    const userTokenHeader = c.req.header('X-User-Token');
+    const { error: authError, user } = await verifyToken(userTokenHeader);
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const formData = await c.req.formData();
+    const file = formData.get('file') as File | null;
+    if (!file) {
+      return c.json({ error: 'Missing file in form data' }, 400);
+    }
+
+    const contentType = file.type || 'image/jpeg';
+    if (!contentType.startsWith('image/')) {
+      return c.json({ error: `Invalid type: ${contentType}. Must be image/*` }, 400);
+    }
+
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (bytes.length > 5 * 1024 * 1024) {
+      return c.json({ error: 'Image too large. Max 5MB.' }, 400);
+    }
+
+    const ext = (file.name || 'art.jpg').split('.').pop() || 'jpg';
+    const r2Key = `art/${crypto.randomUUID()}.${ext}`;
+    console.log(`[AUDIO-ART] Uploading to R2: ${r2Key} (${contentType}, ${bytes.length} bytes)`);
+
+    const { publicUrl } = await uploadToR2(r2Key, bytes, contentType);
+
+    const storedPath = `r2:${r2Key}`;
+    console.log(`[AUDIO-ART] R2 success: ${storedPath} → ${publicUrl}`);
+    return c.json({ success: true, image_path: storedPath, signed_url: publicUrl });
+  } catch (error: any) {
+    console.error('[AUDIO-ART] Error:', error);
+    return c.json({ error: `Album art upload failed: ${error.message}` }, 500);
+  }
+});
+
+// ── Get resolved audio URL for playback ──
+app.get("/make-server-221a61bc/media/audio-url/:trackId", async (c) => {
+  try {
+    const trackId = c.req.param('trackId');
+    const track = await kv.get(`media_audio:${trackId}`);
+    if (!track) return c.json({ error: 'Track not found' }, 404);
+
+    let resolvedAudioUrl = track.audio_url || '';
+    let resolvedArtUrl = track.album_art || '';
+
+    // R2 paths (new): "r2:audio/uuid.mp3" → public URL
+    if (isR2Key(resolvedAudioUrl)) {
+      resolvedAudioUrl = r2PublicUrl(extractR2Key(resolvedAudioUrl));
+    }
+    // Legacy Supabase Storage paths: "audio-files/uuid.mp3" → signed URL
+    else if (resolvedAudioUrl.startsWith('audio-files/')) {
+      const { data } = await supabaseAdmin.storage
+        .from(QUEST_IMAGE_BUCKET)
+        .createSignedUrl(resolvedAudioUrl, 3600);
+      resolvedAudioUrl = data?.signedUrl || resolvedAudioUrl;
+    }
+
+    if (isR2Key(resolvedArtUrl)) {
+      resolvedArtUrl = r2PublicUrl(extractR2Key(resolvedArtUrl));
+    } else if (resolvedArtUrl.startsWith('audio-art/')) {
+      const { data } = await supabaseAdmin.storage
+        .from(QUEST_IMAGE_BUCKET)
+        .createSignedUrl(resolvedArtUrl, 86400);
+      resolvedArtUrl = data?.signedUrl || resolvedArtUrl;
+    }
+
+    return c.json({ success: true, audio_url: resolvedAudioUrl, album_art: resolvedArtUrl });
+  } catch (error: any) {
+    console.error('[MEDIA] Audio URL error:', error);
+    return c.json({ error: `Failed: ${error.message}` }, 500);
+  }
+});
+
+// ── Helper: resolve audio storage paths to playable URLs ──
+// Supports both R2 (new: "r2:audio/...") and legacy Supabase Storage ("audio-files/...")
+async function resolveAudioUrls(tracks: any[]) {
+  return Promise.all(tracks.map(async (t: any) => {
+    let audio_url = t.audio_url || '';
+    let album_art = t.album_art || '';
+
+    // Audio URL resolution
+    if (isR2Key(audio_url)) {
+      audio_url = r2PublicUrl(extractR2Key(audio_url));
+    } else if (audio_url.startsWith('audio-files/')) {
+      try {
+        const { data } = await supabaseAdmin.storage.from(QUEST_IMAGE_BUCKET).createSignedUrl(audio_url, 3600);
+        audio_url = data?.signedUrl || audio_url;
+      } catch {}
+    }
+
+    // Album art resolution
+    if (isR2Key(album_art)) {
+      album_art = r2PublicUrl(extractR2Key(album_art));
+    } else if (album_art.startsWith('audio-art/')) {
+      try {
+        const { data } = await supabaseAdmin.storage.from(QUEST_IMAGE_BUCKET).createSignedUrl(album_art, 86400);
+        album_art = data?.signedUrl || album_art;
+      } catch {}
+    }
+
+    return { ...t, audio_url, album_art };
+  }));
+}
 
 Deno.serve(app.fetch);

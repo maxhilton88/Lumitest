@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 
 interface ForgotPasswordFormProps {
   userType: 'kindergarten' | 'superadmin';
-  onResetPassword: (email: string) => void;
+  onResetPassword: (email: string) => Promise<void>;
   onBack: () => void;
 }
 
@@ -14,12 +14,20 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      onResetPassword(email);
+    if (!email) return;
+
+    setIsLoading(true);
+    try {
+      await onResetPassword(email);
       setSubmitted(true);
+    } catch {
+      // Error toast is handled by the caller — keep form visible so user can retry
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -65,6 +73,7 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
                   placeholder="you@example.com"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-900 transition-colors"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -75,9 +84,10 @@ export const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                disabled={isLoading}
+                className="w-full px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send Reset Link
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
             </form>
           ) : (

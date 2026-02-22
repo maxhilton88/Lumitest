@@ -1,15 +1,18 @@
 // Stripe Checkout integration for Foxy Adventure
 // Plan A: RM365/year (Game subscription only)
-// Plan B: RM730 first year (Game subscription + Toy one-time), then RM365/year renewal
+// Plan B: RM365 promo (Game sub RM365/yr + Toy RM365 one-time, coupon zeros out the toy)
+//         → Customer pays RM365 today, renews at RM365/yr (subscription only)
 import { Hono } from "npm:hono";
 import Stripe from "npm:stripe@14";
 import * as kv from "./kv_store.tsx";
 
-const STRIPE_PRICE_GAME = "price_1SynLQPDTit9vc0mgbu8tHMf"; // Recurring RM365/year
-const STRIPE_PRICE_TOY = "price_1SynV5PDTit9vc0mJiKKP1ga";  // One-time RM365
+const STRIPE_PRICE_GAME = "price_1T2LBRPS5VWYunAIqCjxVFJM"; // Recurring RM365/year (LIVE)
+const STRIPE_PRICE_TOY = "price_1T2LFhPS5VWYunAIX6wvmkuJ";  // One-time RM365 (LIVE)
+const STRIPE_COUPON_INTRO = "Founder_discount"; // Founder discount — 100% off toy for first batch (LIVE)
 
-// KG Pro plan — RM1,850/year recurring
-const STRIPE_PRODUCT_KG_PRO = "prod_TyIQKnxdmqeBRf";
+// KG Pro plan — RM1,850/year recurring (LIVE)
+const STRIPE_PRODUCT_KG_PRO = "prod_U0NPP3BMg0jvmw";
+const STRIPE_PRICE_KG_PRO = "price_1T2MeHPS5VWYunAI4508KD71"; // Recurring RM1,850/year (LIVE)
 
 function getStripe() {
   const key = Deno.env.get("STRIPE_SECRET_KEY");
@@ -67,6 +70,7 @@ stripeRoutes.post("/checkout", async (c) => {
       mode: "subscription",
       customer_email: email,
       line_items: lineItems,
+      billing_address_collection: "required",
       success_url: successUrl || `${c.req.url.split("/make-server")[0]}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${c.req.url.split("/make-server")[0]}?checkout=cancelled`,
       metadata: {
@@ -87,6 +91,9 @@ stripeRoutes.post("/checkout", async (c) => {
       sessionParams.shipping_address_collection = {
         allowed_countries: ["MY", "SG"],
       };
+      // Auto-apply the Limited Intro Offer coupon — 100% off the toy
+      // Note: `discounts` and `allow_promotion_codes` are mutually exclusive in Stripe Checkout
+      sessionParams.discounts = [{ coupon: STRIPE_COUPON_INTRO }];
     }
 
     console.log(`[STRIPE] Creating checkout session: plan=${plan}, parent=${parentId}, email=${email}`);
@@ -561,15 +568,11 @@ stripeRoutes.post("/kg-checkout", async (c) => {
       customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: "myr",
-            product: STRIPE_PRODUCT_KG_PRO,
-            recurring: { interval: "year" },
-            unit_amount: 185000, // RM1,850 in sen
-          },
+          price: STRIPE_PRICE_KG_PRO,
           quantity: 1,
         },
       ],
+      billing_address_collection: "required",
       success_url: successUrl || `${c.req.url.split("/make-server")[0]}/kg?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${c.req.url.split("/make-server")[0]}/kg?checkout=cancelled`,
       metadata: {
@@ -584,7 +587,7 @@ stripeRoutes.post("/kg-checkout", async (c) => {
       },
     };
 
-    console.log(`[STRIPE-KG] Creating KG Pro checkout: school=${schoolId}, email=${email}, RM1850/year`);
+    console.log(`[STRIPE-KG] Creating KG Pro checkout: school=${schoolId}, email=${email}, Price ID=${STRIPE_PRICE_KG_PRO}`);
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
@@ -598,6 +601,89 @@ stripeRoutes.post("/kg-checkout", async (c) => {
   } catch (error) {
     console.error("[STRIPE-KG] Checkout error:", error);
     return c.json({ error: `KG checkout failed: ${error.message}` }, 500);
+  }
+});
+
+// ===== ADMIN: LIST ALL ORDERS — fetches completed checkout sessions from Stripe =====
+// GET /orders?limit=50&starting_after=cs_xxx
+// Returns: { orders: [...], has_more: boolean, next_cursor: string | null }
+stripeRoutes.get("/orders", async (c) => {
+  try {
+    const stripe = getStripe();
+    const limit = Math.min(parseInt(c.req.query("limit") || "50"), 100);
+    const startingAfter = c.req.query("starting_after") || undefined;
+
+    const params: Record<string, any> = {
+      limit,
+      expand: ["data.customer_details", "data.line_items"],
+    };
+    if (startingAfter) params.starting_after = startingAfter;
+
+    console.log(`[STRIPE-ORDERS] Listing checkout sessions: limit=${limit}, starting_after=${startingAfter || 'none'}`);
+
+    const sessions = await stripe.checkout.sessions.list(params);
+
+    const orders = sessions.data
+      .filter((s: any) => s.payment_status === "paid")
+      .map((s: any) => {
+        // Format billing address
+        const billing = s.customer_details?.address || null;
+        const billingAddr = billing
+          ? [billing.line1, billing.line2, billing.city, billing.state, billing.postal_code, billing.country]
+              .filter(Boolean)
+              .join(", ")
+          : null;
+
+        // Format shipping address (Plan B orders)
+        const shipping = s.shipping_details?.address || null;
+        const shippingAddr = shipping
+          ? [shipping.line1, shipping.line2, shipping.city, shipping.state, shipping.postal_code, shipping.country]
+              .filter(Boolean)
+              .join(", ")
+          : null;
+
+        // Extract line item names
+        const items = (s.line_items?.data || []).map((li: any) => ({
+          description: li.description || li.price?.product?.name || "—",
+          amount: li.amount_total / 100,
+          currency: li.currency?.toUpperCase() || "MYR",
+          quantity: li.quantity || 1,
+        }));
+
+        return {
+          id: s.id,
+          email: s.customer_email || s.customer_details?.email || "—",
+          name: s.customer_details?.name || "—",
+          phone: s.customer_details?.phone || "—",
+          plan: s.metadata?.plan || "—",
+          parent_id: s.metadata?.parent_id || null,
+          school_id: s.metadata?.school_id || null,
+          amount_total: (s.amount_total || 0) / 100,
+          currency: s.currency?.toUpperCase() || "MYR",
+          payment_status: s.payment_status,
+          billing_address: billingAddr,
+          billing_raw: billing,
+          shipping_name: s.shipping_details?.name || null,
+          shipping_address: shippingAddr,
+          shipping_raw: shipping,
+          items,
+          created_at: new Date(s.created * 1000).toISOString(),
+        };
+      });
+
+    console.log(`[STRIPE-ORDERS] Returning ${orders.length} paid orders (has_more: ${sessions.has_more})`);
+
+    return c.json({
+      success: true,
+      orders,
+      has_more: sessions.has_more,
+      next_cursor: sessions.has_more && sessions.data.length > 0
+        ? sessions.data[sessions.data.length - 1].id
+        : null,
+    });
+  } catch (error) {
+    console.error("[STRIPE-ORDERS] Error:", error);
+    return c.json({ error: `Failed to fetch orders: ${error.message}` }, 500);
   }
 });
 

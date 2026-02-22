@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Lock, Play, Star, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
-import { MusicToggle } from '../MusicToggle';
 import { useLanguage } from '../LanguageContext';
 import { VictoryBurst } from '../VictoryBurst';
 import { toast } from 'sonner@2.0.3';
@@ -507,11 +506,6 @@ export const QuestSelector: React.FC<QuestSelectorProps> = ({
         );
       })()}
 
-      {/* Music Toggle - Top Right */}
-      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-        <MusicToggle />
-      </div>
-
       {/* Back Button - Top Left */}
       {onBack && (
         <button
@@ -908,7 +902,7 @@ export const QuestSelector: React.FC<QuestSelectorProps> = ({
       <SwipeHint language={language} />
 
       {/* Footer */}
-      <FantasyFooter />
+      <FantasyFooter hideLinks />
 
       {/* Fantasy Animations CSS */}
       <style>{`
