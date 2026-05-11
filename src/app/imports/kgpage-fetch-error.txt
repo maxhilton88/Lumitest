@@ -1,0 +1,37 @@
+Failed to fetch dynamically imported module: https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/src/pages/KGPage.tsx?t=1772948976099
+
+TypeError: Failed to fetch dynamically imported module: https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/src/pages/KGPage.tsx?t=1772948976099
+
+    at Lazy
+    at RenderedRoute (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:6296:26)
+    at Outlet (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:7077:26)
+    at Suspense
+    at https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:290:12506
+    at FGCmp (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/@id/fginspector:3:55)
+    at https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:290:12506
+    at FGCmp (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/@id/fginspector:3:55)
+    at LanguageProvider (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/src/components/LanguageContext.tsx:398:36)
+    at https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:290:12506
+    at FGCmp (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/@id/fginspector:3:55)
+    at https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:290:12506
+    at FGCmp (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/@id/fginspector:3:55)
+    at ErrorBoundary (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/src/components/ErrorBoundary.tsx:9:5)
+    at https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:290:12506
+    at FGCmp (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/@id/fginspector:3:55)
+    at MainApp (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/src/App.tsx?t=1772948976101:37:20)
+    at RenderedRoute (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:6296:26)
+    at RenderErrorBoundary (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:6206:5)
+    at DataRoutes (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:6994:3)
+    at Router (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:7086:13)
+    at RouterProvider (https://ta-01kk5z2abvhb614mbp8tx3d4nh-1380-9y0x2892lh9bmmwll0jfe3ysb.makeproxy-m.figma.site/node_modules/.vite/deps/react-router.js?v=b370ccb3:6760:3)
+    at App
+    at o$ (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:55:4461)
+    at O (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:570:13314)
+    at rr (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:624:13959)
+    at b7 (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:641:10109)
+    at div
+    at o2 (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:55:14021)
+    at T3 (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:631:233330)
+    at yk (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:631:249134)
+    at ih (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:40:136003)
+    at hi (https://www.figma.com/webpack-artifacts/assets/code_components_preview_iframe-ab9bdbe29389ccb5.min.js.br:434:8433)

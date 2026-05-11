@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumi — Game Economy Master Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --surface: #111318;
+  --surface2: #181c24;
+  --border: #252a35;
+  --accent: #f59e0b;
+  --accent2: #10b981;
+  --accent3: #8b5cf6;
+  --accent4: #ef4444;
+  --accent5: #3b82f6;
+  --text: #e8eaf0;
+  --muted: #6b7280;
+  --gold: #f59e0b;
+  --diamond: #818cf8;
+  --xp: #10b981;
+  --hp: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.layout { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.sidebar-logo .logo-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.sidebar-logo .logo-sub {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.nav-section {
+  padding: 4px 20px 8px;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(245,158,11,0.06); }
+.nav-icon { font-size: 0.9rem; width: 16px; }
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 32px 40px 80px;
+  max-width: 1100px;
+}
+.page-header {
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+.page-header p {
+  color: var(--muted);
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+/* SECTIONS */
+.section {
+  margin-bottom: 56px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.section-icon { font-size: 1.3rem; }
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.section-badge {
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* TABLES */
+.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* CARDS GRID */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.card.gold::before { background: var(--gold); }
+.card.diamond::before { background: var(--diamond); }
+.card.xp::before { background: var(--xp); }
+.card.hp::before { background: var(--hp); }
+.card.purple::before { background: var(--accent3); }
+.card.blue::before { background: var(--accent5); }
+
+.card-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 2px;
+}
+.card-desc { font-size: 0.72rem; color: var(--muted); }
+.card.gold .card-value { color: var(--gold); }
+.card.diamond .card-value { color: var(--diamond); }
+.card.xp .card-value { color: var(--xp); }
+.card.hp .card-value { color: var(--hp); }
+.card.purple .card-value { color: var(--accent3); }
+.card.blue .card-value { color: var(--accent5); }
+
+/* RARITY */
+.rarity-common { color: #9ca3af; }
+.rarity-rare { color: #3b82f6; }
+.rarity-epic { color: #a855f7; }
+.rarity-legendary { color: #f59e0b; }
+.rarity-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rarity-badge.common { background: rgba(156,163,175,0.15); color: #9ca3af; }
+.rarity-badge.rare { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.rarity-badge.epic { background: rgba(168,85,247,0.15); color: #c084fc; }
+.rarity-badge.legendary { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+/* CHIP */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.chip.gold { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); color: var(--gold); }
+.chip.diamond { border-color: rgba(129,140,248,0.3); background: rgba(129,140,248,0.08); color: var(--diamond); }
+.chip.xp { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); color: var(--xp); }
+.chip.hp { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: var(--hp); }
+.chip.atk { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #fca5a5; }
+.chip.def { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.08); color: #93c5fd; }
+
+/* CALLOUT */
+.callout {
+  border-left: 3px solid var(--accent);
+  background: rgba(245,158,11,0.06);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.7;
+}
+.callout.info { border-color: var(--accent5); background: rgba(59,130,246,0.06); }
+.callout.success { border-color: var(--xp); background: rgba(16,185,129,0.06); }
+.callout.warn { border-color: var(--accent4); background: rgba(239,68,68,0.06); }
+.callout-title { font-weight: 600; margin-bottom: 4px; font-size: 0.75rem; }
+
+/* PILL */
+.pill {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.pill.free { background: rgba(107,114,128,0.2); color: #9ca3af; }
+.pill.premium { background: rgba(245,158,11,0.15); color: var(--gold); }
+
+/* SUBJECT COLOR DOTS */
+.subj { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; }
+.subj-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+/* PROGRESS BAR */
+.progress-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; border-radius: 3px; }
+
+/* CODE MONO */
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+.formula {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent2);
+  margin: 8px 0;
+}
+
+/* TABS */
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.tab-btn {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn:hover { color: var(--text); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* SHOP ITEM */
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.shop-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color 0.15s;
+}
+.shop-item:hover { border-color: var(--border); }
+.shop-emoji { font-size: 1.8rem; line-height: 1; min-width: 36px; }
+.shop-info { flex: 1; }
+.shop-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 3px; }
+.shop-desc { font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; line-height: 1.5; }
+.shop-meta { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+
+/* SKILL WEB */
+.skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.skill-node {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.72rem;
+}
+.skill-node-subj { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.skill-node-name { color: var(--text); line-height: 1.4; }
+.skill-node-code { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--accent); margin-top: 4px; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 20px 16px 60px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">🦊 Lumi</div>
+    <div class="logo-sub">Game Economy Reference</div>
+  </div>
+  <div class="nav-section">Economy</div>
+  <a class="nav-item active" href="#currencies"><span class="nav-icon">💰</span> Currencies</a>
+  <a class="nav-item" href="#rewards"><span class="nav-icon">🎁</span> Activity Rewards</a>
+  <a class="nav-item" href="#age-scaling"><span class="nav-icon">📊</span> Age Scaling</a>
+  <a class="nav-item" href="#leveling"><span class="nav-icon">⬆️</span> Leveling & XP</a>
+  <div class="nav-section">Store</div>
+  <a class="nav-item" href="#shop"><span class="nav-icon">🛒</span> Full Shop Catalog</a>
+  <a class="nav-item" href="#equipment"><span class="nav-icon">⚔️</span> Equipment System</a>
+  <div class="nav-section">Gameplay</div>
+  <a class="nav-item" href="#battle"><span class="nav-icon">⚡</span> Battle Economy</a>
+  <a class="nav-item" href="#evolution"><span class="nav-icon">🥚</span> Evolution Path</a>
+  <a class="nav-item" href="#access"><span class="nav-icon">🔒</span> Access Gates</a>
+
+  <div class="nav-section">Content</div>
+  <a class="nav-item" href="#skills"><span class="nav-icon">📚</span> Skill Web (KSSR)</a>
+  <a class="nav-item" href="#referral"><span class="nav-icon">👥</span> Referral System</a>
+  <a class="nav-item" href="#flags"><span class="nav-icon">🚩</span> Open Questions</a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="page-header">
+    <h1>Lumi — Game Economy Master Reference</h1>
+    <p>Full proposed design: currencies · shop · rewards · age-scaling · evolution · battle · KSSR skills · referral</p>
+  </div>
+
+  <!-- CURRENCIES -->
+  <section class="section" id="currencies">
+    <div class="section-header">
+      <span class="section-icon">💰</span>
+      <span class="section-title">Currency System</span>
+      <span class="section-badge">2 currencies</span>
+    </div>
+    <div class="cards" style="margin-bottom:16px;">
+      <div class="card gold">
+        <div class="card-label">🪙 Gold</div>
+        <div class="card-value">Earnable</div>
+        <div class="card-desc">Earned through all activities. Buys consumables, common/rare items. The primary daily loop currency.</div>
+      </div>
+      <div class="card diamond">
+        <div class="card-label">💎 Diamond</div>
+        <div class="card-value">Premium</div>
+        <div class="card-desc">Earned via referrals & milestones only. Buys epic/legendary items and rare shop exclusives.</div>
+      </div>
+      <div class="card xp">
+        <div class="card-label">⭐ XP</div>
+        <div class="card-value">Progress</div>
+        <div class="card-desc">Not a spendable currency — drives leveling. High XP = higher battle stats + better rewards per question.</div>
+      </div>
+      <div class="card hp">
+        <div class="card-label">❤️ HP</div>
+        <div class="card-value">Resource</div>
+        <div class="card-desc">Depletes in battle. Restored via potions from shop. Gate for battle entry (≥10% max HP required).</div>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">💎 Diamond Earning Paths — Intentionally Rare</div>
+      Gems are hard to get. Regular gameplay does <strong>not</strong> award gems. Only:<br>
+      • <strong>5 💎</strong> on signup (existing)<br>
+      • <strong>1 💎</strong> per free account referral &nbsp;|&nbsp; <strong>3 💎</strong> per Plan A referral &nbsp;|&nbsp; <strong>5 💎</strong> per Plan B referral<br>
+      • <em>Future:</em> Found in caves / hidden in RPG quest map (when full RPG mode launches)
+    </div>
+  </section>
+
+  <!-- ACTIVITY REWARDS -->
+  <section class="section" id="rewards">
+    <div class="section-header">
+      <span class="section-icon">🎁</span>
+      <span class="section-title">Activity Rewards</span>
+    </div>
+
+    <div class="callout warn" style="margin-bottom:16px;">
+      <div class="callout-title">⚠️ Practice reward is currently broken in code</div>
+      <span class="mono">recordDailyActivity('practice')</span> returns hardcoded <span class="mono">gold=0, xp=0</span> flat — it ignores <span class="mono">questionsCorrect/questionsTotal</span> entirely. Fix needed: wire up the session reward logic below. Test already works correctly.
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead>
+          <tr><th>Activity</th><th>XP</th><th>Gold</th><th>Daily Limit</th><th>Premium</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>📝 Test</td><td>Flat by age on completion</td><td>0 unless ≥80% accuracy</td><td><strong>No limit</strong></td><td>No limit</td></tr>
+          <tr><td>🏋️ Practice</td><td>Flat by age on completion</td><td>0 unless ≥80% accuracy</td><td><strong>No limit</strong></td><td>No limit</td></tr>
+          <tr><td>🃏 Flashcard</td><td>5 XP (age 4–6 only)</td><td>5g (age 4–6 only)</td><td>3/day</td><td>∞</td></tr>
+          <tr><td>🎬 Video</td><td>0</td><td>0</td><td>2/day</td><td>∞</td></tr>
+          <tr><td>🎵 Music</td><td>0</td><td>0</td><td>∞</td><td>∞</td></tr>
+          <tr><td>⚔️ Battle</td><td>Winner only — level-scaled formula</td><td>stake × 2 (winner)</td><td>1/day</td><td>∞</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-header" style="margin-top:24px;">
+      <span class="section-title" style="font-size:0.95rem;">Test & Practice — Session Reward Logic</span>
+    </div>
+
+    <div class="callout info" style="margin-bottom:14px;">
+      <div class="callout-title">How a session completes</div>
+      <strong>Practice:</strong> Timer counts down. Kid must answer ≥ minQuestions before session ends. Timer hits 0 → unanswered questions counted as wrong. Session must complete fully to receive any reward.<br><br>
+      <strong>Test:</strong> Kid must complete the entire test flow. Partial completion = no reward.<br><br>
+      Both modes: <strong>XP always awarded on completion. Gold only awarded if accuracy ≥ 80%.</strong>
+    </div>
+
+    <div class="formula">
+      sessionXP = round(20 × (1 + (age – 4) × 0.375))<br>
+      accuracyBonus_gold = getAccuracyBonus(age, accuracy) — see Age-Scaled table below<br>
+      if accuracy &lt; 80%: gold = 0
+    </div>
+
+    <div class="table-wrap" style="margin-top:14px;">
+      <table>
+        <thead>
+          <tr><th>Age</th><th>Year</th><th>Session XP (completion)</th><th>>80% Gold</th><th>>90% Gold</th><th>100% Gold</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>4</strong></td><td>Prasekolah</td><td>20 XP</td><td>10g</td><td>25g</td><td>60g</td></tr>
+          <tr><td><strong>5</strong></td><td>Prasekolah</td><td>28 XP</td><td>14g</td><td>34g</td><td>83g</td></tr>
+          <tr><td><strong>6</strong></td><td>Tahun 1</td><td>35 XP</td><td>18g</td><td>44g</td><td>105g</td></tr>
+          <tr><td><strong>7</strong></td><td>Tahun 2</td><td>43 XP</td><td>21g</td><td>53g</td><td>128g</td></tr>
+          <tr><td><strong>8</strong></td><td>Tahun 3</td><td>50 XP</td><td>25g</td><td>63g</td><td>150g</td></tr>
+          <tr><td><strong>9</strong></td><td>Tahun 4</td><td>58 XP</td><td>29g</td><td>72g</td><td>173g</td></tr>
+          <tr><td><strong>10</strong></td><td>Tahun 4</td><td>65 XP</td><td>33g</td><td>81g</td><td>195g</td></tr>
+          <tr><td><strong>11</strong></td><td>Tahun 5</td><td>73 XP</td><td>36g</td><td>91g</td><td>218g</td></tr>
+          <tr><td><strong>12</strong></td><td>Tahun 6</td><td>80 XP</td><td>40g</td><td>100g</td><td>240g</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout success" style="margin-top:14px;">
+      <div class="callout-title">✅ What this means for a kid</div>
+      Complete the session → always get XP (shows effort is always rewarded).<br>
+      Score ≥80% → bonus gold on top (shows accuracy matters).<br>
+      No daily limit → kids can do as many subjects as they want in one day.<br>
+      Multiple subjects count separately — Math practice + English practice = 2 separate XP rewards.
+    </div>
+  </section>
+
+  <!-- AGE SCALING -->
+  <section class="section" id="age-scaling">
+    <div class="section-header">
+      <span class="section-icon">📊</span>
+      <span class="section-title">Age-Scaled Rewards</span>
+      <span class="section-badge">Ages 4–12 · Test & Practice only</span>
+    </div>
+    <div class="callout info" style="margin-bottom:14px;">
+      <div class="callout-title">Formula</div>
+      <span class="mono">sessionXP = round(20 × (1 + (age – 4) × 0.375))</span><br>
+      <span class="mono">accuracyGold = age-scaled bonus — only if accuracy ≥ 80%</span><br><br>
+      XP is for <strong>completing</strong> the session. Gold is for <strong>scoring well</strong>. They are independent. No per-question tracking.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Age</th><th>Year</th><th>Scale</th>
+            <th>Session XP</th>
+            <th>>80% Gold</th><th>>90% Gold</th><th>100% Gold</th>
+            <th>Signup Gold</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>4</strong></td><td>Prasekolah</td><td class="mono">1.0×</td><td>20 XP</td><td>10g</td><td>25g</td><td>60g</td><td>100g</td></tr>
+          <tr><td><strong>5</strong></td><td>Prasekolah</td><td class="mono">1.375×</td><td>28 XP</td><td>14g</td><td>34g</td><td>83g</td><td>100g</td></tr>
+          <tr><td><strong>6</strong></td><td>Tahun 1</td><td class="mono">1.75×</td><td>35 XP</td><td>18g</td><td>44g</td><td>105g</td><td>100g</td></tr>
+          <tr><td><strong>7</strong></td><td>Tahun 2</td><td class="mono">2.125×</td><td>43 XP</td><td>21g</td><td>53g</td><td>128g</td><td>100g</td></tr>
+          <tr><td><strong>8</strong></td><td>Tahun 3</td><td class="mono">2.5×</td><td>50 XP</td><td>25g</td><td>63g</td><td>150g</td><td>100g</td></tr>
+          <tr><td><strong>9</strong></td><td>Tahun 4</td><td class="mono">2.875×</td><td>58 XP</td><td>29g</td><td>72g</td><td>173g</td><td>100g</td></tr>
+          <tr><td><strong>10</strong></td><td>Tahun 4</td><td class="mono">3.25×</td><td>65 XP</td><td>33g</td><td>81g</td><td>195g</td><td>100g</td></tr>
+          <tr><td><strong>11</strong></td><td>Tahun 5</td><td class="mono">3.625×</td><td>73 XP</td><td>36g</td><td>91g</td><td>218g</td><td>100g</td></tr>
+          <tr><td><strong>12</strong></td><td>Tahun 6</td><td class="mono">4.0×</td><td>80 XP</td><td>40g</td><td>100g</td><td>240g</td><td>100g</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info" style="margin-top:14px;">
+      <div class="callout-title">📌 Key rules</div>
+      • Gold accuracy bonuses are mutually exclusive — only the highest tier applies (100% overrides >90% overrides >80%)<br>
+      • Below 80% accuracy = 0 gold, session XP only<br>
+      • Both Test and Practice use identical reward logic<br>
+      • No daily limit on either — kids can do as many subjects as they want
+    </div>
+  </section>
+
+  <!-- LEVELING -->
+  <section class="section" id="leveling">
+    <div class="section-header">
+      <span class="section-icon">⬆️</span>
+      <span class="section-title">Leveling & XP Curve</span>
+      <span class="section-badge">Pokémon Medium Fast · Max Level 100</span>
+    </div>
+    <div class="formula">XP to reach level N = N³ &nbsp;·&nbsp; XP to next level = N³ – (N–1)³ &nbsp;·&nbsp; Max total XP = 1,000,000</div>
+    <div class="callout info" style="margin-bottom:14px;">
+      <div class="callout-title">Why level³?</div>
+      Identical to Pokémon's "Medium Fast" growth curve. Early levels feel fast and rewarding. Mid-game slows naturally. Level 100 is a multi-year achievement — always something to work toward, never truly "done."<br>
+      A child doing ~350 XP/day (study only, no battles): <strong>Level 20 in ~23 days · Level 30 in ~77 days</strong><br>
+      Premium battler (3 wins/day at Lv 30): ~750 XP/day → <strong>Level 30 in ~36 days</strong>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Level</th><th>XP to Next</th><th>Total XP</th><th>Milestone</th><th>Battle Stake</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>7</td><td>0</td><td>Egg stage, basic access</td><td>10g (floor)</td></tr>
+          <tr><td>5</td><td>61</td><td>125</td><td>🥚 → 🦊 Baby hatches (48hr + Lv5)</td><td>25g</td></tr>
+          <tr><td>10</td><td>271</td><td>1,000</td><td>—</td><td>50g</td></tr>
+          <tr><td>20</td><td>1,141</td><td>8,000</td><td>🦊 Young stage (Rive — future)</td><td>100g</td></tr>
+          <tr><td>30</td><td>2,711</td><td>27,000</td><td>⚔️ Warrior stage (Rive — future)</td><td>150g ← ceiling</td></tr>
+          <tr><td>50</td><td>7,351</td><td>125,000</td><td>—</td><td>150g (capped)</td></tr>
+          <tr><td>75</td><td>16,876</td><td>421,875</td><td>—</td><td>150g (capped)</td></tr>
+          <tr><td>100</td><td>—</td><td>1,000,000</td><td>🌟 Max level — prestige badge</td><td>150g (capped)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info" style="margin-top:14px;">
+      <div class="callout-title">📌 Evolution stages are level-gated, not time-gated (except Baby)</div>
+      Baby = 48hr timer (existing, live). Young = Level 20. Warrior = Level 30 + 25 battle wins. Visual character swaps wait for Rive — but level thresholds and rewards should be coded now.
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section class="section" id="shop">
+    <div class="section-header">
+      <span class="section-icon">🛒</span>
+      <span class="section-title">Full Shop Catalog (Proposed)</span>
+    </div>
+
+    <div class="tabs" id="shopTabs">
+      <button class="tab-btn active" onclick="switchTab('shopTabs','tab-consumable',this)">🧪 Consumables</button>
+      <button class="tab-btn" onclick="switchTab('shopTabs','tab-battle',this)">⚔️ Battle Items</button>
+      <button class="tab-btn" onclick="switchTab('shopTabs','tab-treasure',this)">💍 Equipment</button>
+      <button class="tab-btn" onclick="switchTab('shopTabs','tab-special',this)">✨ Special</button>
+    </div>
+
+    <!-- CONSUMABLES -->
+    <div class="tab-content active" id="tab-consumable">
+      <div class="callout info" style="margin-bottom:14px;">
+        <div class="callout-title">All bag items are one-time use, instant effect</div>
+        No timed buffs. No passive mechanics. Use item → effect applies immediately → item consumed. Simple.
+      </div>
+      <div class="shop-grid">
+        <div class="shop-item">
+          <div class="shop-emoji">🧴</div>
+          <div class="shop-info">
+            <div class="shop-name">Small Potion</div>
+            <div class="shop-desc">Instantly restore 25 HP.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 50g</span>
+              <span class="rarity-badge common">Common</span>
+              <span class="chip hp">+25 HP</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🍶</div>
+          <div class="shop-info">
+            <div class="shop-name">Medium Potion</div>
+            <div class="shop-desc">Instantly restore 50 HP.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 90g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip hp">+50 HP</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🏺</div>
+          <div class="shop-info">
+            <div class="shop-name">Max Potion</div>
+            <div class="shop-desc">Instantly restore HP to full maximum.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 200g</span>
+              <span class="rarity-badge epic">Epic</span>
+              <span class="chip hp">Full HP</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🌟</div>
+          <div class="shop-info">
+            <div class="shop-name">XP Crystal</div>
+            <div class="shop-desc">Instantly grant +200 XP.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 180g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip xp">+200 XP</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">💫</div>
+          <div class="shop-info">
+            <div class="shop-name">Level Scroll</div>
+            <div class="shop-desc">Instantly gain +1 level, skipping the XP requirement.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 500g</span>
+              <span class="rarity-badge legendary">Legendary</span>
+              <span class="chip xp">+1 Level</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATTLE ITEMS -->
+    <div class="tab-content" id="tab-battle">
+      <div class="callout info" style="margin-bottom:14px;">
+        <div class="callout-title">Battle items: one-time use, applied before battle starts</div>
+        Simple stat boosts only — ATK, DEF, or both. No streaks, no debuffs, no reflect. Use from bag before scanning QR.
+      </div>
+      <div class="shop-grid">
+        <div class="shop-item">
+          <div class="shop-emoji">🗡️</div>
+          <div class="shop-info">
+            <div class="shop-name">Iron Dagger</div>
+            <div class="shop-desc">Boost your ATK for this battle. One use.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 40g</span>
+              <span class="rarity-badge common">Common</span>
+              <span class="chip atk">ATK +10 (1 battle)</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">⚔️</div>
+          <div class="shop-info">
+            <div class="shop-name">Steel Sword</div>
+            <div class="shop-desc">Stronger ATK boost for this battle. One use.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 90g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip atk">ATK +25 (1 battle)</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🛡️</div>
+          <div class="shop-info">
+            <div class="shop-name">Wooden Shield</div>
+            <div class="shop-desc">Boost your DEF for this battle. One use.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 40g</span>
+              <span class="rarity-badge common">Common</span>
+              <span class="chip def">DEF +10 (1 battle)</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🏰</div>
+          <div class="shop-info">
+            <div class="shop-name">Iron Shield</div>
+            <div class="shop-desc">Stronger DEF boost for this battle. One use.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 90g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip def">DEF +25 (1 battle)</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">💊</div>
+          <div class="shop-info">
+            <div class="shop-name">Battle Tonic</div>
+            <div class="shop-desc">Moderate boost to both ATK and DEF for this battle. One use.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 120g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip atk">ATK +15</span>
+              <span class="chip def">DEF +15</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT (Treasure/Equip) -->
+    <div class="tab-content" id="tab-treasure">
+      <div class="callout info" style="margin-bottom:14px;">
+        <div class="callout-title">Equipment System</div>
+        Equipable items have 4 slots: Weapon, Armor, Boots, Accessory. Stats are persistent (not one-use). Higher rarity items have higher stat boosts. Kids can mix and match to build their "loadout."
+      </div>
+      <div class="shop-grid">
+        <div class="shop-item">
+          <div class="shop-emoji">🗡️</div>
+          <div class="shop-info">
+            <div class="shop-name">Rusty Sword</div>
+            <div class="shop-desc">Starter weapon. Increases base ATK in battles.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 150g</span>
+              <span class="rarity-badge common">Common</span>
+              <span class="chip atk">ATK +5</span>
+              <span class="chip">weapon slot</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🔱</div>
+          <div class="shop-info">
+            <div class="shop-name">Warrior Blade</div>
+            <div class="shop-desc">Strong weapon for seasoned battlers.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 400g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip atk">ATK +20</span>
+              <span class="chip">weapon slot</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🛡️</div>
+          <div class="shop-info">
+            <div class="shop-name">Leaf Armor</div>
+            <div class="shop-desc">Light armor. Reduces damage taken in battle.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 200g</span>
+              <span class="rarity-badge common">Common</span>
+              <span class="chip def">DEF +8</span>
+              <span class="chip">armor slot</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🧥</div>
+          <div class="shop-info">
+            <div class="shop-name">Scholar's Robe</div>
+            <div class="shop-desc">Sturdy armor that also rewards academic effort.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 400g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip def">DEF +15</span>
+              <span class="chip gold">+10% test gold</span>
+              <span class="chip">armor slot</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🌙</div>
+          <div class="shop-info">
+            <div class="shop-name">Mooncloak</div>
+            <div class="shop-desc">Top-tier armor. Highest DEF and max HP boost.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 800g</span>
+              <span class="rarity-badge epic">Epic</span>
+              <span class="chip def">DEF +25</span>
+              <span class="chip hp">Max HP +50</span>
+              <span class="chip">armor slot</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">📿</div>
+          <div class="shop-info">
+            <div class="shop-name">Focus Necklace</div>
+            <div class="shop-desc">Accessory. Earn more XP from every activity.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 350g</span>
+              <span class="rarity-badge rare">Rare</span>
+              <span class="chip xp">+10% all XP</span>
+              <span class="chip">accessory slot</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPECIAL -->
+    <div class="tab-content" id="tab-special">
+      <div class="shop-grid">
+        <div class="shop-item">
+          <div class="shop-emoji">⏩</div>
+          <div class="shop-info">
+            <div class="shop-name">Hatch Accelerator</div>
+            <div class="shop-desc">Cut the egg hatch timer by 12 hours. Stack up to 2.</div>
+            <div class="shop-meta">
+              <span class="chip diamond">💎 3</span>
+              <span class="rarity-badge epic">Epic</span>
+              <span class="chip">–12hr hatch</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🔔</div>
+          <div class="shop-info">
+            <div class="shop-name">Daily Quest Refresh</div>
+            <div class="shop-desc">Reset your daily activity limits once (not battle limit). Premium only.</div>
+            <div class="shop-meta">
+              <span class="chip diamond">💎 5</span>
+              <span class="rarity-badge epic">Epic</span>
+              <span class="pill premium">Premium</span>
+            </div>
+          </div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-emoji">🗺️</div>
+          <div class="shop-info">
+            <div class="shop-name">Treasure Map</div>
+            <div class="shop-desc">Unlock a hidden bonus challenge this week with 3× gold reward.</div>
+            <div class="shop-meta">
+              <span class="chip gold">🪙 500g</span>
+              <span class="rarity-badge legendary">Legendary</span>
+              <span class="chip gold">3× bonus round</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EQUIPMENT -->
+  <section class="section" id="equipment">
+    <div class="section-header">
+      <span class="section-icon">⚔️</span>
+      <span class="section-title">Equipment & Battle Stats</span>
+    </div>
+
+    <!-- HP SCALING -->
+    <div class="section-header" style="margin-top:0;">
+      <span class="section-title" style="font-size:0.95rem;">❤️ HP Scaling by Level</span>
+    </div>
+    <div class="formula">maxHP = 50 + (level × 15)</div>
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead><tr><th>Level</th><th>Max HP</th><th>Base ATK</th><th>Hits to KO (no gear)</th><th>HP entry gate (10%)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>65</td><td>13</td><td>~5 hits</td><td>≥7 HP</td></tr>
+          <tr><td>5</td><td>125</td><td>25</td><td>~5 hits</td><td>≥13 HP</td></tr>
+          <tr><td>10</td><td>200</td><td>40</td><td>~5 hits</td><td>≥20 HP</td></tr>
+          <tr><td>20</td><td>350</td><td>70</td><td>~5 hits</td><td>≥35 HP</td></tr>
+          <tr><td>30</td><td>500</td><td>100</td><td>~5 hits</td><td>≥50 HP</td></tr>
+          <tr><td>50</td><td>800</td><td>160</td><td>~5 hits</td><td>≥80 HP</td></tr>
+          <tr><td>100</td><td>1,550</td><td>310</td><td>~5 hits</td><td>≥155 HP</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info" style="margin-bottom:16px;">
+      <div class="callout-title">⚔️ Battle Damage Formula (Confirmed)</div>
+      <span class="mono">baseATK = 10 + (level × 3)</span><br>
+      <span class="mono">damage = (baseATK + equip_ATK) × age_scale × speed_bonus</span><br>
+      <span class="mono">net damage = raw_damage – equip_DEF (min 1)</span><br>
+      <span class="mono">speed bonus = 1.0 (>5s) | 1.15 (3–5s) | 1.3 (&lt;3s)</span><br><br>
+      HP and ATK are designed so same-level battles last ~5 hits. DEF gear pushes toward 6 hits, ATK gear toward 4 hits.
+    </div>
+
+    <!-- EQUIPMENT STAT TABLE -->
+    <div class="section-header">
+      <span class="section-title" style="font-size:0.95rem;">🎒 Equipment Stats</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Stat</th><th>Effect</th><th>Base (no gear)</th><th>Max with gear</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>ATK</strong> ⚔️</td><td>Flat bonus on top of level base ATK</td><td>Lv1: 13 · Lv30: 100 · Lv100: 310</td><td>+20 (Warrior Blade)</td></tr>
+          <tr><td><strong>DEF</strong> 🛡️</td><td>Flat damage absorbed per hit. Min 1 always lands.</td><td>0</td><td>+25 (Mooncloak)</td></tr>
+          <tr><td><strong>Max HP</strong> ❤️</td><td>Bonus HP on top of level-scaled base</td><td>Lv1: 65 · Lv30: 500 · Lv100: 1,550</td><td>+50 (Mooncloak)</td></tr>
+          <tr><td><strong>XP%</strong> ⭐</td><td>Multiplier on XP from all activities</td><td>1.0×</td><td>1.1× (Focus Necklace)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- BATTLE -->
+  <section class="section" id="battle">
+    <div class="section-header">
+      <span class="section-icon">⚡</span>
+      <span class="section-title">Battle Economy</span>
+    </div>
+
+    <div class="callout info" style="margin-bottom:16px;">
+      <div class="callout-title">⚙️ Updated Stake Formula</div>
+      <span class="mono">calcBattleStake(levelA, levelB):</span><br>
+      <span class="mono">&nbsp;&nbsp;avg = (levelA + levelB) / 2</span><br>
+      <span class="mono">&nbsp;&nbsp;return min(150, max(10, round(avg × 5)))</span><br><br>
+      Stake is based on the average of both players' levels. Hard ceiling of <strong>150g</strong> kicks in at avg Level 30 — stays capped all the way to Level 100.
+    </div>
+
+    <div class="callout info" style="margin-bottom:16px;">
+      <div class="callout-title">⭐ Battle XP Formula</div>
+      <span class="mono">avgLevel = (levelA + levelB) / 2</span><br>
+      <span class="mono">xpToNext = (avgLevel + 1)³ – avgLevel³</span><br>
+      <span class="mono">winXP = max(10, round(xpToNext × 0.05))</span><br>
+      <span class="mono">loseXP = 0 &nbsp;·&nbsp; forfeitXP = 0</span><br><br>
+      Loser and forfeiter get <strong>0 XP</strong> — prevents kids farming XP by deliberately losing to high-level players. Winner always gets at least 10 XP (floor).
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead><tr><th>Player A</th><th>Player B</th><th>Avg</th><th>Stake</th><th>Win Gold</th><th>Win XP</th><th>Lose/Forfeit</th></tr></thead>
+        <tbody>
+          <tr><td>Lv 1</td><td>Lv 1</td><td>1</td><td>10g</td><td>20g</td><td>10 XP (floor)</td><td>0g · 0 XP</td></tr>
+          <tr><td>Lv 5</td><td>Lv 5</td><td>5</td><td>25g</td><td>50g</td><td>10 XP (floor)</td><td>0g · 0 XP</td></tr>
+          <tr><td>Lv 10</td><td>Lv 10</td><td>10</td><td>50g</td><td>100g</td><td>14 XP</td><td>0g · 0 XP</td></tr>
+          <tr><td>Lv 20</td><td>Lv 20</td><td>20</td><td>100g</td><td>200g</td><td>57 XP</td><td>0g · 0 XP</td></tr>
+          <tr><td>Lv 30</td><td>Lv 30</td><td>30</td><td>150g ← ceiling</td><td>300g</td><td>136 XP</td><td>0g · 0 XP</td></tr>
+          <tr><td>Lv 50</td><td>Lv 50</td><td>50</td><td>150g</td><td>300g</td><td>368 XP</td><td>0g · 0 XP</td></tr>
+          <tr><td>Lv 5</td><td>Lv 10</td><td>7.5</td><td>38g</td><td>76g</td><td>10 XP (floor)</td><td>0g · 0 XP</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead><tr><th>Outcome</th><th>Gold</th><th>XP</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>🏆 Win</td><td>stake × 2</td><td>max(10, round(xpToNext × 0.05))</td><td>Always at least 10 XP</td></tr>
+          <tr><td>💀 Lose</td><td>0</td><td><strong>0 XP</strong></td><td>No XP — prevents farming losses against high-level players</td></tr>
+          <tr><td>🏃 Forfeit</td><td>0</td><td><strong>0 XP</strong></td><td>Full penalty — quitters get nothing</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step</th><th>Mechanic</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Gold deducted upfront</td><td>Both players lose <span class="mono">stake</span> gold before battle starts — no refund if forfeit</td></tr>
+          <tr><td>2</td><td>Winner receives</td><td><span class="mono">stake × 2</span> gold + <span class="mono">max(10, round(xpToNext × 0.05))</span> XP</td></tr>
+          <tr><td>3</td><td>Loser receives</td><td>0 gold · 0 XP</td></tr>
+          <tr><td>4</td><td>Forfeit (Run)</td><td>0 gold · 0 XP — stake already deducted, not returned</td></tr>
+          <tr><td>5</td><td>HP after battle</td><td>HP stays at whatever it was when the battle ended — no forced drop, no regen</td></tr>
+          <tr><td>6</td><td>HP entry requirement</td><td>≥ 10% of max HP to start a battle</td></tr>
+          <tr><td>7</td><td>Battle limit (free)</td><td>1/day</td></tr>
+          <tr><td>8</td><td>Battle limit (premium)</td><td>Unlimited</td></tr>
+          <tr><td>9</td><td>Battle questions</td><td>Drawn from both players' weak skill nodes (spiderweb data)</td></tr>
+          <tr><td>10</td><td>Matchmaking</td><td>Friend-only via QR scan — no random matchmaking</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout success" style="margin-top:14px;">
+      <div class="callout-title">🕸️ Battle questions pulled from weak topics</div>
+      Questions are drawn from both players' weak skill nodes in the spiderweb. Battles are fun AND fix real gaps — parents see weak topics being targeted every time their child battles.
+    </div>
+  </section>
+
+  <!-- EVOLUTION -->
+  <section class="section" id="evolution">
+    <div class="section-header">
+      <span class="section-icon">🥚</span>
+      <span class="section-title">Evolution Path</span>
+      <span class="section-badge">Rive character required for stages 3+</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stage</th><th>Trigger</th><th>HP Base</th><th>ATK Base</th><th>Status</th><th>Reward on Evolve</th></tr></thead>
+        <tbody>
+          <tr><td>🥚 Egg</td><td>Default (signup)</td><td>—</td><td>—</td><td><span class="pill premium">Live</span></td><td>—</td></tr>
+          <tr><td>🦊 Baby</td><td>48hr timer + Level 5</td><td>88</td><td>10 + (level × 3)</td><td><span class="pill premium">Live</span></td><td>+50 gold</td></tr>
+          <tr><td>🦊 Young</td><td>Level 20</td><td>120</td><td>10 + (level × 3)</td><td><span class="pill free">Rive — future</span></td><td>Rare weapon</td></tr>
+          <tr><td>⚔️ Warrior</td><td>Level 30 + 25 battles won</td><td>160</td><td>10 + (level × 3)</td><td><span class="pill free">Rive — future</span></td><td>Epic item</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout info" style="margin-top:14px;">
+      <div class="callout-title">📌 What's implemented now vs. later</div>
+      Egg → Baby is live and working. Young and Warrior stage <em>triggers</em> (level thresholds + rewards) should be coded now so the data is ready — the visual character swap just displays a placeholder until the Rive animation is complete.
+    </div>
+  </section>
+
+  <!-- ACCESS GATES -->
+  <section class="section" id="access">
+    <div class="section-header">
+      <span class="section-icon">🔒</span>
+      <span class="section-title">Access Gates & Free vs. Premium</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Activity</th><th>Free</th><th>Plan A (Digital)</th><th>Plan B (+ Toy)</th></tr></thead>
+        <tbody>
+          <tr><td>📝 Test</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>🏋️ Practice</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>🃏 Flashcard</td><td>3/day</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>🎬 Video</td><td>2/day</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>🎵 Music</td><td>Unlimited</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>⚔️ Battle</td><td>1/day</td><td>Unlimited</td><td>Unlimited</td></tr>
+          <tr><td>📊 Full Spider Report</td><td>❌ Blurred</td><td>✅ Full</td><td>✅ Full</td></tr>
+          <tr><td>🏫 KG Connect</td><td>View only</td><td>Full sync</td><td>Full sync</td></tr>
+          <tr><td>🛒 Shop – Common/Rare</td><td>✅ Gold only</td><td>✅</td><td>✅</td></tr>
+          <tr><td>🛒 Shop – Epic/Legendary</td><td>💎 only (limited)</td><td>💎 full access</td><td>💎 full access</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SKILLS WEB -->
+  <section class="section" id="skills">
+    <div class="section-header">
+      <span class="section-icon">📚</span>
+      <span class="section-title">KSSR Skill Taxonomy</span>
+      <span class="section-badge">338 skills · 7 subjects · 7 levels</span>
+    </div>
+    <div class="tabs" id="skillTabs">
+      <button class="tab-btn active" onclick="switchTab('skillTabs','skill-overview',this)">Overview</button>
+      <button class="tab-btn" onclick="switchTab('skillTabs','skill-reward',this)">Reward by Subject</button>
+      <button class="tab-btn" onclick="switchTab('skillTabs','skill-spider',this)">Spider Web Logic</button>
+    </div>
+    <div class="tab-content active" id="skill-overview">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Level</th><th>Age</th><th>Mat</th><th>Sains</th><th>English</th><th>BM</th><th>Chinese</th><th>Geo</th><th>Sejarah</th><th>Total Topics</th></tr></thead>
+          <tbody>
+            <tr><td>Prasekolah</td><td>4–5</td><td>6</td><td>5</td><td>2</td><td>3</td><td>2</td><td>5</td><td>4</td><td><strong>27</strong></td></tr>
+            <tr><td>Tahun 1</td><td>6</td><td>8</td><td>4</td><td>5</td><td>3</td><td>5</td><td>6</td><td>3</td><td><strong>34</strong></td></tr>
+            <tr><td>Tahun 2</td><td>7</td><td>10</td><td>4</td><td>4</td><td>3</td><td>5</td><td>5</td><td>4</td><td><strong>35</strong></td></tr>
+            <tr><td>Tahun 3</td><td>8</td><td>10</td><td>4</td><td>3</td><td>4</td><td>4</td><td>4</td><td>5</td><td><strong>34</strong></td></tr>
+            <tr><td>Tahun 4</td><td>9–10</td><td>7</td><td>4</td><td>3</td><td>3</td><td>4</td><td>3</td><td>4</td><td><strong>28</strong></td></tr>
+            <tr><td>Tahun 5</td><td>11</td><td>7</td><td>3</td><td>4</td><td>3</td><td>4</td><td>4</td><td>2</td><td><strong>27</strong></td></tr>
+            <tr><td>Tahun 6</td><td>12</td><td>8</td><td>3</td><td>3</td><td>4</td><td>4</td><td>4</td><td>4</td><td><strong>30</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-content" id="skill-reward">
+      <div class="callout success" style="margin-bottom:14px;">
+        <div class="callout-title">✅ All subjects use the same 1.0× XP multiplier</div>
+        No subject bonuses or penalties. Every subject earns the same XP for the same effort — fair across all races and backgrounds in Malaysia.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Subject</th><th>XP Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td>🔢 Matematik</td><td>1.0×</td></tr>
+            <tr><td>🔬 Sains</td><td>1.0×</td></tr>
+            <tr><td>🇬🇧 English</td><td>1.0×</td></tr>
+            <tr><td>🇲🇾 Bahasa Melayu</td><td>1.0×</td></tr>
+            <tr><td>🈵 Chinese</td><td>1.0×</td></tr>
+            <tr><td>🌍 Geography</td><td>1.0×</td></tr>
+            <tr><td>📜 Sejarah</td><td>1.0×</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tab-content" id="skill-spider">
+      <div class="callout info">
+        <div class="callout-title">🕸️ Spider Web — How it maps to rewards</div>
+        Each skill has a Kod Kemahiran (e.g. <span class="mono">MAT-T1-N01</span>). Every activity (test/practice/flashcard/battle) is tagged to 1+ skill codes.<br><br>
+        <strong>Mastery scoring per skill:</strong><br>
+        • 0 attempts → <span style="color:var(--accent4)">◉ Unstarted</span><br>
+        • 1–2 correct → <span style="color:#f59e0b">◉ Exploring</span><br>
+        • 3+ correct, avg ≥60% → <span style="color:#60a5fa">◉ Learning</span><br>
+        • 5+ correct, avg ≥80% → <span style="color:#a3e635">◉ Proficient</span><br>
+        • 10+ correct, avg ≥90% → <span style="color:#10b981">◉ Mastered</span><br><br>
+        <strong>Parent spider chart</strong> shows mastery % per subject per year level. Weak nodes (Unstarted/Exploring) are surfaced in the daily quest recommendation engine — nudging kids to study gaps.
+      </div>
+      <div class="callout success" style="margin-top:12px;">
+        <div class="callout-title">✅ Reward for mastering a skill node</div>
+        When a skill goes from <em>Learning → Proficient</em>: +20 XP bonus + "Skill Unlocked" animation.<br>
+        When a skill reaches <em>Mastered</em>: +50 XP + subject-specific badge (collectible) + gold bonus.
+      </div>
+    </div>
+  </section>
+
+  <!-- REFERRAL -->
+  <section class="section" id="referral">
+    <div class="section-header">
+      <span class="section-icon">👥</span>
+      <span class="section-title">Referral System (Streamlined)</span>
+      <span class="section-badge">One mechanism for all users</span>
+    </div>
+    <div class="callout info" style="margin-bottom:16px;">
+      <div class="callout-title">Single referral link — works for both parents and kids</div>
+      Every user (parent or child account) gets one referral link/code. The reward scales based on what the referred person does after signing up. No separate KG referral mechanism.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Referral Outcome</th><th>Who earns</th><th>💎 Gems</th><th>💰 Cash Credit</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Referred person signs up <strong>free account</strong></td>
+            <td>Referrer</td>
+            <td><strong>+1 💎</strong></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Referred person subscribes to <strong>Plan A</strong> (RM365/yr)</td>
+            <td>Referrer</td>
+            <td><strong>+3 💎</strong></td>
+            <td><strong>RM36.50 credit</strong> (10% of RM365)</td>
+          </tr>
+          <tr>
+            <td>Referred person subscribes to <strong>Plan B</strong> (RM730)</td>
+            <td>Referrer</td>
+            <td><strong>+5 💎</strong></td>
+            <td><strong>RM73.00 credit</strong> (10% of RM730)</td>
+          </tr>
+          <tr style="background:rgba(245,158,11,0.04)">
+            <td>Referrer reaches <strong>10 paid referrals</strong> (milestone)</td>
+            <td>Referrer</td>
+            <td><strong>+20 💎</strong></td>
+            <td><strong>1 year free</strong> (RM365 credit)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout" style="margin-top:14px;">
+      <div class="callout-title">💡 Key rules</div>
+      • <strong>Single level only</strong> — no MLM, only direct referrer is rewarded<br>
+      • <strong>Credits apply to app subscription renewal only</strong> — cannot be used to claim or offset toy cost (Plan B toy is excluded)<br>
+      • <strong>Credits</strong> accumulate in <span class="mono">referral_credits</span> on the parent record (existing)<br>
+      • Free → Paid upgrade counts: if a referred free user later upgrades, referrer gets the paid reward delta automatically<br>
+      • Show a <strong>Referral Dashboard</strong> in-app: link copied, # invited, # signed up, # paid, total gems + credits earned
+    </div>
+  </section>
+
+  <!-- OPEN FLAGS -->
+  <section class="section" id="flags">
+    <div class="section-header">
+      <span class="section-icon">🚩</span>
+      <span class="section-title">Open Questions & Decisions</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Flag</th><th>Resolution</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Extra Battles row contradicted unlimited Plan A/B</td><td>✅ <strong>Fixed</strong> — Battle row simplified: Free = 1/day + 20g per extra. Plan A/B = Unlimited. Extra row removed.</td></tr>
+          <tr><td>2</td><td>Doc ATK formula removed level scaling, conflicting with codebase</td><td>✅ <strong>Fixed</strong> — Confirmed level stays in ATK: <span class="mono">Base ATK = 10 + (level × 3)</span>. Higher level = stronger. Kids must grind to win.</td></tr>
+          <tr><td>3</td><td>Plan B referral credit was RM36.50, should be RM73</td><td>✅ <strong>Fixed</strong> — Plan B referral = RM73 (10% of RM730). Credits apply to subscription renewal only, not toy.</td></tr>
+          <tr><td>4</td><td>Brain Elixir was a next-activity buff (edge case for "no timed buffs")</td><td>✅ <strong>Removed</strong> — All bag items are now instant-effect only. Brain Elixir cut from shop.</td></tr>
+          <tr><td>5</td><td>Complex battle items needed 6 new effect handlers</td><td>✅ <strong>Simplified</strong> — All complex items removed. Battle items are now simple one-use ATK/DEF stat boosts only.</td></tr>
+          <tr><td>6</td><td>Gem of Insight needed a persistent perfect-score counter</td><td>✅ <strong>Removed</strong> — Gems are intentionally rare. Not earned from gameplay. Referrals + Level 10 milestone + future RPG cave drops only.</td></tr>
+          <tr><td>7</td><td>Signup gold wiped by first battle stake</td><td>✅ <strong>Fixed</strong> — Age-scaled welcome pack + starter weapon card on signup</td></tr>
+          <tr><td>8</td><td>Free → Paid referral upgrade tracking</td><td>✅ <strong>Confirmed</strong> — If referred free user upgrades, referrer auto-receives delta reward (extra 💎 + RM credit for that plan tier)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<script>
+function switchTab(groupId, targetId, btn) {
+  const group = document.getElementById(groupId) || btn.closest('.section');
+  // deactivate all tabs in this group
+  btn.closest('.tabs').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // find sibling tab-contents
+  const section = btn.closest('.section');
+  section.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(targetId).classList.add('active');
+}
+
+// Highlight active nav on scroll
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navItems.forEach(n => {
+    n.classList.toggle('active', n.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+id
+
+No description
+
+uuid	uuid		
+name
+
+No description
+
+text	text		
+address
+
+No description
+
+text	text		
+postcode
+
+No description
+
+text	text		
+state
+
+No description
+
+text	text		
+city
+
+No description
+
+text	text		
+phone
+
+No description
+
+text	text		
+email
+
+No description
+
+text	text		
+principal_name
+
+No description
+
+text	text		
+lat
+
+No description
+
+double precision	float8		
+lng
+
+No description
+
+double precision	float8		
+status
+
+No description
+
+text	text		
+claim_code
+
+No description
+
+text	text		
+claimed_by
+
+No description
+
+uuid	uuid		
+plan_tier
+
+No description
+
+text	text		
+trial_start
+
+No description
+
+timestamp with time zone	timestamptz		
+trial_expires_at
+
+No description
+
+timestamp with time zone	timestamptz		
+stripe_customer_id
+
+No description
+
+text	text		
+stripe_subscription_id
+
+No description
+
+text	text		
+created_at
+
+No description
+
+timestamp with time zone	timestamptz		
+updated_at
+
+No description
+
+timestamp with time zone	timestamptz		

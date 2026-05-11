@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e160c"/>
+      <stop offset="100%" stop-color="#0c0814"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffeaa7"/>
+      <stop offset="40%" stop-color="#d4a44a"/>
+      <stop offset="70%" stop-color="#c6872e"/>
+      <stop offset="100%" stop-color="#ffeaa7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d4a44a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4a44a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <!-- Subtle glow -->
+  <circle cx="256" cy="230" r="200" fill="url(#glow)"/>
+  <!-- Border accent -->
+  <rect x="6" y="6" width="500" height="500" rx="102" fill="none" stroke="#d4a44a" stroke-opacity="0.25" stroke-width="3"/>
+  <!-- Corner accents -->
+  <path d="M30,60 L30,30 L60,30" fill="none" stroke="#d4a44a" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M452,30 L482,30 L482,60" fill="none" stroke="#d4a44a" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M30,452 L30,482 L60,482" fill="none" stroke="#d4a44a" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M452,482 L482,482 L482,452" fill="none" stroke="#d4a44a" stroke-opacity="0.4" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Fox ears -->
+  <path d="M148,200 L196,100 L244,200 Z" fill="url(#gold)" opacity="0.9"/>
+  <path d="M268,200 L316,100 L364,200 Z" fill="url(#gold)" opacity="0.9"/>
+  <!-- Inner ears -->
+  <path d="M172,195 L196,130 L220,195 Z" fill="#1e160c" opacity="0.6"/>
+  <path d="M292,195 L316,130 L340,195 Z" fill="#1e160c" opacity="0.6"/>
+  <!-- Fox face -->
+  <ellipse cx="256" cy="265" rx="110" ry="100" fill="url(#gold)" opacity="0.9"/>
+  <!-- Eyes -->
+  <ellipse cx="218" cy="247" rx="18" ry="20" fill="#1e160c"/>
+  <ellipse cx="294" cy="247" rx="18" ry="20" fill="#1e160c"/>
+  <!-- Eye shine -->
+  <circle cx="224" cy="239" r="6" fill="#ffeaa7" opacity="0.8"/>
+  <circle cx="300" cy="239" r="6" fill="#ffeaa7" opacity="0.8"/>
+  <!-- Nose -->
+  <ellipse cx="256" cy="285" rx="14" ry="10" fill="#1e160c"/>
+  <!-- Nose shine -->
+  <ellipse cx="252" cy="282" rx="5" ry="3" fill="#ffeaa7" opacity="0.3"/>
+  <!-- Mouth — wider smile -->
+  <path d="M238,296 Q256,314 274,296" fill="none" stroke="#1e160c" stroke-width="3" stroke-linecap="round"/>
+  <!-- Cheek blush -->
+  <circle cx="186" cy="275" r="14" fill="#c6872e" opacity="0.3"/>
+  <circle cx="326" cy="275" r="14" fill="#c6872e" opacity="0.3"/>
+  <!-- Small wizard hat on right ear -->
+  <path d="M330,105 L352,58 L374,105" fill="#6c3483" opacity="0.85"/>
+  <path d="M330,105 L374,105" stroke="#d4a44a" stroke-width="2.5" fill="none"/>
+  <circle cx="352" cy="56" r="5" fill="#ffeaa7" opacity="0.7"/>
+  <!-- "FOXY" text -->
+  <text x="256" y="420" text-anchor="middle" font-family="serif" font-weight="bold" font-size="52" letter-spacing="6" fill="url(#gold)">FOXY</text>
+  <!-- Subtitle -->
+  <text x="256" y="452" text-anchor="middle" font-family="sans-serif" font-weight="600" font-size="16" letter-spacing="4" fill="#d4a44a" opacity="0.5">ADVENTURE</text>
+  <!-- Sparkle decorations -->
+  <circle cx="120" cy="140" r="3" fill="#ffeaa7" opacity="0.6"/>
+  <circle cx="392" cy="160" r="3" fill="#ffeaa7" opacity="0.6"/>
+  <circle cx="100" cy="380" r="2" fill="#ffeaa7" opacity="0.4"/>
+  <circle cx="412" cy="380" r="2" fill="#ffeaa7" opacity="0.4"/>
+  <!-- Small star sparkle near hat -->
+  <path d="M390,80 L393,70 L396,80 L406,83 L396,86 L393,96 L390,86 L380,83 Z" fill="#ffeaa7" opacity="0.5"/>
+</svg>

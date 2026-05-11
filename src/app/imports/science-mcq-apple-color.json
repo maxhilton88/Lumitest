@@ -1,0 +1,63 @@
+Edit Question
+Image MCQ
+Edit image options, labels, and question details
+
+
+Question ID
+SCI-4-001
+Age Target
+4
+Subject
+Science
+DSKP Code
+EN 1.1.1
+Question Text (English)
+What color is this?
+Question Text (Bahasa Melayu)
+Apa warna ini?
+Question Text (Chinese)
+这是什么颜色？
+Input Type
+
+Multiple Choice (MCQ)
+Image Options
+Answer Options (Image MCQ)
+A
+Option a
+Blue
+Biru
+蓝色
+B
+Option b
+Red
+Merah
+红色
+C
+Option c
+Green
+Hijau
+绿色
+D
+Option d
+Yellow
+Kuning
+黄色
+Hover over an image to replace it. Max 200KB per image. Images are shared across all 3 languages.
+
+Correct Answer
+A
+B
+C
+D
+Visual Prompt
+a single large bright red apple
+Question Image
+
+Replace Image
+Recommended: 600 × 300px · Landscape · PNG or JPG · Max 500KB
+
+Or paste an external URL:
+
+https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/sign/make-221a61bc-quest-images/questions/e6472271-63ea-472e-81ce-2048d172697b.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NjdkMWU4Ny02YjY3LTRmMjMtODU0YS02MTljNGQ5NzI3MGMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtYWtlLTIyMWE2MWJjLXF1ZXN0LWltYWdlcy9xdWVzdGlvbnMvZTY0NzIyNzEtNjNlYS00NzJlLTgxY2UtMjA0OGQxNzI2OTdiLnBuZyIsImlhdCI6MTc3MjA5ODY1MywiZXhwIjoxNzcyMTAyMjUzfQ.esZY2vnvAq4F42KH6H1cBaUOvFN2AQA3wv9MXJpexLU
+Cancel
+Save Changes

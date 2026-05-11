@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aeluris Spirit Compendium</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0d0f;
+  --surface: #13151a;
+  --surface2: #1a1d24;
+  --border: #252830;
+  --border2: #32374a;
+  --text: #e8e6df;
+  --muted: #6b6d7a;
+  --gold: #d4a843;
+  --gold2: #f0c060;
+  --fire: #e05a2b;
+  --water: #2e7fbf;
+  --wood: #4a9c3f;
+  --thunder: #c49a1a;
+  --earth: #7a6a52;
+  --shadow: #6b4fa8;
+  --accent-gold: #d4a843;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.site-header {
+  text-align: center;
+  padding: 60px 24px 40px;
+  border-bottom: 1px solid var(--border);
+  background: radial-gradient(ellipse at 50% 0%, #1a1508 0%, var(--bg) 70%);
+  position: relative;
+  overflow: hidden;
+}
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 60px,
+    rgba(212,168,67,0.02) 60px,
+    rgba(212,168,67,0.02) 61px
+  );
+  pointer-events: none;
+}
+.header-tag {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+.site-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--gold2);
+  letter-spacing: 2px;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.site-sub {
+  font-size: 16px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 32px;
+}
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 40px;
+  padding: 8px 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.stat-pill span { color: var(--gold2); font-weight: 600; }
+
+/* FOXY SPECIAL SECTION */
+.foxy-section {
+  max-width: 1100px;
+  margin: 48px auto 0;
+  padding: 0 24px;
+}
+.foxy-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.foxy-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 700px) { .foxy-grid { grid-template-columns: repeat(2, 1fr); } }
+.foxy-card {
+  background: linear-gradient(135deg, #1a1508 0%, #13100a 100%);
+  border: 1px solid #3a2e10;
+  border-radius: 12px;
+  padding: 18px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.foxy-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--fire), var(--gold));
+}
+.foxy-stage {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+.foxy-name {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold2);
+  margin-bottom: 6px;
+}
+.foxy-trigger {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 10px;
+  min-height: 32px;
+}
+.type-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+.type-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+.foxy-moves { margin-top: 8px; }
+.foxy-move {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.foxy-move:last-child { border-bottom: none; }
+.foxy-move-name { color: var(--text); }
+.foxy-move-pwr { color: var(--gold); font-size: 11px; }
+.foxy-note {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 6px 6px 0;
+}
+
+/* FILTERS */
+.filter-bar {
+  max-width: 1100px;
+  margin: 48px auto 24px;
+  padding: 0 24px;
+}
+.filter-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 30px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: 'Crimson Pro', serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+.filter-btn.active { background: var(--gold); border-color: var(--gold); color: #0c0900; font-weight: 500; }
+
+/* SPIRIT COUNT */
+.spirit-count {
+  max-width: 1100px;
+  margin: 0 auto 16px;
+  padding: 0 24px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.spirit-count span { color: var(--gold2); font-weight: 500; }
+
+/* SPIRIT GRID */
+.spirit-grid {
+  max-width: 1100px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+/* SPIRIT CARD */
+.spirit-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+.spirit-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+.spirit-card.hidden { display: none; }
+
+.card-header {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.card-left { flex: 1; min-width: 0; }
+.card-num {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+.card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+.rarity-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.rarity-common   { background: #1e2020; color: #8a9090; border: 1px solid #303535; }
+.rarity-uncommon { background: #0e1a10; color: #5a9060; border: 1px solid #254030; }
+.rarity-rare     { background: #0e1020; color: #5060c0; border: 1px solid #253080; }
+.rarity-epic     { background: #180e28; color: #9060d0; border: 1px solid #5030a0; }
+.rarity-legendary{ background: #1a1008; color: var(--gold); border: 1px solid #5a3a08; }
+
+.card-body { padding: 12px 16px; }
+.card-types { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+
+.card-info-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.card-info-item { display: flex; flex-direction: column; gap: 1px; }
+.card-info-label { color: var(--muted); font-size: 10px; letter-spacing: 0.5px; font-family: 'Cinzel', serif; }
+.card-info-val { color: var(--text); font-size: 12px; }
+
+.card-zone {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 10px;
+  padding: 5px 8px;
+  background: var(--surface2);
+  border-radius: 5px;
+}
+
+.moves-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+}
+.moves-list { display: flex; flex-direction: column; gap: 4px; }
+.move-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--surface2);
+  border-radius: 5px;
+  font-size: 12px;
+}
+.move-name { color: var(--text); flex: 1; }
+.move-meta { display: flex; gap: 6px; align-items: center; }
+.move-pow { color: var(--gold); font-size: 11px; font-family: 'Cinzel', serif; }
+.move-cat {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.5px;
+}
+.cat-phys { background: #2a1a0a; color: #c07030; }
+.cat-spec { background: #0a1a2a; color: #3080c0; }
+.cat-stat { background: #1a1a2a; color: #6060a0; }
+
+/* TYPE COLORS */
+.t-fire     { background: #2a0e06; color: #e06030; border: 1px solid #5a1808; }
+.t-water    { background: #060e1a; color: #4090d0; border: 1px solid #0830608; }
+.t-wood     { background: #060e06; color: #50a040; border: 1px solid #184018; }
+.t-thunder  { background: #1a1406; color: #c0a020; border: 1px solid #5a4008; }
+.t-earth    { background: #12100a; color: #9a8060; border: 1px solid #40352010; }
+.t-shadow   { background: #100818; color: #8060c0; border: 1px solid #382060; }
+.t-gold     { background: #1a1206; color: #d4a030; border: 1px solid #5a3c08; }
+
+/* fix border */
+.t-water  { border: 1px solid #083060; }
+.t-earth  { border: 1px solid #403520; }
+
+/* SECTION DIVIDERS */
+.region-divider {
+  max-width: 1100px;
+  margin: 32px auto 16px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.region-divider-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+.region-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+footer strong { color: var(--gold); font-style: normal; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-tag">Project Lumi · Game Design Bible</div>
+  <h1 class="site-title">Aeluris Spirit Compendium</h1>
+  <p class="site-sub">Every spirit in the realm — their nature, their moves, their home</p>
+  <div class="stats-row">
+    <div class="stat-pill">Total Spirits: <span>35 + Foxy</span></div>
+    <div class="stat-pill">Foxy Stages: <span>4 (Starter only)</span></div>
+    <div class="stat-pill">Types: <span>7</span></div>
+    <div class="stat-pill">Regions: <span>14</span></div>
+    <div class="stat-pill">Moves per Spirit: <span>4</span></div>
+  </div>
+</header>
+
+<!-- FOXY SECTION -->
+<section class="foxy-section">
+  <div class="foxy-title">⭐ Foxy — The Chosen Starter · Only Spirit That Evolves</div>
+  <div class="foxy-grid">
+    <div class="foxy-card">
+      <div class="foxy-stage">Stage 1</div>
+      <div class="foxy-name">Foxkit</div>
+      <div class="foxy-trigger">Hatches from the o1 device</div>
+      <div class="type-tags">
+        <span class="type-tag t-gold">Gold</span>
+        <span class="type-tag t-fire">Fire</span>
+      </div>
+      <div class="foxy-moves">
+        <div class="foxy-move"><span class="foxy-move-name">Ember Strike</span><span class="foxy-move-pwr">Pwr 40</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Auric Pulse</span><span class="foxy-move-pwr">Pwr 45</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Ashveil</span><span class="foxy-move-pwr">Status</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Pyrestep</span><span class="foxy-move-pwr">Pwr 50</span></div>
+      </div>
+    </div>
+    <div class="foxy-card">
+      <div class="foxy-stage">Stage 2 · Level 5</div>
+      <div class="foxy-name">Foxara</div>
+      <div class="foxy-trigger">Lumi reaches Level 5</div>
+      <div class="type-tags">
+        <span class="type-tag t-gold">Gold</span>
+        <span class="type-tag t-fire">Fire</span>
+      </div>
+      <div class="foxy-moves">
+        <div class="foxy-move"><span class="foxy-move-name">Flameburst</span><span class="foxy-move-pwr">Pwr 65</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Codex Beam</span><span class="foxy-move-pwr">Pwr 70</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Inferno Veil</span><span class="foxy-move-pwr">Pwr 70</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Star Fragment</span><span class="foxy-move-pwr">Pwr 55×2</span></div>
+      </div>
+    </div>
+    <div class="foxy-card">
+      <div class="foxy-stage">Stage 3 · Level 20</div>
+      <div class="foxy-name">Foxen</div>
+      <div class="foxy-trigger">Lumi reaches Level 20</div>
+      <div class="type-tags">
+        <span class="type-tag t-gold">Gold</span>
+        <span class="type-tag t-fire">Fire</span>
+      </div>
+      <div class="foxy-moves">
+        <div class="foxy-move"><span class="foxy-move-name">Nova Surge</span><span class="foxy-move-pwr">Pwr 90</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Lumira Flare</span><span class="foxy-move-pwr">Pwr 80</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Golden Age</span><span class="foxy-move-pwr">Pwr 90+</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Foxy's Bond</span><span class="foxy-move-pwr">Pwr 75</span></div>
+      </div>
+    </div>
+    <div class="foxy-card">
+      <div class="foxy-stage">Stage 4 · Level 30 + 25 Wins</div>
+      <div class="foxy-name">Forveil</div>
+      <div class="foxy-trigger">Warrior form — Malachar's agents flee</div>
+      <div class="type-tags">
+        <span class="type-tag t-gold">Gold</span>
+        <span class="type-tag t-fire">Fire</span>
+      </div>
+      <div class="foxy-moves">
+        <div class="foxy-move"><span class="foxy-move-name">Final Ember</span><span class="foxy-move-pwr">Pwr 120</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Codex Restored</span><span class="foxy-move-pwr">Pwr 150</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Knowledge Surge</span><span class="foxy-move-pwr">Status</span></div>
+        <div class="foxy-move"><span class="foxy-move-name">Ancient Light</span><span class="foxy-move-pwr">Status</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foxy-note">
+    Foxy is Gold/Fire dual-type — the only spirit in Aeluris with this combination. Gold gives her the ancient Fox Spirit lineage and Codex connection. Fire gives her personality, her glow, her aggression. Strong against Wood, Shadow, Earth. Weak to Water and Thunder. The o1 device acts as her container when HP reaches critical — she retreats inside, regenerates, and emerges fresh.
+  </div>
+</section>
+
+<!-- FILTERS -->
+<div class="filter-bar">
+  <div class="filter-label">Filter by type</div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterSpirits('all', this)">All 35</button>
+    <button class="filter-btn" onclick="filterSpirits('Fire', this)">🔥 Fire</button>
+    <button class="filter-btn" onclick="filterSpirits('Water', this)">💧 Water</button>
+    <button class="filter-btn" onclick="filterSpirits('Wood', this)">🌿 Wood</button>
+    <button class="filter-btn" onclick="filterSpirits('Thunder', this)">⚡ Thunder</button>
+    <button class="filter-btn" onclick="filterSpirits('Earth', this)">🪨 Earth</button>
+    <button class="filter-btn" onclick="filterSpirits('Shadow', this)">🌑 Shadow</button>
+    <button class="filter-btn" onclick="filterSpirits('Gold', this)">✨ Gold</button>
+    <button class="filter-btn" onclick="filterSpirits('Common', this)">Common</button>
+    <button class="filter-btn" onclick="filterSpirits('Uncommon', this)">Uncommon</button>
+    <button class="filter-btn" onclick="filterSpirits('Rare', this)">Rare</button>
+    <button class="filter-btn" onclick="filterSpirits('Epic', this)">Epic</button>
+    <button class="filter-btn" onclick="filterSpirits('Legendary', this)">Legendary</button>
+  </div>
+</div>
+<div class="spirit-count" id="spiritCount">Showing <span>35</span> spirits</div>
+
+<!-- SPIRIT GRID -->
+<div class="spirit-grid" id="spiritGrid"></div>
+
+<footer>
+  <strong>Aeluris Spirit Compendium</strong> · Project Lumi Game Design Bible · Confidential<br>
+  35 catchable spirits · Foxy is the only spirit that evolves · All spirits scale with Lumi's level
+</footer>
+
+<script>
+const TYPE_ICONS = { Fire:'🔥', Water:'💧', Wood:'🌿', Thunder:'⚡', Earth:'🪨', Shadow:'🌑', Gold:'✨' };
+
+const spirits = [
+  // ─── THORNHAVEN (R1) ───
+  {
+    id:1, name:'Leafpup', types:['Wood'], rarity:'Common',
+    region:'Thornhaven', zone:'Meadow Path — tall grass',
+    stat: 'HP 1.2× · ATK 0.9× · DEF 1.1×',
+    moves:[
+      {n:'Leaf Slash', p:40, c:'Phys'},
+      {n:'Vine Whip',  p:35, c:'Phys'},
+      {n:'Forest Breath', p:0, c:'Stat'},
+      {n:'Root Grasp', p:50, c:'Phys'},
+    ]
+  },
+  {
+    id:2, name:'Embrit', types:['Fire'], rarity:'Uncommon',
+    region:'Thornhaven', zone:'Near the blacksmith forge',
+    stat: 'HP 1.0× · ATK 1.15× · DEF 0.85×',
+    moves:[
+      {n:'Ember Strike', p:40, c:'Phys'},
+      {n:'Ashveil',      p:0,  c:'Stat'},
+      {n:'Cinderlash',   p:55, c:'Phys'},
+      {n:'Pyrestep',     p:50, c:'Phys'},
+    ]
+  },
+  {
+    id:3, name:'Dewspark', types:['Water'], rarity:'Common',
+    region:'Thornhaven', zone:'Stream near the eastern trail',
+    stat: 'HP 1.1× · ATK 0.95× · DEF 1.0×',
+    moves:[
+      {n:'Aqua Tap',   p:40, c:'Phys'},
+      {n:'Dewshield',  p:0,  c:'Stat'},
+      {n:'Surge Pulse',p:60, c:'Spec'},
+      {n:'Mistform',   p:0,  c:'Stat'},
+    ]
+  },
+  // ─── EMBERVEIL (R2) ───
+  {
+    id:4, name:'Mosscrawl', types:['Earth'], rarity:'Common',
+    region:'Emberveil', zone:'Jungle floor — all paths',
+    stat: 'HP 1.1× · ATK 0.9× · DEF 1.25×',
+    moves:[
+      {n:'Rock Slam',   p:50, c:'Phys'},
+      {n:'Stone Guard', p:0,  c:'Stat'},
+      {n:'Quicksand',   p:40, c:'Stat'},
+      {n:'Tremor',      p:60, c:'Spec'},
+    ]
+  },
+  {
+    id:5, name:'Sivox', types:['Wood','Thunder'], rarity:'Uncommon',
+    region:'Emberveil', zone:'Near the waterfall — rare spawn',
+    stat: 'HP 1.05× · ATK 1.0× · DEF 1.0×',
+    moves:[
+      {n:'Leaf Slash',   p:40, c:'Phys'},
+      {n:'Static Snap',  p:40, c:'Phys'},
+      {n:'Petal Storm',  p:65, c:'Spec'},
+      {n:'Charge Up',    p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:6, name:'Blazefang', types:['Fire'], rarity:'Rare',
+    region:'Emberveil', zone:'Deep jungle interior only',
+    stat: 'HP 1.0× · ATK 1.15× · DEF 0.85×',
+    moves:[
+      {n:'Flameburst',  p:65, c:'Spec'},
+      {n:'Scorchtail',  p:45, c:'Phys'},
+      {n:'Ashveil',     p:0,  c:'Stat'},
+      {n:'Magma Core',  p:80, c:'Spec'},
+    ]
+  },
+  {
+    id:7, name:'Tanglevine', types:['Wood'], rarity:'Common',
+    region:'Emberveil', zone:'Ruin interior — vine-covered walls',
+    stat: 'HP 1.2× · ATK 0.9× · DEF 1.1×',
+    moves:[
+      {n:'Thornwall',     p:0,  c:'Stat'},
+      {n:'Root Grasp',    p:50, c:'Phys'},
+      {n:'Bark Armour',   p:0,  c:'Stat'},
+      {n:'Ancient Growth',p:80, c:'Spec'},
+    ]
+  },
+  // ─── CINDERPOST (R3) ───
+  {
+    id:8, name:'Magmort', types:['Fire','Earth'], rarity:'Uncommon',
+    region:'Cinderpost', zone:'Lava fields outside the city',
+    stat: 'HP 1.05× · ATK 1.025× · DEF 1.05×',
+    moves:[
+      {n:'Rock Slam',  p:50, c:'Phys'},
+      {n:'Ember Strike',p:40, c:'Phys'},
+      {n:'Boulder Drop',p:80, c:'Phys'},
+      {n:'Eruption',   p:100,c:'Spec'},
+    ]
+  },
+  {
+    id:9, name:'Ashscale', types:['Fire'], rarity:'Rare',
+    region:'Cinderpost', zone:'Volcanic summit — high altitude only',
+    stat: 'HP 1.0× · ATK 1.15× · DEF 0.85×',
+    moves:[
+      {n:'Cinderlash', p:55, c:'Phys'},
+      {n:'Magma Core', p:80, c:'Spec'},
+      {n:'Inferno Veil',p:70, c:'Spec'},
+      {n:'Final Ember', p:120,c:'Spec'},
+    ]
+  },
+  {
+    id:10, name:'Slagbit', types:['Earth'], rarity:'Common',
+    region:'Cinderpost', zone:'Fire caves — underground tunnels',
+    stat: 'HP 1.1× · ATK 0.9× · DEF 1.25×',
+    moves:[
+      {n:'Stone Guard',  p:0,  c:'Stat'},
+      {n:'Ironstone',    p:70, c:'Phys'},
+      {n:'Rockslide',    p:75, c:'Phys'},
+      {n:'Titan Crush',  p:120,c:'Spec'},
+    ]
+  },
+  // ─── DRIFTMOOR (R4) ───
+  {
+    id:11, name:'Gustpup', types:['Thunder'], rarity:'Common',
+    region:'Driftmoor', zone:'Open plains — everywhere',
+    stat: 'HP 0.9× · ATK 1.1× · DEF 0.9×',
+    moves:[
+      {n:'Static Snap', p:40, c:'Phys'},
+      {n:'Voltdash',    p:60, c:'Phys'},
+      {n:'Spark Frenzy',p:30, c:'Phys'},
+      {n:'Charge Up',   p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:12, name:'Thundermane', types:['Thunder','Earth'], rarity:'Uncommon',
+    region:'Driftmoor', zone:'Underground cavern beneath the plains',
+    stat: 'HP 1.0× · ATK 1.0× · DEF 1.075×',
+    moves:[
+      {n:'Thunderclap', p:75, c:'Spec'},
+      {n:'Rock Slam',   p:50, c:'Phys'},
+      {n:'Storm Surge', p:85, c:'Spec'},
+      {n:'Quicksand',   p:40, c:'Stat'},
+    ]
+  },
+  {
+    id:13, name:'Cloudwhisper', types:['Wood','Thunder'], rarity:'Rare',
+    region:'Driftmoor', zone:'Underground cavern — rare, night spawn',
+    stat: 'HP 1.05× · ATK 1.0× · DEF 1.0×',
+    moves:[
+      {n:'Petal Storm',   p:65, c:'Spec'},
+      {n:'Thunderclap',   p:75, c:'Spec'},
+      {n:'Charge Up',     p:0,  c:'Stat'},
+      {n:'Ancient Growth',p:80, c:'Spec'},
+    ]
+  },
+  {
+    id:14, name:'Windshard', types:['Thunder'], rarity:'Common',
+    region:'Driftmoor', zone:'Windstone ruins — daytime only',
+    stat: 'HP 0.9× · ATK 1.1× · DEF 0.9×',
+    moves:[
+      {n:'Voltdash',   p:60, c:'Phys'},
+      {n:'Storm Surge',p:85, c:'Spec'},
+      {n:'Megavolt',   p:95, c:'Spec'},
+      {n:'Lightning Rod',p:0,  c:'Stat'},
+    ]
+  },
+  // ─── VAULTHOLLOW (R5) ───
+  {
+    id:15, name:'Shadowstone', types:['Shadow','Earth'], rarity:'Uncommon',
+    region:'Vaulthollow', zone:'Upper caves',
+    stat: 'HP 1.05× · ATK 0.95× · DEF 1.125×',
+    moves:[
+      {n:'Void Touch',  p:40, c:'Phys'},
+      {n:'Stone Guard', p:0,  c:'Stat'},
+      {n:'Darkpulse',   p:65, c:'Spec'},
+      {n:'Boulder Drop',p:80, c:'Phys'},
+    ]
+  },
+  {
+    id:16, name:'Crystalwing', types:['Thunder','Gold'], rarity:'Rare',
+    region:'Vaulthollow', zone:'Crystal cavern — glowing tiles',
+    stat: 'HP 0.9× · ATK 1.15× · DEF 0.85×',
+    moves:[
+      {n:'Static Snap', p:40, c:'Phys'},
+      {n:'Auric Pulse', p:45, c:'Spec'},
+      {n:'Megavolt',    p:95, c:'Spec'},
+      {n:'Ancient Light',p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:17, name:'Gloomfang', types:['Shadow'], rarity:'Uncommon',
+    region:'Vaulthollow', zone:'Underground river banks',
+    stat: 'HP 1.0× · ATK 1.0× · DEF 1.0×',
+    moves:[
+      {n:'Shadow Step',   p:55, c:'Phys'},
+      {n:'Nightmare',     p:0,  c:'Stat'},
+      {n:'Null Drain',    p:60, c:'Spec'},
+      {n:'Voidstrike',    p:80, c:'Spec'},
+    ]
+  },
+  // ─── STORMREACH (R6) ───
+  {
+    id:18, name:'Coralyx', types:['Water'], rarity:'Common',
+    region:'Stormreach', zone:'Beach shore and reef shallows',
+    stat: 'HP 1.1× · ATK 0.95× · DEF 1.0×',
+    moves:[
+      {n:'Aqua Tap',   p:40, c:'Phys'},
+      {n:'Tidecrash',  p:70, c:'Spec'},
+      {n:'Dewshield',  p:0,  c:'Stat'},
+      {n:'Whirlpool',  p:50, c:'Spec'},
+    ]
+  },
+  {
+    id:19, name:'Stormfin', types:['Water','Thunder'], rarity:'Uncommon',
+    region:'Stormreach', zone:'Storm sea — offshore tiles',
+    stat: 'HP 1.0× · ATK 1.025× · DEF 0.95×',
+    moves:[
+      {n:'Tidecrash',   p:70, c:'Spec'},
+      {n:'Thunderclap', p:75, c:'Spec'},
+      {n:'Riptide',     p:55, c:'Phys'},
+      {n:'Storm Surge', p:85, c:'Spec'},
+    ]
+  },
+  {
+    id:20, name:'Boltserpent', types:['Thunder'], rarity:'Rare',
+    region:'Stormreach', zone:'Shipwreck interior — dark zones',
+    stat: 'HP 0.9× · ATK 1.1× · DEF 0.9×',
+    moves:[
+      {n:'Voltdash',        p:60, c:'Phys'},
+      {n:'Spark Frenzy',    p:30, c:'Phys'},
+      {n:'Thundergod Strike',p:130,c:'Spec'},
+      {n:'Lightning Rod',   p:0,  c:'Stat'},
+    ]
+  },
+  // ─── ASHENVEIL (R7) ───
+  {
+    id:21, name:'Ashwraith', types:['Shadow'], rarity:'Uncommon',
+    region:'Ashenveil', zone:'Ghost ruins — corrupted zones',
+    stat: 'HP 1.0× · ATK 1.0× · DEF 1.0×',
+    moves:[
+      {n:'Phantom Cloak', p:0,  c:'Stat'},
+      {n:'Darkpulse',     p:65, c:'Spec'},
+      {n:'Eclipse',       p:90, c:'Spec'},
+      {n:'Abyssal Cry',   p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:22, name:'Grimclaw', types:['Shadow','Earth'], rarity:'Uncommon',
+    region:'Ashenveil', zone:'Ruin foundations — underground',
+    stat: 'HP 1.05× · ATK 0.95× · DEF 1.125×',
+    moves:[
+      {n:'Void Touch',  p:40, c:'Phys'},
+      {n:'Rock Slam',   p:50, c:'Phys'},
+      {n:'Nightmare',   p:0,  c:'Stat'},
+      {n:'Titan Crush', p:120,c:'Spec'},
+    ]
+  },
+  {
+    id:23, name:'Hazewisp', types:['Shadow','Wood'], rarity:'Epic',
+    region:'Ashenveil', zone:'Ruins — night only, rare encounter',
+    stat: 'HP 1.1× · ATK 0.95× · DEF 1.05×',
+    moves:[
+      {n:'Thornwall',   p:0,  c:'Stat'},
+      {n:'Null Drain',  p:60, c:'Spec'},
+      {n:'Eclipse',     p:90, c:'Spec'},
+      {n:'Forest Breath',p:0,  c:'Stat'},
+    ]
+  },
+  // ─── LUMENVAST (R8) ───
+  {
+    id:24, name:'Galewisp', types:['Thunder','Gold'], rarity:'Uncommon',
+    region:'Lumenvast', zone:'Cloud fields — sky kingdom paths',
+    stat: 'HP 0.9× · ATK 1.15× · DEF 0.85×',
+    moves:[
+      {n:'Voltdash',   p:60, c:'Phys'},
+      {n:'Auric Pulse',p:45, c:'Spec'},
+      {n:'Storm Surge',p:85, c:'Spec'},
+      {n:'Auraveil',   p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:25, name:'Starfleck', types:['Gold'], rarity:'Rare',
+    region:'Lumenvast', zone:'Wind temple interior — golden tiles',
+    stat: 'HP 0.9× · ATK 1.2× · DEF 0.8×',
+    moves:[
+      {n:'Codex Beam',    p:70, c:'Spec'},
+      {n:'Star Fragment', p:55, c:'Phys'},
+      {n:'Lumira Flare',  p:80, c:'Spec'},
+      {n:'Knowledge Surge',p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:26, name:'Mistvane', types:['Water','Thunder'], rarity:'Common',
+    region:'Lumenvast', zone:'Cloud border — sky edge tiles',
+    stat: 'HP 1.0× · ATK 1.025× · DEF 0.95×',
+    moves:[
+      {n:'Aqua Tap',   p:40, c:'Phys'},
+      {n:'Static Snap',p:40, c:'Phys'},
+      {n:'Mistform',   p:0,  c:'Stat'},
+      {n:'Deep Current',p:85,c:'Spec'},
+    ]
+  },
+  // ─── IRONDEEP (R9) ───
+  {
+    id:27, name:'Gearbit', types:['Earth','Thunder'], rarity:'Common',
+    region:'Irondeep', zone:'Underground forge tunnels',
+    stat: 'HP 1.0× · ATK 1.0× · DEF 1.075×',
+    moves:[
+      {n:'Rock Slam',   p:50, c:'Phys'},
+      {n:'Spark Frenzy',p:30, c:'Phys'},
+      {n:'Ironstone',   p:70, c:'Phys'},
+      {n:'Tremor',      p:60, c:'Spec'},
+    ]
+  },
+  {
+    id:28, name:'Forgeclaw', types:['Fire','Earth'], rarity:'Uncommon',
+    region:'Irondeep', zone:'Ancient machine chambers',
+    stat: 'HP 1.05× · ATK 1.025× · DEF 1.05×',
+    moves:[
+      {n:'Magma Core',  p:80, c:'Spec'},
+      {n:'Boulder Drop',p:80, c:'Phys'},
+      {n:'Inferno Veil',p:70, c:'Spec'},
+      {n:'Eruption',    p:100,c:'Spec'},
+    ]
+  },
+  {
+    id:29, name:'Vaultbreaker', types:['Earth','Shadow'], rarity:'Epic',
+    region:'Irondeep', zone:'Deepest forge vault — rare encounter',
+    stat: 'HP 1.05× · ATK 0.95× · DEF 1.125×',
+    moves:[
+      {n:'Titan Crush', p:120,c:'Spec'},
+      {n:'Voidstrike',  p:80, c:'Spec'},
+      {n:'Stone Guard', p:0,  c:'Stat'},
+      {n:'Nightmare',   p:0,  c:'Stat'},
+    ]
+  },
+  // ─── WRAITHSPIRE (R10) ───
+  {
+    id:30, name:'Stonewing', types:['Earth','Gold'], rarity:'Rare',
+    region:'Wraithspire', zone:'Temple exterior — stone plateaus',
+    stat: 'HP 1.0× · ATK 1.05× · DEF 1.025×',
+    moves:[
+      {n:'Rock Slam',    p:50, c:'Phys'},
+      {n:'Auric Pulse',  p:45, c:'Spec'},
+      {n:'Foundation Wall',p:0,  c:'Stat'},
+      {n:'Golden Age',   p:90, c:'Spec'},
+    ]
+  },
+  {
+    id:31, name:'Wispseal', types:['Gold','Shadow'], rarity:'Epic',
+    region:'Wraithspire', zone:'Temple inner sanctum — ultra rare',
+    stat: 'HP 0.95× · ATK 1.1× · DEF 0.9×',
+    moves:[
+      {n:'Ancient Light', p:0,  c:'Stat'},
+      {n:'Eclipse',       p:90, c:'Spec'},
+      {n:'Lumira Flare',  p:80, c:'Spec'},
+      {n:'Phantom Cloak', p:0,  c:'Stat'},
+    ]
+  },
+  // ─── ECHOVAST (R11) ───
+  {
+    id:32, name:'Rootwarden', types:['Wood'], rarity:'Uncommon',
+    region:'Echovast', zone:'Old growth forest — ancient tree bases',
+    stat: 'HP 1.2× · ATK 0.9× · DEF 1.1×',
+    moves:[
+      {n:'Bark Armour',   p:0,  c:'Stat'},
+      {n:'Thornwall',     p:0,  c:'Stat'},
+      {n:'Vine Whip',     p:35, c:'Phys'},
+      {n:'World Tree',    p:100,c:'Spec'},
+    ]
+  },
+  {
+    id:33, name:'Heartwood', types:['Wood','Gold'], rarity:'Rare',
+    region:'Echovast', zone:'Heart of the forest — centre tile only',
+    stat: 'HP 1.05× · ATK 1.05× · DEF 0.95×',
+    moves:[
+      {n:'Ancient Growth', p:80, c:'Spec'},
+      {n:'Codex Beam',     p:70, c:'Spec'},
+      {n:'Forest Breath',  p:0,  c:'Stat'},
+      {n:'Knowledge Surge',p:0,  c:'Stat'},
+    ]
+  },
+  // ─── GOLDENVEIL (R12) ───
+  {
+    id:34, name:'Goldwing', types:['Gold'], rarity:'Rare',
+    region:'Goldenveil', zone:'Outer wastelands approaching the city',
+    stat: 'HP 0.9× · ATK 1.2× · DEF 0.8×',
+    moves:[
+      {n:'Lumira Flare',   p:80, c:'Spec'},
+      {n:'Star Fragment',  p:55, c:'Phys'},
+      {n:'Golden Age',     p:90, c:'Spec'},
+      {n:'Auraveil',       p:0,  c:'Stat'},
+    ]
+  },
+  {
+    id:35, name:'Brightmane', types:['Gold','Earth'], rarity:'Epic',
+    region:'Goldenveil', zone:'City coliseum — post-champion battle only',
+    stat: 'HP 1.0× · ATK 1.05× · DEF 1.025×',
+    moves:[
+      {n:'Codex Beam',      p:70, c:'Spec'},
+      {n:'Ironstone',       p:70, c:'Phys'},
+      {n:'Foundation Wall', p:0,  c:'Stat'},
+      {n:'Codex Restored',  p:150,c:'Spec'},
+    ]
+  },
+];
+
+function typeTagHTML(type) {
+  const cls = `t-${type.toLowerCase()}`;
+  return `<span class="type-tag ${cls}">${TYPE_ICONS[type]||''} ${type}</span>`;
+}
+
+function rarityClass(r) {
+  return `rarity-${r.toLowerCase()}`;
+}
+
+function moveCatClass(c) {
+  if (c === 'Phys') return 'cat-phys';
+  if (c === 'Spec') return 'cat-spec';
+  return 'cat-stat';
+}
+
+function moveCatLabel(c) {
+  if (c === 'Phys') return 'Physical';
+  if (c === 'Spec') return 'Special';
+  return 'Status';
+}
+
+function buildCard(s) {
+  const div = document.createElement('div');
+  div.className = 'spirit-card';
+  div.dataset.types = s.types.join(',');
+  div.dataset.rarity = s.rarity;
+
+  div.innerHTML = `
+    <div class="card-header">
+      <div class="card-left">
+        <div class="card-num">#${String(s.id).padStart(3,'0')}</div>
+        <div class="card-name">${s.name}</div>
+      </div>
+      <span class="rarity-badge ${rarityClass(s.rarity)}">${s.rarity.toUpperCase()}</span>
+    </div>
+    <div class="card-body">
+      <div class="card-types">${s.types.map(typeTagHTML).join('')}</div>
+      <div class="card-info-row">
+        <div class="card-info-item">
+          <span class="card-info-label">Region</span>
+          <span class="card-info-val">${s.region}</span>
+        </div>
+        <div class="card-info-item">
+          <span class="card-info-label">Stat Modifier</span>
+          <span class="card-info-val">${s.stat}</span>
+        </div>
+      </div>
+      <div class="card-zone">📍 ${s.zone}</div>
+      <div class="moves-title">Moves</div>
+      <div class="moves-list">
+        ${s.moves.map(m => `
+          <div class="move-row">
+            <span class="move-name">${m.n}</span>
+            <div class="move-meta">
+              <span class="move-pow">${m.p > 0 ? 'Pwr ' + m.p : '—'}</span>
+              <span class="move-cat ${moveCatClass(m.c)}">${moveCatLabel(m.c)}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  return div;
+}
+
+const grid = document.getElementById('spiritGrid');
+const countEl = document.getElementById('spiritCount');
+
+spirits.forEach(s => grid.appendChild(buildCard(s)));
+
+function filterSpirits(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  let visible = 0;
+  document.querySelectorAll('.spirit-card').forEach(card => {
+    let show = false;
+    if (filter === 'all') {
+      show = true;
+    } else if (['Common','Uncommon','Rare','Epic','Legendary'].includes(filter)) {
+      show = card.dataset.rarity === filter;
+    } else {
+      show = card.dataset.types.split(',').includes(filter);
+    }
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+
+  countEl.innerHTML = `Showing <span>${visible}</span> spirit${visible !== 1 ? 's' : ''}`;
+}
+</script>
+</body>
+</html>

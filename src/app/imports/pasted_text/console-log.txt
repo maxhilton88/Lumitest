@@ -1,0 +1,40 @@
+[Hydrated]
+d12fab55d73fa912cf0e89820edf550129653521.js:12150 [SUPABASE-CLIENT] Module init — raw URL snapshot: Object
+d12fab55d73fa912cf0e89820edf550129653521.js:13414 [SESSION] Debug logger initialized Object
+d12fab55d73fa912cf0e89820edf550129653521.js:19228 [API] Fetching platform stats (super admin)
+d12fab55d73fa912cf0e89820edf550129653521.js:19241 [API] Fetching all users (super admin)
+d12fab55d73fa912cf0e89820edf550129653521.js:19402 [API] Fetching admin videos
+d12fab55d73fa912cf0e89820edf550129653521.js:19543 [API] Fetching Stripe orders (cursor=none)
+d12fab55d73fa912cf0e89820edf550129653521.js:21224 Validating session token... (auto-refreshed)
+d12fab55d73fa912cf0e89820edf550129653521.js:21181 [PWA] Service Worker registration failed: SecurityError: Failed to register a ServiceWorker for scope ('https://www.projectlumi.org/') with script ('https://www.projectlumi.org/sw.js'): The script has an unsupported MIME type ('text/html').
+(anonymous) @ d12fab55d73fa912cf0e89820edf550129653521.js:21181Understand this warning
+manifest.json:3 Manifest: Line: 3, column: 1, Syntax error.Understand this error
+d12fab55d73fa912cf0e89820edf550129653521.js:21242 Session valid: hey@pitchdeck.my Super Admin
+d12fab55d73fa912cf0e89820edf550129653521.js:19412 [API] Admin videos loaded: 0 videos
+d12fab55d73fa912cf0e89820edf550129653521.js:19238 [API] Platform stats loaded: 2 schools, 0 leads
+d12fab55d73fa912cf0e89820edf550129653521.js:19251 [API] All users loaded: 16 total (7 parents, 2 kindergartens)
+d12fab55d73fa912cf0e89820edf550129653521.js:19553 [API] Stripe orders loaded: 0 orders, has_more=false
+d12fab55d73fa912cf0e89820edf550129653521.js:1248 [TAXONOMY] Loaded 411 live skills from server
+d12fab55d73fa912cf0e89820edf550129653521.js:19834 [API] RPG assets fetched fresh: bag_header, battle-ground, realm-bg, realm-bg-landscape, shop_header, battle_mode, foxy, foxy_back, test_mode, game-diamond, item-banana-removebg-preview-mmj2qxct, item-potion_2-removebg-preview-mmj29053, item-rare-removebg-preview-mmj27i3d, item-shield_2-removebg-preview-mmj2f2sa, item-shield-removebg-preview-mmj2ckuk, magic-potion, bettle, card_mode, durian_monster, for_kindergarten, for_parents, foxy-ai, homepage_banner, homepage_practice_mode, homepage_test_mode, homepage-banne_object, homepagebg, kid_study, kinder2, kindergarten, kindergarten_heading, kling-20251230-image-can-you-he-3984-1, music_mode, parents-2, practice_mode, quest_mode, quest_mode-homepage, realm-potion, realm-premium, test_mode_2, video_mode, video_mode_homepage, foxy-practice, game_egg, game-coin, magic_button, practice-bg, realm_bag, realm_map, realm_shield, stroll
+7The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+d12fab55d73fa912cf0e89820edf550129653521.js:19834 [API] RPG assets fetched fresh: bag_header, battle-ground, realm-bg, realm-bg-landscape, shop_header, battle_mode, foxy, foxy_back, test_mode, game-diamond, item-banana-removebg-preview-mmj2qxct, item-potion_2-removebg-preview-mmj29053, item-rare-removebg-preview-mmj27i3d, item-shield_2-removebg-preview-mmj2f2sa, item-shield-removebg-preview-mmj2ckuk, magic-potion, bettle, card_mode, durian_monster, for_kindergarten, for_parents, foxy-ai, homepage_banner, homepage_practice_mode, homepage_test_mode, homepage-banne_object, homepagebg, kid_study, kinder2, kindergarten, kindergarten_heading, kling-20251230-image-can-you-he-3984-1, music_mode, parents-2, practice_mode, quest_mode, quest_mode-homepage, realm-potion, realm-premium, test_mode_2, video_mode, video_mode_homepage, foxy-practice, game_egg, game-coin, magic_button, practice-bg, realm_bag, realm_map, realm_shield, stroll
+zrtbjefoaennvtlcneal.supabase.co/functions/v1/make-server-221a61bc/realm/economy-analytics:1  Failed to load resource: the server responded with a status of 401 ()Understand this error
+d12fab55d73fa912cf0e89820edf550129653521.js:78358 [ECONOMY] Load error: Error: Auth error: Missing or invalid user token header
+    at $Q (d12fab55d73fa912cf0e89820edf550129653521.js:20052:11)
+    at async d12fab55d73fa912cf0e89820edf550129653521.js:78355:17
+(anonymous) @ d12fab55d73fa912cf0e89820edf550129653521.js:78358Understand this error
+d12fab55d73fa912cf0e89820edf550129653521.js:21265 Login attempt: hey@pitchdeck.my
+d12fab55d73fa912cf0e89820edf550129653521.js:21281 Login success: Object
+d12fab55d73fa912cf0e89820edf550129653521.js:21285 [AUTH] User role: superadmin
+d12fab55d73fa912cf0e89820edf550129653521.js:21288 [AUTH] Session set on adminAuthClient after login
+d12fab55d73fa912cf0e89820edf550129653521.js:19228 [API] Fetching platform stats (super admin)
+d12fab55d73fa912cf0e89820edf550129653521.js:19241 [API] Fetching all users (super admin)
+d12fab55d73fa912cf0e89820edf550129653521.js:19402 [API] Fetching admin videos
+d12fab55d73fa912cf0e89820edf550129653521.js:19543 [API] Fetching Stripe orders (cursor=none)
+d12fab55d73fa912cf0e89820edf550129653521.js:19412 [API] Admin videos loaded: 0 videos
+d12fab55d73fa912cf0e89820edf550129653521.js:19251 [API] All users loaded: 16 total (7 parents, 2 kindergartens)
+d12fab55d73fa912cf0e89820edf550129653521.js:19553 [API] Stripe orders loaded: 0 orders, has_more=false
+d12fab55d73fa912cf0e89820edf550129653521.js:19238 [API] Platform stats loaded: 2 schools, 0 leads
+zrtbjefoaennvtlcneal.supabase.co/functions/v1/make-server-221a61bc/realm/economy-analytics:1  Failed to load resource: the server responded with a status of 401 ()Understand this error
+d12fab55d73fa912cf0e89820edf550129653521.js:78358 [ECONOMY] Load error: Error: Auth error: Missing or invalid user token header
+    at $Q (d12fab55d73fa912cf0e89820edf550129653521.js:20052:11)

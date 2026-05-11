@@ -1,0 +1,27 @@
+{
+  "name": "Foxy Adventure — Screen Time That Builds School Readiness",
+  "short_name": "Foxy Adventure",
+  "description": "Malaysia's #1 KSSR readiness platform. Gamified RPG assessments in BM, EN & ZH that turn after-school screen time into real learning - ages 4 to 12.",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#000000",
+  "background_color": "#0c0814",
+  "lang": "en",
+  "categories": ["education", "kids", "games"],
+  "icons": [
+    {
+      "src": "https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/public/App_icon/Foxy_app_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://zrtbjefoaennvtlcneal.supabase.co/storage/v1/object/public/App_icon/foxy_app_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+age_target,subject,dskp_code,kssr_level,topic,skill_name,question_text_en,question_text_ms,question_text_zh,input_type,options_en,options_ms,options_zh,correct_answer,visual_prompt,image_url,TTS_en,TTS_ms,TTS_zh
+4,English,ENG-4-P01,,Phonics,Mengenal huruf besar A-Z,Which letter comes after A?,Huruf mana yang datang selepas A?,哪个字母在A之后?,mcq,B|C|D|Z,B|C|D|Z,B|C|D|Z,a,Cheerful alphabet scene,,,,
+7,Math,MATH-7-N01,,Nombor,Membilang hingga 100,What is 2 + 3?,Berapakah 2 + 3?,2加3等于多少?,mcq,4|5|6|7,4|5|6|7,4|5|6|7,b,Colorful number blocks,,https://example.com/audio_en.mp3,https://example.com/audio_ms.mp3,https://example.com/audio_zh.mp3
+4,Bahasa Melayu,BM-4-D01,,Dengar & Tutur,Mendengar dan mengecam bunyi,What colour is the sky?,Apakah warna langit?,天空是什么颜色?,mcq,Red|Blue|Green|Yellow,Merah|Biru|Hijau|Kuning,红色|蓝色|绿色|黄色,b,Bright sky scene,,,,

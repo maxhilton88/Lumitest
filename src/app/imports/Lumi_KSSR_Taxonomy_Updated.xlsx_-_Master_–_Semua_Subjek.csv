@@ -1,0 +1,439 @@
+Umur,Tahun/Level,Subjek,Bidang / Topik,Kemahiran / Subtopik,Kod Kemahiran,Tahap,Jenis Soalan,Contoh Soalan,Rujukan KSSR
+4,Prasekolah Thn 1,Matematik,Nombor,Membilang objek 1–5,MAT-A4-N01,Mudah,MCQ,Berapa banyak kucing? [gambar 3 kucing],KSPK Tahun 1
+4,Prasekolah Thn 1,Matematik,Nombor,Mengenal angka 1–5 dan lambangnya,MAT-A4-N02,Mudah,MCQ,Angka manakah menunjukkan tiga? [1/2/3/4],KSPK Tahun 1
+4,Prasekolah Thn 1,Matematik,Perbandingan,Lebih banyak vs lebih sedikit (hingga 5),MAT-A4-N03,Mudah,MCQ,Kumpulan mana ada lebih banyak? [gambar 2 vs 4 objek],KSPK Tahun 1
+4,Prasekolah Thn 1,Matematik,Bentuk 2D,"Mengenal bentuk: bulatan, segi tiga, segi empat",MAT-A4-B01,Mudah,MCQ,Bentuk manakah ini? [gambar bulatan],KSPK Tahun 1
+4,Prasekolah Thn 1,Matematik,Ruang,"Konsep: dalam vs luar, atas vs bawah",MAT-A4-R01,Mudah,MCQ,Bola ada di ___ kotak? [gambar dalam kotak],KSPK Tahun 1
+4,Prasekolah Thn 1,Matematik,Pola,"Mengenal pola AB (merah, biru, merah, biru)",MAT-A4-P01,Mudah,MCQ,"Warna seterusnya? [merah, biru, merah, ___]",KSPK Tahun 1
+4,Prasekolah Thn 1,Matematik,Sukatan,Panjang vs pendek (perbandingan visual),MAT-A4-S01,Mudah,MCQ,Pensel mana yang lebih panjang? [gambar 2 pensel],KSPK Tahun 1
+4,Prasekolah Thn 1,Sains,Hidupan,Benda hidup vs benda bukan hidup (visual),SCI-A4-H01,Mudah,MCQ,Yang mana satukah benda hidup? [kucing/kerusi],KSPK Tahun 1
+4,Prasekolah Thn 1,Sains,Deria,"5 deria: mata, telinga, hidung, mulut, tangan",SCI-A4-D01,Mudah,MCQ,Kita guna ___ untuk melihat? [gambar mata/telinga/hidung],KSPK Tahun 1
+4,Prasekolah Thn 1,Sains,Haiwan,"Mengenal haiwan biasa (kucing, anjing, ikan, burung)",SCI-A4-A01,Mudah,MCQ,Haiwan manakah ini? [gambar kucing],KSPK Tahun 1
+4,Prasekolah Thn 1,Sains,Haiwan,"Bunyi haiwan (lembu=moo, kucing=meow)",SCI-A4-A02,Mudah,MCQ,Haiwan mana yang berbunyi 'moo'? [gambar],KSPK Tahun 1
+4,Prasekolah Thn 1,Sains,Tumbuhan,"Mengenal tumbuhan biasa (pokok, bunga, rumput)",SCI-A4-T01,Mudah,MCQ,Yang mana satukah tumbuhan? [gambar pokok/batu/meja],KSPK Tahun 1
+4,Prasekolah Thn 1,Sains,Cuaca,Mengenal cuaca: panas (matahari) vs hujan,SCI-A4-C01,Mudah,MCQ,Gambar mana menunjukkan hari hujan? [gambar],KSPK Tahun 1
+4,Prasekolah Thn 1,English,Phonics,Mengenal huruf besar A–Z (recognition),ENG-A4-P01,Mudah,MCQ,Which letter is this? [A],KSPK Tahun 1
+4,Prasekolah Thn 1,English,Phonics,Mengenal huruf kecil a–z (recognition),ENG-A4-P02,Mudah,MCQ,Which letter is this? [b],KSPK Tahun 1
+4,Prasekolah Thn 1,English,Phonics,"Bunyi huruf awal mudah: /a/, /b/, /c/",ENG-A4-P03,Mudah,MCQ,'Apple' starts with which letter? [A/B/C/D],KSPK Tahun 1
+4,Prasekolah Thn 1,English,Vocabulary,"Warna asas: red, blue, yellow, green",ENG-A4-V01,Mudah,MCQ,What colour is this? [gambar merah],KSPK Tahun 1
+4,Prasekolah Thn 1,English,Vocabulary,"Nombor 1–5 dalam BI: one, two, three, four, five",ENG-A4-V02,Mudah,MCQ,How many cats? [gambar 3 kucing] (one/two/three),KSPK Tahun 1
+4,Prasekolah Thn 1,English,Vocabulary,"Nama haiwan biasa: cat, dog, fish, bird",ENG-A4-V03,Mudah,MCQ,What is this? [gambar anjing] (cat/dog/fish),KSPK Tahun 1
+4,Prasekolah Thn 1,Bahasa Melayu,Fonetik,"Mengenal huruf vokal: a, e, i, o, u",BM-A4-F01,Mudah,MCQ,Huruf mana ialah huruf vokal? [a/b/c/d],KSPK Tahun 1
+4,Prasekolah Thn 1,Bahasa Melayu,Fonetik,"Mengenal huruf konsonan biasa: b, d, m, s",BM-A4-F02,Mudah,MCQ,Huruf pertama bagi perkataan 'bola' ialah ___?,KSPK Tahun 1
+4,Prasekolah Thn 1,Bahasa Melayu,Kosa Kata,"Nama benda harian: meja, kerusi, buku, beg",BM-A4-K01,Mudah,MCQ,Apakah nama benda ini? [gambar meja],KSPK Tahun 1
+4,Prasekolah Thn 1,Bahasa Melayu,Kosa Kata,"Warna dalam BM: merah, biru, kuning, hijau",BM-A4-K02,Mudah,MCQ,Warna apakah ini? [gambar merah],KSPK Tahun 1
+4,Prasekolah Thn 1,Bahasa Melayu,Ayat,"Memahami arahan mudah: duduk, berdiri, lari",BM-A4-A01,Mudah,MCQ,Gambar mana menunjukkan kanak-kanak sedang 'duduk'?,KSPK Tahun 1
+4,Prasekolah Thn 1,Chinese,Aksara,"Mengenal nombor Cina 1–5 (一,二,三,四,五)",ZH-A4-A01,Mudah,MCQ,Aksara manakah bermaksud 'tiga'? [一/二/三/四],KSPK Tahun 1
+4,Prasekolah Thn 1,Chinese,Aksara,"Mengenal aksara mudah: 人,口,手,大,小",ZH-A4-A02,Mudah,MCQ,Aksara mana bermaksud 'besar'? [gambar/aksara],KSPK Tahun 1
+4,Prasekolah Thn 1,Chinese,Pinyin,"Mengenal vokal Pinyin: a, o, e, i, u",ZH-A4-P01,Mudah,MCQ,Bunyi vokal dalam 'māo(猫)' ialah ___? (a/o/e),KSPK Tahun 1
+4,Prasekolah Thn 1,Chinese,Kosa Kata,"Mengenal warna dalam BM Cina: 红,蓝,黄,绿",ZH-A4-K01,Mudah,MCQ,Aksara 红 bermaksud warna ___? [gambar warna],KSPK Tahun 1
+4,Prasekolah Thn 1,Geography,Persekitaran,"Mengenal tempat: rumah, sekolah, taman",GEO-A4-PK01,Mudah,MCQ,Di manakah kita belajar? [gambar rumah/sekolah/kedai],KSPK Tahun 1
+4,Prasekolah Thn 1,Geography,Persekitaran,"Mengenal bilik dalam rumah: bilik tidur, dapur, bilik air",GEO-A4-PK02,Mudah,MCQ,Di mana kita tidur? [gambar bilik tidur/dapur/bilik air],KSPK Tahun 1
+4,Prasekolah Thn 1,Geography,Alam Sekitar,"Mengenal unsur alam: pokok, sungai, langit, tanah",GEO-A4-AS01,Mudah,MCQ,Gambar mana menunjukkan sungai? [gambar],KSPK Tahun 1
+4,Prasekolah Thn 1,Geography,Cuaca,Cuaca: panas (☀️) vs hujan (🌧️),GEO-A4-CW01,Mudah,MCQ,Gambar mana menunjukkan cuaca panas?,KSPK Tahun 1
+4,Prasekolah Thn 1,Geography,Arah,Konsep: kiri vs kanan,GEO-A4-AR01,Mudah,MCQ,Tangan kanan kamu ada di sebelah mana? [gambar],KSPK Tahun 1
+4,Prasekolah Thn 1,Sejarah,Identiti Diri,"Mengenal diri: nama, umur, jantina",SJ-A4-ID01,Mudah,MCQ,Saya seorang ___? (lelaki/perempuan) [gambar],KSPK Tahun 1
+4,Prasekolah Thn 1,Sejarah,Keluarga,"Mengenal ahli keluarga: ibu, ayah, abang, kakak, adik",SJ-A4-KL01,Mudah,MCQ,Gambar mana menunjukkan 'ibu'? [gambar keluarga],KSPK Tahun 1
+4,Prasekolah Thn 1,Sejarah,Budaya,"Mengenal pakaian tradisional (baju kurung, cheongsam, sari)",SJ-A4-BD01,Mudah,MCQ,Pakaian mana ini? [gambar baju kurung],KSPK Tahun 1
+4,Prasekolah Thn 1,Sejarah,Simbol Negara,Mengenal bendera Malaysia – Jalur Gemilang,SJ-A4-SN01,Mudah,MCQ,Gambar mana ialah bendera Malaysia? [4 pilihan bendera],KSPK Tahun 1
+4,Prasekolah Thn 1,Sejarah,Komuniti,"Mengenal pekerjaan: guru, doktor, polis",SJ-A4-KM01,Mudah,MCQ,Siapakah yang mengajar di sekolah? [gambar],KSPK Tahun 1
+5,Prasekolah Thn 2,Matematik,Nombor,Membilang objek 1–10,MAT-A5-N01,Mudah,MCQ,Berapa banyak bintang? [gambar 7 bintang],KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Nombor,Mengenal angka 1–10 dan lambangnya,MAT-A5-N02,Mudah,MCQ,Angka manakah menunjukkan lapan? [6/7/8/9],KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Nombor,Nombor sebelum dan selepas (1–10),MAT-A5-N03,Mudah,MCQ,Nombor selepas 6 ialah ___? [5/6/7/8],KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Operasi,Tambah menggunakan objek hingga 10,MAT-A5-O01,Mudah,MCQ,3 epal + 2 epal = ___? [gambar],KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Perbandingan,Lebih banyak vs lebih sedikit (hingga 10),MAT-A5-N04,Mudah,MCQ,Kumpulan mana ada lebih banyak? [gambar 4 vs 7 objek],KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Bentuk 2D,"Mengenal dan menamakan: bulatan, segi tiga, segi empat, segi empat tepat",MAT-A5-B01,Mudah,MCQ,Bentuk dengan 4 sisi yang sama panjang ialah ___?,KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Pola,Mengenal dan sambung pola ABC,MAT-A5-P01,Mudah,MCQ,"Corak seterusnya? [merah, biru, hijau, merah, biru, ___]",KSPK Tahun 2
+5,Prasekolah Thn 2,Matematik,Sukatan,Berat: berat vs ringan (perbandingan visual),MAT-A5-S01,Mudah,MCQ,Yang mana lebih berat? [gambar gajah vs arnab],KSPK Tahun 2
+5,Prasekolah Thn 2,Sains,Hidupan,"Keperluan hidup: makanan, air, udara, cahaya",SCI-A5-H01,Mudah,MCQ,Manusia perlukan ___ untuk hidup. [pilih 2: air/batu/makanan/televisyen],KSPK Tahun 2
+5,Prasekolah Thn 2,Sains,Haiwan,Haiwan peliharaan vs haiwan liar,SCI-A5-A01,Mudah,MCQ,Haiwan manakah haiwan peliharaan? [kucing/singa/buaya],KSPK Tahun 2
+5,Prasekolah Thn 2,Sains,Haiwan,Makanan haiwan: tumbuhan vs daging,SCI-A5-A02,Mudah,MCQ,Arnab makan ___? [daging/sayur/ikan],KSPK Tahun 2
+5,Prasekolah Thn 2,Sains,Tumbuhan,"Bahagian tumbuhan: akar, batang, daun, bunga, buah",SCI-A5-T01,Mudah,MCQ,Bahagian tumbuhan yang berwarna hijau dan lebar ialah ___?,KSPK Tahun 2
+5,Prasekolah Thn 2,Sains,Bahan,Terapung vs tenggelam (ujian mudah),SCI-A5-B01,Mudah,MCQ,Batu akan terapung atau tenggelam dalam air?,KSPK Tahun 2
+5,Prasekolah Thn 2,Sains,Cuaca,Pakaian sesuai mengikut cuaca,SCI-A5-C01,Mudah,MCQ,Hari hujan — pakaian apa yang sesuai? [gambar payung/topi/baju tebal],KSPK Tahun 2
+5,Prasekolah Thn 2,English,Phonics,"Bunyi huruf awal semua konsonan b,c,d,f,g…",ENG-A5-P01,Mudah,MCQ,Which picture starts with the letter 'D'? [dog/cat/fish/bird],KSPK Tahun 2
+5,Prasekolah Thn 2,English,Phonics,"Mengenal huruf vokal: A, E, I, O, U",ENG-A5-P02,Mudah,MCQ,Which letter is a vowel? [A/B/C/D],KSPK Tahun 2
+5,Prasekolah Thn 2,English,Phonics,"Perkataan CVC mudah: cat, dog, sit, run",ENG-A5-P03,Mudah,MCQ,What is this? [gambar kucing] (cat/bat/hat),KSPK Tahun 2
+5,Prasekolah Thn 2,English,Vocabulary,Nombor 1–10 dalam BI,ENG-A5-V01,Mudah,MCQ,How many birds? [gambar 6 burung] (five/six/seven),KSPK Tahun 2
+5,Prasekolah Thn 2,English,Vocabulary,"Nama anggota badan: head, hand, leg, eye, ear",ENG-A5-V02,Mudah,MCQ,We use our ___ to hear. (eye/ear/nose),KSPK Tahun 2
+5,Prasekolah Thn 2,English,Vocabulary,"Kata sifat mudah: big, small, tall, short",ENG-A5-V03,Mudah,MCQ,The elephant is ___. [gambar gajah besar] (big/small/tall),KSPK Tahun 2
+5,Prasekolah Thn 2,Bahasa Melayu,Fonetik,"Suku kata KV: ba, bu, da, di, ma, mi, sa, si",BM-A5-F01,Mudah,MCQ,Suku kata pertama bagi 'bola' ialah ___? [ba/bo/bu/bi],KSPK Tahun 2
+5,Prasekolah Thn 2,Bahasa Melayu,Fonetik,"Membatang perkataan 2 suku kata KV+KV: bola, meja, buku",BM-A5-F02,Mudah,MCQ,'bo' + 'la' = ___? [bola/bale/bila],KSPK Tahun 2
+5,Prasekolah Thn 2,Bahasa Melayu,Kosa Kata,"Nama haiwan: kucing, anjing, ikan, burung, arnab",BM-A5-K01,Mudah,MCQ,Apakah nama haiwan ini? [gambar arnab],KSPK Tahun 2
+5,Prasekolah Thn 2,Bahasa Melayu,Kosa Kata,Bilangan 1–10 dalam BM: satu hingga sepuluh,BM-A5-K02,Mudah,MCQ,Berapa banyak? [gambar 5 bintang] (empat/lima/enam),KSPK Tahun 2
+5,Prasekolah Thn 2,Bahasa Melayu,Ayat,Padankan gambar dengan ayat mudah,BM-A5-A01,Mudah,MCQ,Pilih ayat yang sesuai untuk gambar ini. [gambar budak berlari],KSPK Tahun 2
+5,Prasekolah Thn 2,Chinese,Aksara,Mengenal nombor Cina 1–10 (一到十),ZH-A5-A01,Mudah,MCQ,Aksara manakah bermaksud 'tujuh'? [六/七/八/九],KSPK Tahun 2
+5,Prasekolah Thn 2,Chinese,Aksara,"Mengenal aksara keluarga: 爸,妈,哥,姐,弟,妹",ZH-A5-A02,Mudah,MCQ,Aksara 妈 bermaksud ___? (ayah/ibu/abang/kakak),KSPK Tahun 2
+5,Prasekolah Thn 2,Chinese,Pinyin,"Pinyin konsonan mudah: b,p,m,f,d,t,n,l",ZH-A5-P01,Mudah,MCQ,Pinyin bagi '猫' ialah ___? (māo/niú/gǒu),KSPK Tahun 2
+5,Prasekolah Thn 2,Chinese,Kosa Kata,"Kosa kata haiwan: 猫,狗,鱼,鸟",ZH-A5-K01,Mudah,MCQ,Aksara 鱼 bermaksud ___? (kucing/ikan/burung),KSPK Tahun 2
+5,Prasekolah Thn 2,Geography,Persekitaran,Mengenal kawasan: bandar vs kampung,GEO-A5-PK01,Mudah,MCQ,Gambar mana menunjukkan kawasan bandar? [gambar],KSPK Tahun 2
+5,Prasekolah Thn 2,Geography,Pengangkutan,"Jenis pengangkutan: darat, air, udara",GEO-A5-PG01,Mudah,MCQ,Kapal terbang bergerak di ___? (darat/air/udara),KSPK Tahun 2
+5,Prasekolah Thn 2,Geography,Alam Sekitar,"Mengenal alam semula jadi: gunung, sungai, laut, hutan",GEO-A5-AS01,Mudah,MCQ,Gambar mana menunjukkan gunung? [gambar],KSPK Tahun 2
+5,Prasekolah Thn 2,Geography,Cuaca,"Keadaan cuaca: cerah, hujan, berawan, berangin",GEO-A5-CW01,Mudah,MCQ,Cuaca apakah dalam gambar? [gambar mendung],KSPK Tahun 2
+5,Prasekolah Thn 2,Geography,Arah,"Konsep arah: kiri, kanan, depan, belakang",GEO-A5-AR01,Mudah,MCQ,Kedai ada di sebelah ___ sekolah. [gambar pelan mudah],KSPK Tahun 2
+5,Prasekolah Thn 2,Geography,Persekitaran,"Tempat dalam komuniti: hospital, pasar, masjid, sekolah",GEO-A5-PK02,Mudah,MCQ,Di manakah kita pergi jika sakit? [gambar hospital/sekolah/pasar],KSPK Tahun 2
+5,Prasekolah Thn 2,Sejarah,Keluarga,"Peranan ahli keluarga: ayah bekerja, ibu masak",SJ-A5-KL01,Mudah,MCQ,Siapakah yang biasanya memasak di rumah? [gambar],KSPK Tahun 2
+5,Prasekolah Thn 2,Sejarah,Budaya,"Perayaan Malaysia: Hari Raya, Tahun Baru Cina, Deepavali",SJ-A5-BD01,Mudah,MCQ,Perayaan manakah disambut oleh masyarakat Melayu?,KSPK Tahun 2
+5,Prasekolah Thn 2,Sejarah,Budaya,"Makanan tradisional: nasi lemak, kuih bulan, murukku",SJ-A5-BD02,Mudah,MCQ,Nasi lemak adalah makanan tradisional kaum ___?,KSPK Tahun 2
+5,Prasekolah Thn 2,Sejarah,Simbol Negara,Warna bendera Malaysia,SJ-A5-SN01,Mudah,MCQ,Bendera Malaysia ada berapa warna? [gambar Jalur Gemilang],KSPK Tahun 2
+5,Prasekolah Thn 2,Sejarah,Komuniti,"Peraturan dalam komuniti: patuh lampu isyarat, buang sampah",SJ-A5-KM01,Mudah,MCQ,Apa yang patut kita buat dengan sampah? [gambar tong sampah],KSPK Tahun 2
+6,Prasekolah Thn 3,Matematik,Nombor,Membilang 1–20 dan mengenal lambang angkanya,MAT-A6-N01,Mudah,MCQ,Nombor selepas 15 ialah ___? [14/15/16/17],KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Nombor,Membilang mundur dari 10 ke 1,MAT-A6-N02,Mudah,MCQ,"10, 9, 8, ___. Nombor seterusnya? [6/7/8/9]",KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Operasi,"Tambah dua nombor, hasil hingga 10",MAT-A6-O01,Mudah,MCQ,4 + 3 = ___? [6/7/8/9],KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Operasi,Tolak dua nombor dalam lingkungan 10,MAT-A6-O02,Mudah,MCQ,8 – 3 = ___? [4/5/6/7],KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Nombor,Nombor ganjil dan genap (1–10),MAT-A6-N03,Mudah,MCQ,Nombor manakah nombor genap? [3/4/5/7],KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Bentuk 3D,"Mengenal bentuk 3D: kiub, sfera, kon, silinder",MAT-A6-B01,Mudah,MCQ,Bola berbentuk ___? [kiub/sfera/kon/silinder],KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Masa,Membaca jam – tepat (o'clock) sahaja,MAT-A6-M01,Mudah,MCQ,Jam ini menunjukkan pukul berapa? [gambar jam 3:00],KSPK Tahun 3
+6,Prasekolah Thn 3,Matematik,Wang,"Mengenal syiling: 10 sen, 20 sen, 50 sen, RM1",MAT-A6-W01,Mudah,MCQ,Syiling manakah bernilai 50 sen? [gambar syiling],KSPK Tahun 3
+6,Prasekolah Thn 3,Sains,Hidupan,Kitaran hidup mudah: telur → anak → dewasa (ayam),SCI-A6-H01,Mudah,MCQ,Peringkat pertama kitaran hidup ayam ialah ___? [telur/anak ayam/ayam dewasa],KSPK Tahun 3
+6,Prasekolah Thn 3,Sains,Tumbuhan,"Keperluan tumbuhan: air, cahaya, tanah",SCI-A6-T01,Mudah,MCQ,Tumbuhan perlukan ___ untuk membuat makanan. (air/batu/pasir),KSPK Tahun 3
+6,Prasekolah Thn 3,Sains,Haiwan,"Haiwan: cara bergerak (terbang, berenang, berjalan)",SCI-A6-A01,Mudah,MCQ,Ikan bergerak dengan cara ___? (terbang/berenang/berjalan),KSPK Tahun 3
+6,Prasekolah Thn 3,Sains,Bahan,"Sifat bahan: keras vs lembut, kasar vs licin",SCI-A6-B01,Mudah,MCQ,Batu adalah bahan yang ___? (keras/lembut/ringan),KSPK Tahun 3
+6,Prasekolah Thn 3,Sains,Deria,Menggunakan deria untuk menerangkan objek,SCI-A6-D01,Mudah,MCQ,Kita menggunakan ___ untuk merasa makanan. (mata/telinga/lidah),KSPK Tahun 3
+6,Prasekolah Thn 3,Sains,Bumi,Siang dan malam: matahari dan bulan,SCI-A6-E01,Mudah,MCQ,"Pada waktu malam, kita boleh melihat ___? (matahari/bulan/pelangi)",KSPK Tahun 3
+6,Prasekolah Thn 3,English,Phonics,Perkataan CVC – isi huruf tengah yang hilang (c_t),ENG-A6-P01,Mudah,MCQ,C_T — missing letter? [gambar kucing] (a/o/e/i),KSPK Tahun 3
+6,Prasekolah Thn 3,English,Phonics,Perkataan yang berima (rhyming): cat/bat/hat,ENG-A6-P02,Mudah,MCQ,Which word rhymes with 'cat'? (hat/dog/fish/bird),KSPK Tahun 3
+6,Prasekolah Thn 3,English,Sight Words,"Mengenal sight words: I, am, is, the, a, can, see, we",ENG-A6-SW01,Mudah,MCQ,___ a cat. Choose correct word. (I/is/am/the),KSPK Tahun 3
+6,Prasekolah Thn 3,English,Grammar,Ayat mudah: This is a ___.,ENG-A6-G01,Mudah,MCQ,This is a ___. [gambar buku] (book/books/booking),KSPK Tahun 3
+6,Prasekolah Thn 3,English,Vocabulary,"Kata kerja mudah: run, jump, eat, sleep, play",ENG-A6-V01,Mudah,MCQ,The dog is ___. [gambar anjing berlari] (running/eating/sleeping),KSPK Tahun 3
+6,Prasekolah Thn 3,English,Punctuation,Tanda noktah dan tanda soal (. vs ?),ENG-A6-PU01,Mudah,MCQ,Which sentence needs a question mark? (She is happy_/What is your name_),KSPK Tahun 3
+6,Prasekolah Thn 3,Bahasa Melayu,Fonetik,"Suku kata KVK: bab, cat, dan, has, mas",BM-A6-F01,Mudah,MCQ,Suku kata KVK ialah ___? [ba/bat/bola/buku],KSPK Tahun 3
+6,Prasekolah Thn 3,Bahasa Melayu,Fonetik,"Membatang perkataan 2 suku kata KV+KVK: badan, makan, jalan",BM-A6-F02,Mudah,MCQ,'ma' + 'kan' = ___? [makan/makin/mekan],KSPK Tahun 3
+6,Prasekolah Thn 3,Bahasa Melayu,Ejaan,Mengeja perkataan mudah 2 suku kata,BM-A6-E01,Mudah,MCQ,Ejaan yang betul ialah ___? (bola/bula/bolla/bolah),KSPK Tahun 3
+6,Prasekolah Thn 3,Bahasa Melayu,Tatabahasa,Kata Nama Am – nama benda biasa,BM-A6-T01,Mudah,MCQ,Kata nama am ialah ___? (Ali/meja/Kuala Lumpur/Siti),KSPK Tahun 3
+6,Prasekolah Thn 3,Bahasa Melayu,Tatabahasa,"Kata Kerja – tindakan (makan, berlari, menulis)",BM-A6-T02,Mudah,MCQ,Pilih kata kerja: (meja/cantik/berlari/merah),KSPK Tahun 3
+6,Prasekolah Thn 3,Bahasa Melayu,Ayat,Membina ayat mudah: Subjek + Kata Kerja + Objek,BM-A6-A01,Mudah,MCQ,Ayat yang betul ialah ___? (Ali makan nasi./Makan Ali nasi./Nasi Ali makan.),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Aksara,"Mengenal aksara badan manusia: 头,手,脚,眼,耳,口",ZH-A6-A01,Mudah,MCQ,Aksara 手 bermaksud ___? (kepala/tangan/kaki/mata),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Pinyin,"Pinyin 4 nada: nada 1 (ā), nada 2 (á), nada 3 (ǎ), nada 4 (à)",ZH-A6-P01,Mudah,MCQ,'māo'(猫) adalah nada ke ___? (1/2/3/4),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Aksara,"Mengenal aksara warna: 红,蓝,黄,绿,白,黑",ZH-A6-A02,Mudah,MCQ,Aksara 黄 bermaksud warna ___? (merah/biru/kuning/hijau),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Ayat,Ayat mudah menggunakan 是: 我是学生,ZH-A6-Y01,Mudah,MCQ,我___学生。Isi tempat kosong. (是/有/在/和),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Kosa Kata,"Kosa kata sekolah: 书,笔,纸,桌子,椅子",ZH-A6-K01,Mudah,MCQ,Aksara 书 bermaksud ___? (pensel/buku/meja/kerusi),KSPK Tahun 3
+6,Prasekolah Thn 3,Geography,Peta,"Membaca pelan mudah: bilik darjah, sekolah",GEO-A6-PT01,Mudah,MCQ,"Dalam pelan ini, bilik guru ada di sebelah mana? [gambar pelan sekolah]",KSPK Tahun 3
+6,Prasekolah Thn 3,Geography,Arah,"Mengenal arah mata angin asas: Utara, Selatan, Timur, Barat",GEO-A6-AR01,Mudah,MCQ,Berlawanan dengan Utara ialah ___? (Selatan/Timur/Barat),KSPK Tahun 3
+6,Prasekolah Thn 3,Geography,Malaysia,Mengenal Malaysia sebagai sebuah negara,GEO-A6-MY01,Mudah,MCQ,Nama negara kita ialah ___? (Malaysia/Indonesia/Thailand),KSPK Tahun 3
+6,Prasekolah Thn 3,Geography,Malaysia,Mengenal Semenanjung Malaysia vs Malaysia Timur,GEO-A6-MY02,Mudah,MCQ,Sabah dan Sarawak terletak di ___? (Semenanjung/Malaysia Timur),KSPK Tahun 3
+6,Prasekolah Thn 3,Geography,Alam Sekitar,"Mengenal bencana alam mudah: banjir, kebakaran",GEO-A6-AS01,Mudah,MCQ,Hujan lebat boleh menyebabkan ___? (banjir/gempa bumi/ribut salji),KSPK Tahun 3
+6,Prasekolah Thn 3,Geography,Pengangkutan,"Mengenal pengangkutan awam: bas, LRT, teksi, kapal",GEO-A6-PG01,Mudah,MCQ,Pengangkutan awam yang bergerak di atas landasan ialah ___? (bas/LRT/teksi),KSPK Tahun 3
+6,Prasekolah Thn 3,Sejarah,Identiti Negara,"Malaysia: nama, ibu negara, bahasa rasmi",SJ-A6-IN01,Mudah,MCQ,Ibu negara Malaysia ialah ___? (Johor Bahru/Kuala Lumpur/Ipoh),KSPK Tahun 3
+6,Prasekolah Thn 3,Sejarah,Simbol Negara,"Jalur Gemilang: bilangan jalur, warna, lambang",SJ-A6-SN01,Mudah,MCQ,Berapa bilangan jalur pada Jalur Gemilang? (12/14/16/18),KSPK Tahun 3
+6,Prasekolah Thn 3,Sejarah,Simbol Negara,Bunga kebangsaan: Bunga Raya,SJ-A6-SN02,Mudah,MCQ,Bunga kebangsaan Malaysia ialah ___? (bunga ros/bunga raya/bunga matahari),KSPK Tahun 3
+6,Prasekolah Thn 3,Sejarah,Simbol Negara,"Jata Negara: lambang harimau, keris, bulan bintang",SJ-A6-SN03,Mudah,MCQ,Haiwan apakah yang terdapat pada Jata Negara? (singa/harimau/helang),KSPK Tahun 3
+6,Prasekolah Thn 3,Sejarah,Budaya,"Kepelbagaian kaum: Melayu, Cina, India, lain-lain",SJ-A6-BD01,Mudah,MCQ,Malaysia mempunyai pelbagai ___? (bahasa/kaum/bendera) [jawapan: kaum],KSPK Tahun 3
+6,Prasekolah Thn 3,Sejarah,Rukun Negara,Pengenalan Rukun Negara – konsep perpaduan,SJ-A6-RN01,Mudah,MCQ,Rukun Negara dibuat untuk memastikan rakyat Malaysia ___? (bersatu/bergaduh/bersaing),KSPK Tahun 3
+7,Tahun 1,Matematik,Nombor Bulat,Nilai nombor bulat hingga 100,MAT-T1-N01,Mudah,MCQ,Nombor selepas 49 ialah ___?,DSKP SK 1.1
+7,Tahun 1,Matematik,Nombor Bulat,"Membilang mengikut tertib: 1s, 2s, 5s, 10s",MAT-T1-N02,Mudah,MCQ,"5, 10, 15, ___. Nombor seterusnya?",DSKP SK 1.4
+7,Tahun 1,Matematik,Nombor Bulat,Nilai tempat: puluh dan sa,MAT-T1-N03,Mudah,MCQ,"Dalam nombor 37, digit puluh ialah ___?",DSKP SK 1.5
+7,Tahun 1,Matematik,Operasi – Tambah,Menambah dua nombor dalam lingkungan 100,MAT-T1-OT01,Mudah,MCQ,23 + 14 = ___,DSKP SK 3.1
+7,Tahun 1,Matematik,Operasi – Tambah,Pasangan nombor bagi suatu jumlah (nombor bon),MAT-T1-OT02,Mudah,MCQ,___ + 6 = 10. Isi tempat kosong.,DSKP SK 2.1
+7,Tahun 1,Matematik,Operasi – Tolak,Menolak dua nombor dalam lingkungan 100,MAT-T1-OL01,Mudah,MCQ,45 – 22 = ___,DSKP SK 4.1
+7,Tahun 1,Matematik,Wang,Mengenal syiling Malaysia (5 sen hingga RM1),MAT-T1-W01,Mudah,MCQ,Berapakah nilai keseluruhan syiling ini? [gambar],DSKP SK 5.1
+7,Tahun 1,Matematik,Masa,Membaca jam – tepat (o'clock),MAT-T1-M01,Mudah,MCQ,Jam ini menunjukkan pukul berapa? [gambar jam 3:00],DSKP SK 6.1
+7,Tahun 1,Matematik,Sukatan Panjang,Mengukur panjang menggunakan unit tidak piawai,MAT-T1-SP01,Mudah,MCQ,Panjang pensel ini = ___ jubin. [gambar],DSKP SK 7.1
+7,Tahun 1,Matematik,Bentuk 2D & 3D,Mengenal dan menamakan bentuk 2D dan 3D,MAT-T1-B01,Mudah,MCQ,Tin minuman berbentuk ___?,DSKP SK 9.1
+7,Tahun 1,Matematik,Data,Membaca piktograf mudah,MAT-T1-D01,Mudah,MCQ,Berapa orang suka epal? [piktograf],DSKP SK 10.1
+7,Tahun 1,Sains,Sains Hayat,Ciri-ciri benda hidup dan bukan hidup,SCI-T1-H01,Mudah,MCQ,Pokok adalah benda hidup. Betul atau Salah?,DSKP Life Science
+7,Tahun 1,Sains,Sains Hayat,"Keperluan asas hidupan: air, makanan, udara, cahaya",SCI-T1-H02,Mudah,MCQ,Manusia perlukan ___ untuk hidup.,DSKP Life Science
+7,Tahun 1,Sains,Sains Hayat,Deria manusia dan fungsinya,SCI-T1-H03,Mudah,MCQ,Kita menggunakan hidung untuk ___?,DSKP Human Senses
+7,Tahun 1,Sains,Sains Hayat,Haiwan: ciri-ciri dan pengkelasan asas,SCI-T1-A01,Mudah,MCQ,Ikan bernafas menggunakan ___?,DSKP Animals
+7,Tahun 1,Sains,Sains Hayat,Tumbuhan: bahagian-bahagian dan fungsinya,SCI-T1-T01,Mudah,MCQ,Bahagian tumbuhan yang membuat makanan ialah ___?,DSKP Plants
+7,Tahun 1,Sains,Sains Fizikal,Magnet: bahan yang boleh dan tidak boleh ditarik magnet,SCI-T1-F01,Mudah,MCQ,Magnet boleh menarik ___? (klip kertas/kayu/plastik),DSKP Magnet
+7,Tahun 1,Sains,Sains Bahan,Penyerapan: bahan menyerap dan tidak menyerap air,SCI-T1-B01,Mudah,MCQ,Kain boleh menyerap air. Betul atau Salah?,DSKP Absorption
+7,Tahun 1,Sains,Bumi & Angkasa,"Permukaan bumi: tanah, batu, pasir",SCI-T1-E01,Mudah,MCQ,"Antara berikut, yang manakah sejenis tanah?",DSKP Earth & Space
+7,Tahun 1,English,Phonics,"Bunyi huruf CVC (cat, dog, pin)",ENG-T1-P01,Mudah,MCQ,Bunyi tengah dalam perkataan 'pin' ialah ___?,DSKP BI 2.1
+7,Tahun 1,English,Phonics,Perkataan CVC – isi huruf yang hilang (c_t),ENG-T1-P02,Mudah,MCQ,C_T — huruf yang hilang ialah ___? [gambar kucing],DSKP BI 2.1
+7,Tahun 1,English,Sight Words,"Mengenal sight words (I, am, is, the, a, can)",ENG-T1-SW01,Mudah,MCQ,Pilih perkataan: ___ a cat. (I/is/am),DSKP BI 2.2
+7,Tahun 1,English,Vocabulary,"Kosa kata topik: animals, colours, food, school items",ENG-T1-V01,Mudah,MCQ,This is a ___. [gambar anjing],DSKP BI 2.3
+7,Tahun 1,English,Grammar,Ayat mudah: subjek + predikat,ENG-T1-G01,Mudah,MCQ,Choose the correct sentence: (I am/Am I/I is) a student.,DSKP BI 5.1
+7,Tahun 1,English,Writing,Menulis huruf besar dan huruf kecil dengan betul,ENG-T1-W01,Mudah,MCQ,Which is written correctly? (Apple/apple/APPLE),DSKP BI 3.1
+7,Tahun 1,Bahasa Melayu,Fonetik,"Suku kata KV: ba, be, bi, bo, bu",BM-T1-F01,Mudah,MCQ,Suku kata 'be' ada dalam perkataan ___?,DSKP BM SK 2.1
+7,Tahun 1,Bahasa Melayu,Fonetik,"Suku kata KVK: bab, cak, dal, mil",BM-T1-F02,Mudah,MCQ,Bunyi suku kata KVK: ___at (pilih konsonan),DSKP BM SK 2.1
+7,Tahun 1,Bahasa Melayu,Fonetik,Membatang dan membaca perkataan KVKV,BM-T1-F03,Mudah,MCQ,'bo' + 'la' = ___?,DSKP BM SK 2.1
+7,Tahun 1,Bahasa Melayu,Fonetik,Membatang dan membaca perkataan KVKVK,BM-T1-F04,Mudah,MCQ,'ba' + 'tas' = ___?,DSKP BM SK 2.1
+7,Tahun 1,Bahasa Melayu,Ejaan,Mengeja dan menulis perkataan KV+KV,BM-T1-E01,Mudah,MCQ,Ejaan manakah betul? (bola/bula/bolla),DSKP BM SK 2.3
+7,Tahun 1,Bahasa Melayu,Tatabahasa,Kata Nama Am dan Kata Nama Khas,BM-T1-T01,Mudah,MCQ,Yang mana ialah Kata Nama Khas? (buku/Ali/kereta),DSKP BM SK 5.1.1
+7,Tahun 1,Bahasa Melayu,Tatabahasa,"Kata Ganti Nama Diri (saya, awak, dia)",BM-T1-T02,Mudah,MCQ,___ pergi ke sekolah. (Saya/Ini/Itu),DSKP BM SK 5.1.1iii
+7,Tahun 1,Bahasa Melayu,Tatabahasa,Kata Kerja Aktif Transitif,BM-T1-T03,Mudah,MCQ,Dia ___ nasi. (makan/cantik/meja),DSKP BM SK 5.1.2
+7,Tahun 1,Bahasa Melayu,Tatabahasa,Kata Adjektif (sifat benda),BM-T1-T04,Mudah,MCQ,Bunga itu ___. (cantik/berlari/di),DSKP BM SK 5.1.3
+7,Tahun 1,Bahasa Melayu,Tatabahasa,Imbuhan Awalan (me-),BM-T1-T05,Mudah,MCQ,'Baca' dengan imbuhan 'me-' menjadi ___?,DSKP BM SK 5.2.1
+7,Tahun 1,Bahasa Melayu,Tatabahasa,Jenis Ayat: Ayat Penyata,BM-T1-T06,Mudah,MCQ,Yang mana ialah ayat penyata?,DSKP BM SK 5.3.1i
+7,Tahun 1,Chinese,Aksara,Mengenal dan membaca aksara asas Tahun 1 (~150 aksara),ZH-T1-A01,Mudah,MCQ,Aksara ___ bermaksud 'ibu'? [pilih aksara],KSSR Cina T1
+7,Tahun 1,Chinese,Pinyin,"Pinyin: huruf konsonan (b,p,m,f,d,t…)",ZH-T1-P01,Mudah,MCQ,Pinyin bagi aksara '猫' ialah ___?,KSSR Cina T1
+7,Tahun 1,Chinese,Pinyin,Pinyin 4 nada (nada 1–4),ZH-T1-P02,Mudah,MCQ,Perkataan 'māo' (猫) adalah nada ke-___?,KSSR Cina T1
+7,Tahun 1,Chinese,Ductus,Urutan ductus (笔顺) aksara asas,ZH-T1-B01,Mudah,MCQ,Urutan ductus yang betul bagi 人 ialah ___?,KSSR Cina T1
+7,Tahun 1,Chinese,Kosa Kata,"Kosa kata topik: keluarga, sekolah, nombor",ZH-T1-K01,Mudah,MCQ,'弟弟' bermaksud ___? (adik lelaki/abang/bapa),KSSR Cina T1
+7,Tahun 1,Chinese,Ayat,Membina ayat mudah menggunakan 是/有/在,ZH-T1-Y01,Mudah,MCQ,我___学生。(是/有/在),KSSR Cina T1
+7,Tahun 1,Geography,Persekitaran,"Mengenal kawasan: rumah, sekolah, kedai, pasar",GEO-T1-PK01,Mudah,MCQ,Di manakah kita membeli sayur? [gambar],DST – Alam Persekitaran
+7,Tahun 1,Geography,Peta Mudah,"Membaca pelan mudah (bilik darjah, sekolah)",GEO-T1-PM01,Mudah,MCQ,"Dalam pelan ini, bilik guru ada di sebelah mana? [gambar]",DST – Ruang
+7,Tahun 1,Geography,Arah,"Mengenal arah: kiri, kanan, depan, belakang, atas, bawah",GEO-T1-AR01,Mudah,MCQ,Padang ada di sebelah ___ kantin. [gambar pelan sekolah],DST – Arah
+7,Tahun 1,Geography,Alam Sekitar,Mengenal tumbuhan dan haiwan di persekitaran,GEO-T1-AS01,Mudah,MCQ,Pokok mangga tumbuh di ___? (darat/laut),DST – Alam Sekitar
+7,Tahun 1,Geography,Cuaca,Mengenal cuaca dan pakaian yang sesuai,GEO-T1-CW01,Mudah,MCQ,Hari hujan — kita perlu membawa ___?,DST – Cuaca
+7,Tahun 1,Geography,Pengangkutan,"Jenis pengangkutan di darat, air dan udara",GEO-T1-PG01,Mudah,MCQ,Bas bergerak di ___? (darat/air/udara),DST – Pengangkutan
+7,Tahun 1,Sejarah,Identiti & Keluarga,Mengenal keluarga asas dan peranan ahli keluarga,SJ-T1-IK01,Mudah,MCQ,Siapakah ketua keluarga yang biasa? [gambar],KSPK – Dunia Sosial
+7,Tahun 1,Sejarah,Identiti & Keluarga,Mengenal negara Malaysia – saya rakyat Malaysia,SJ-T1-IK02,Mudah,MCQ,Saya tinggal di negara ___?,KSPK – Dunia Sosial
+7,Tahun 1,Sejarah,Budaya,"Perayaan kaum di Malaysia: Hari Raya, CNY, Deepavali",SJ-T1-BD01,Mudah,MCQ,Perayaan manakah disambut oleh masyarakat India?,DST – Budaya
+7,Tahun 1,Sejarah,Budaya,Pakaian tradisional mengikut kaum,SJ-T1-BD02,Mudah,MCQ,Cheongsam adalah pakaian tradisional kaum ___?,DST – Budaya
+7,Tahun 1,Sejarah,Simbol Negara,Jalur Gemilang: warna dan lambang,SJ-T1-SN01,Mudah,MCQ,Berapa bilangan jalur pada Jalur Gemilang?,DST – Negara
+7,Tahun 1,Sejarah,Simbol Negara,Lagu Negaraku – lagu kebangsaan,SJ-T1-SN02,Mudah,MCQ,Lagu kebangsaan Malaysia ialah ___?,DST – Negara
+8,Tahun 2,Matematik,Nombor Bulat,Nilai nombor bulat hingga 1000,MAT-T2-N01,Mudah,MCQ,Berapa nilai digit '3' dalam nombor 325?,DSKP SK 1.1
+8,Tahun 2,Matematik,Nombor Bulat,Membilang dalam lingkungan 1000,MAT-T2-N02,Mudah,MCQ,"100, 200, ___, 400. Isi tempat kosong.",DSKP SK 1.4
+8,Tahun 2,Matematik,Operasi – Tambah,Tambah dua nombor dalam lingkungan 1000,MAT-T2-OT01,Mudah,MCQ,235 + 142 = ___,DSKP SK 3.1
+8,Tahun 2,Matematik,Operasi – Tolak,Tolak dua nombor dalam lingkungan 1000,MAT-T2-OL01,Mudah,MCQ,567 – 234 = ___,DSKP SK 4.1
+8,Tahun 2,Matematik,Operasi – Darab,"Sifir 2, 3, 4, 5",MAT-T2-OD01,Sederhana,MCQ,6 × 3 = ___,DSKP SK 5.2
+8,Tahun 2,Matematik,Operasi – Bahagi,Konsep bahagi sama rata,MAT-T2-OB01,Sederhana,MCQ,12 ÷ 3 = ___,DSKP SK 6.1
+8,Tahun 2,Matematik,Wang,Nilai wang kertas RM1–RM50,MAT-T2-W01,Sederhana,MCQ,RM5 + RM3 = ___,DSKP SK 7.1
+8,Tahun 2,Matematik,Masa,Membaca jam – setengah dan suku jam,MAT-T2-M01,Sederhana,MCQ,Jam ini menunjukkan pukul ___. [gambar 3:30],DSKP SK 8.1
+8,Tahun 2,Matematik,Panjang,Mengukur panjang menggunakan cm dan m,MAT-T2-P01,Sederhana,MCQ,Meja ini 100 ___ panjang. (cm/km/m),DSKP SK 9.1
+8,Tahun 2,Matematik,Jisim,Menimbang jisim menggunakan g dan kg,MAT-T2-J01,Sederhana,MCQ,Beg sekolah mungkin mempunyai jisim ___ kg.,DSKP SK 10.1
+8,Tahun 2,Matematik,Data,Membina dan membaca carta palang mudah,MAT-T2-D01,Sederhana,MCQ,Berapa murid suka warna biru? [carta palang],DSKP SK 13.1
+8,Tahun 2,Sains,Sains Hayat,"Kitaran hidup haiwan (kupu-kupu, katak)",SCI-T2-H01,Sederhana,MCQ,Peringkat selepas telur dalam kitaran hidup kupu-kupu ialah ___?,DSKP Life Cycle
+8,Tahun 2,Sains,Sains Hayat,"Keperluan haiwan: makanan, air, tempat tinggal",SCI-T2-H02,Mudah,MCQ,Haiwan memerlukan ___ untuk hidup.,DSKP Animals
+8,Tahun 2,Sains,Sains Hayat,Pengkelasan tumbuhan: berbunga dan tidak berbunga,SCI-T2-T01,Sederhana,MCQ,Pokok paku-pakis adalah tumbuhan ___?,DSKP Plants
+8,Tahun 2,Sains,Sains Fizikal,Daya tolak dan tarik,SCI-T2-F01,Sederhana,MCQ,Menolak bola adalah contoh daya ___?,DSKP Force
+8,Tahun 2,Sains,Sains Bahan,"Keadaan jirim: pepejal, cecair, gas",SCI-T2-B01,Sederhana,MCQ,Air ialah contoh ___? (pepejal/cecair/gas),DSKP States of Matter
+8,Tahun 2,Sains,Bumi & Angkasa,"Objek langit: matahari, bulan, bintang",SCI-T2-E01,Mudah,MCQ,Objek yang memberikan cahaya pada waktu siang ialah ___?,DSKP Sky
+8,Tahun 2,English,Phonics,"Dwigraf: sh, ch, th, wh",ENG-T2-P01,Sederhana,MCQ,Which letters make the sound in 'ship'? (sh/ch/th),DSKP BI 2.1
+8,Tahun 2,English,Phonics,"Bunyi vokal panjang: a-e, i-e, o-e (cake, bike, home)",ENG-T2-P02,Sederhana,MCQ,Which word has a long vowel sound? (cat/cake/cap),DSKP BI 2.1
+8,Tahun 2,English,Vocabulary,"Kata sifat: big, small, happy, sad",ENG-T2-V01,Mudah,MCQ,The elephant is very ___. (big/run/slowly),DSKP BI 2.3
+8,Tahun 2,English,Grammar,Kata nama jamak regular (cat→cats),ENG-T2-G01,Mudah,MCQ,More than one dog = ___? (dogs/dogss/doges),DSKP BI 5.1
+8,Tahun 2,English,Grammar,"Kata kerja present tense (run, eat, play)",ENG-T2-G02,Mudah,MCQ,She ___ to school every day. (walk/walks/walked),DSKP BI 5.2
+8,Tahun 2,English,Grammar,"Artikel: a, an, the",ENG-T2-G03,Mudah,MCQ,I have ___ umbrella. (a/an/the),DSKP BI 5.3
+8,Tahun 2,English,Writing,Menulis ayat mudah dengan tanda baca betul,ENG-T2-W01,Mudah,MCQ,Which sentence uses correct punctuation?,DSKP BI 3.2
+8,Tahun 2,Bahasa Melayu,Membaca,Membaca dan memahami teks pendek,BM-T2-MB01,Mudah,MCQ,"Berdasarkan teks, di mana Ali bermain?",DSKP BM SK 2.4
+8,Tahun 2,Bahasa Melayu,Ejaan,"Mengeja perkataan KVK+KV, KV+KVK, KVKK",BM-T2-E01,Mudah,MCQ,Ejaan betul ialah ___? (sekolah/sekoleh/sakola),DSKP BM SK 2.3
+8,Tahun 2,Bahasa Melayu,Tatabahasa,"Penjodoh Bilangan (ekor, orang, biji, buah, helai)",BM-T2-T01,Sederhana,MCQ,Dua ___ ayam. (ekor/orang/biji),DSKP BM SK 5.1.1iv
+8,Tahun 2,Bahasa Melayu,Tatabahasa,Kata Kerja Pasif (di- + kata kerja),BM-T2-T02,Sederhana,MCQ,Buku itu ___ Ali. (dibaca/membaca/membacakan),DSKP BM SK 5.1.2ii
+8,Tahun 2,Bahasa Melayu,Tatabahasa,"Kata Sendi Nama (di, ke, dari, pada, untuk)",BM-T2-T03,Sederhana,MCQ,Ali pergi ___ sekolah. (di/ke/dari),DSKP BM SK 5.1.4v
+8,Tahun 2,Bahasa Melayu,Tatabahasa,"Imbuhan Akhiran (-kan, -an, -i)",BM-T2-T04,Sederhana,MCQ,'Bersih' + '-kan' = ___?,DSKP BM SK 5.2.1ii
+8,Tahun 2,Bahasa Melayu,Tatabahasa,Kata Ganda Penuh,BM-T2-T05,Sederhana,MCQ,'kanak' digandakan menjadi ___?,DSKP BM SK 5.2.3
+8,Tahun 2,Bahasa Melayu,Tatabahasa,Jenis Ayat: Ayat Tanya,BM-T2-T06,Mudah,MCQ,Yang mana ialah ayat tanya?,DSKP BM SK 5.3.1ii
+8,Tahun 2,Chinese,Aksara,Aksara Tahun 2 (~200 aksara kumulatif),ZH-T2-A01,Sederhana,MCQ,Maksud aksara '学校' ialah ___?,KSSR Cina T2
+8,Tahun 2,Chinese,Radikal,"Mengenal radikal asas (人,水,木,火,土,口)",ZH-T2-R01,Sederhana,MCQ,Radikal bagi aksara '海' ialah ___?,KSSR Cina T2
+8,Tahun 2,Chinese,Kosa Kata,"Kosa kata topik: badan manusia, makanan, haiwan",ZH-T2-K01,Sederhana,MCQ,'手' bermaksud ___?,KSSR Cina T2
+8,Tahun 2,Chinese,Tatabahasa,Ayat tanya menggunakan 吗/什么/哪里/谁,ZH-T2-G01,Sederhana,MCQ,你叫什么___？(名字/时候/地方),KSSR Cina T2
+8,Tahun 2,Chinese,Bacaan,Memahami teks pendek dan menjawab soalan,ZH-T2-B01,Sederhana,MCQ,"Berdasarkan teks, di mana kanak-kanak bermain?",KSSR Cina T2
+8,Tahun 2,Geography,Peta,Mengenal simbol peta dan arah mata angin,GEO-T2-PT01,Mudah,MCQ,Simbol biru pada peta biasanya mewakili ___?,DST – Peta
+8,Tahun 2,Geography,Peta,"Mengenal arah mata angin: Utara, Selatan, Timur, Barat",GEO-T2-AR01,Mudah,MCQ,Berlawanan dengan Utara ialah ___?,DST – Arah
+8,Tahun 2,Geography,Malaysia,"Mengenal Malaysia: benua, jiran, lautan",GEO-T2-MY01,Mudah,MCQ,Malaysia terletak di benua ___?,DST – Malaysia
+8,Tahun 2,Geography,Malaysia,Semenanjung Malaysia vs Sabah & Sarawak,GEO-T2-MY02,Mudah,MCQ,Sabah dan Sarawak terletak di pulau ___?,DST – Malaysia
+8,Tahun 2,Geography,Alam Sekitar,"Mengenal hutan, sungai, gunung dan pantai",GEO-T2-AS01,Mudah,MCQ,Air mengalir dari gunung ke ___?,DST – Alam Sekitar
+8,Tahun 2,Geography,Cuaca & Iklim,Malaysia beriklim khatulistiwa: panas dan lembap,GEO-T2-CK01,Mudah,MCQ,Malaysia mengalami cuaca ___ sepanjang tahun.,DST – Iklim
+8,Tahun 2,Geography,Komuniti,"Jenis tempat dalam komuniti: hospital, stesen polis, sekolah",GEO-T2-KM01,Mudah,MCQ,Di manakah kita pergi jika sakit? [gambar],DST – Komuniti
+8,Tahun 2,Sejarah,Budaya Malaysia,Kepelbagaian kaum di Malaysia,SJ-T2-BM01,Mudah,MCQ,Malaysia terkenal dengan kepelbagaian ___?,DST – Masyarakat
+8,Tahun 2,Sejarah,Budaya Malaysia,Bahasa rasmi Malaysia,SJ-T2-BM02,Mudah,MCQ,Bahasa rasmi Malaysia ialah ___?,DST – Masyarakat
+8,Tahun 2,Sejarah,Simbol Negara,Jata Negara: lambang-lambang,SJ-T2-SN01,Sederhana,MCQ,Haiwan apakah yang terdapat pada Jata Negara?,DST – Negara
+8,Tahun 2,Sejarah,Simbol Negara,Warna dan lambang Jalur Gemilang,SJ-T2-SN02,Mudah,MCQ,Warna apakah yang terdapat pada Jalur Gemilang?,DST – Negara
+8,Tahun 2,Sejarah,Rukun Negara,Pengenalan Rukun Negara (5 prinsip),SJ-T2-RN01,Sederhana,MCQ,Berapa banyak prinsip dalam Rukun Negara?,DST – Negara
+8,Tahun 2,Sejarah,Komuniti,Peranan pemimpin komuniti,SJ-T2-KM01,Mudah,MCQ,Siapakah pemimpin di peringkat kampung?,DST – Komuniti
+9,Tahun 3,Matematik,Nombor Bulat,Nilai nombor bulat hingga 10 000,MAT-T3-N01,Sederhana,MCQ,"Dalam 4 382, digit ratus ialah ___?",DSKP SK 1.1
+9,Tahun 3,Matematik,Operasi – Tambah,Tambah hingga tiga nombor dalam 10 000,MAT-T3-OT01,Sederhana,MCQ,1 234 + 2 341 = ___,DSKP SK 3.1
+9,Tahun 3,Matematik,Operasi – Tolak,Tolak dua nombor dalam lingkungan 10 000,MAT-T3-OL01,Sederhana,MCQ,8 000 – 3 456 = ___,DSKP SK 4.1
+9,Tahun 3,Matematik,Operasi – Darab,"Sifir 6, 7, 8, 9",MAT-T3-OD01,Sederhana,MCQ,7 × 8 = ___,DSKP SK 5.2
+9,Tahun 3,Matematik,Operasi – Bahagi,Bahagi dalam lingkungan sifir 2–9,MAT-T3-OB01,Sederhana,MCQ,56 ÷ 7 = ___,DSKP SK 6.1
+9,Tahun 3,Matematik,Pecahan,"Mengenal dan menamakan pecahan (1/2, 1/3, 1/4, 1/5)",MAT-T3-PC01,Sederhana,MCQ,Gambar mana menunjukkan 1/3 berlorek?,DSKP SK 8.1
+9,Tahun 3,Matematik,Pecahan,Membanding dan menyusun pecahan,MAT-T3-PC02,Sederhana,MCQ,"Susun menaik: 1/4, 1/2, 1/3",DSKP SK 8.2
+9,Tahun 3,Matematik,Wang,Operasi bergabung melibatkan wang,MAT-T3-W01,Sederhana,MCQ,RM10 – RM3.50 = ___,DSKP SK 9.1
+9,Tahun 3,Matematik,Masa,"Membaca jam – minit (3:15, 4:45)",MAT-T3-M01,Sederhana,MCQ,Jam menunjukkan pukul ___. [gambar 7:15],DSKP SK 10.1
+9,Tahun 3,Matematik,Panjang,"Menukar unit: m ke cm, km ke m",MAT-T3-P01,Sederhana,MCQ,2 m = ___ cm,DSKP SK 11.1
+9,Tahun 3,Matematik,Data,Membaca dan menafsir carta palang,MAT-T3-D01,Sederhana,MCQ,Bulan mana jualan paling tinggi? [carta palang],DSKP SK 14.1
+9,Tahun 3,Sains,Sains Hayat,Pembiakan haiwan: bertelur dan melahirkan anak,SCI-T3-H01,Sederhana,MCQ,Ayam membiak dengan cara ___?,DSKP Reproduction
+9,Tahun 3,Sains,Sains Hayat,"Pembiakan tumbuhan: benih, spora, keratan",SCI-T3-T01,Sederhana,MCQ,Pokok kelapa membiak melalui ___?,DSKP Plants
+9,Tahun 3,Sains,Sains Fizikal,"Daya: graviti, daya tolak, daya tarik",SCI-T3-F01,Sederhana,MCQ,Apakah daya yang menarik buah jatuh ke bumi?,DSKP Force
+9,Tahun 3,Sains,Sains Bahan,"Sifat bahan: keras, lembut, telus, legap",SCI-T3-B01,Sederhana,MCQ,Kaca adalah bahan yang ___? (telus/legap/lembut),DSKP Materials
+9,Tahun 3,Sains,Kemahiran Proses,Kemahiran memerhati dan mengelas,SCI-T3-KP01,Sederhana,MCQ,Apakah yang kita gunakan untuk MEMERHATI?,DSKP Process Skills
+9,Tahun 3,English,Reading,Membaca dan memahami teks pendek – soalan fakta,ENG-T3-R01,Sederhana,MCQ,"According to the text, where does the animal live?",DSKP BI 2.4
+9,Tahun 3,English,Grammar,Kata kerja lampau regular (+ed),ENG-T3-G01,Sederhana,MCQ,"Yesterday, she ___ to school. (walk/walked/walking)",DSKP BI 5.2
+9,Tahun 3,English,Grammar,Kata kerja lampau irregular (go→went),ENG-T3-G02,Sederhana,MCQ,He ___ to the market yesterday. (go/goes/went),DSKP BI 5.2
+9,Tahun 3,English,Grammar,Kata nama jamak tidak teratur (child→children),ENG-T3-G03,Sederhana,MCQ,More than one child = ___?,DSKP BI 5.1
+9,Tahun 3,English,Grammar,"Kata depan tempat (in, on, under, beside, between)",ENG-T3-G04,Sederhana,MCQ,The cat is ___ the table. [gambar bawah meja],DSKP BI 5.4
+9,Tahun 3,English,Grammar,"Kata hubung (and, but, because, so, or)",ENG-T3-G05,Sederhana,MCQ,I like cats ___ I am allergic. (and/but/or),DSKP BI 5.5
+9,Tahun 3,English,Vocabulary,Sinonim dan antonim mudah,ENG-T3-V01,Sederhana,MCQ,What is the opposite of 'hot'? (cold/warm/cool),DSKP BI 2.3
+9,Tahun 3,Bahasa Melayu,Membaca,Membaca dan memahami petikan prosa,BM-T3-MB01,Sederhana,MCQ,Apakah yang dilakukan oleh Ahmad pada waktu petang?,DSKP BM SK 2.4
+9,Tahun 3,Bahasa Melayu,Ejaan,Mengeja perkataan berimbuhan awalan,BM-T3-E01,Sederhana,MCQ,Kata berimbuhan 'me-' yang betul: (membaca/mebaca/mebacakan),DSKP BM SK 2.3
+9,Tahun 3,Bahasa Melayu,Tatabahasa,"Imbuhan Awalan: ber-, ter-, pe-",BM-T3-T01,Sederhana,MCQ,'ber-' + 'jalan' = ___?,DSKP BM SK 5.2.1i
+9,Tahun 3,Bahasa Melayu,Tatabahasa,Kata Majmuk Rangkai Kata Bebas,BM-T3-T02,Sederhana,MCQ,'meja makan' ialah contoh ___?,DSKP BM SK 5.2.2
+9,Tahun 3,Bahasa Melayu,Tatabahasa,Jenis Ayat: Ayat Perintah dan Ayat Seruan,BM-T3-T03,Sederhana,MCQ,'Tolong ambilkan buku itu!' ialah ayat ___?,DSKP BM SK 5.3.1iii-iv
+9,Tahun 3,Bahasa Melayu,Tatabahasa,Bentuk Ayat: Ayat Tunggal dan Ayat Majmuk,BM-T3-T04,Sederhana,MCQ,'Ali pergi ke sekolah dan Nina pergi ke kedai' ialah ayat ___?,DSKP BM SK 5.3.2
+9,Tahun 3,Bahasa Melayu,Seni Bahasa,Melafaz dan memahami pantun dua kerat,BM-T3-SB01,Sederhana,MCQ,Apakah pembayang bagi pantun ini?,DSKP BM SK 4.1
+9,Tahun 3,Chinese,Aksara,Aksara Tahun 3 (~300 aksara kumulatif),ZH-T3-A01,Sederhana,MCQ,Aksara '明天' bermaksud ___?,KSSR Cina T3
+9,Tahun 3,Chinese,Tatabahasa,Kata adjektif – membanding (比),ZH-T3-G01,Sederhana,MCQ,他___我高。(比/和/跟),KSSR Cina T3
+9,Tahun 3,Chinese,Tatabahasa,"Penegas masa: 今天,昨天,明天",ZH-T3-G02,Mudah,MCQ,'Yesterday' dalam bahasa Cina ialah ___?,KSSR Cina T3
+9,Tahun 3,Chinese,Bacaan,Memahami teks deskriptif pendek,ZH-T3-B01,Sederhana,MCQ,"Berdasarkan teks, rakan 小明 bernama siapa?",KSSR Cina T3
+9,Tahun 3,Chinese,Penulisan,Susun semula ayat mengikut urutan betul,ZH-T3-P01,Sederhana,MCQ,Susun: 公园/我/去/想 – ayat yang betul ialah ___?,KSSR Cina T3
+9,Tahun 3,Geography,Malaysia,Mengenal 14 negeri Malaysia dan wilayah persekutuan,GEO-T3-MY01,Sederhana,MCQ,Berapa bilangan negeri dalam Malaysia?,DST – Malaysia
+9,Tahun 3,Geography,Malaysia,Ibu negeri bagi setiap negeri Malaysia,GEO-T3-MY02,Sederhana,MCQ,Ibu negeri Selangor ialah ___?,DST – Malaysia
+9,Tahun 3,Geography,Malaysia,Mengenal peta Malaysia dan kedudukan negeri,GEO-T3-MY03,Sederhana,MCQ,Negeri manakah terletak di Borneo? [peta],DST – Malaysia
+9,Tahun 3,Geography,Asia Tenggara,Negara-negara ASEAN,GEO-T3-AT01,Sederhana,MCQ,Berapa bilangan negara ahli ASEAN?,DST – Asia Tenggara
+9,Tahun 3,Geography,Asia Tenggara,Jiran-jiran Malaysia,GEO-T3-AT02,Sederhana,MCQ,Negara yang bersempadankan Malaysia di selatan ialah ___?,DST – Asia Tenggara
+9,Tahun 3,Geography,Dunia,Mengenal 7 benua dunia,GEO-T3-DU01,Sederhana,MCQ,Malaysia terletak di benua ___?,DST – Dunia
+9,Tahun 3,Geography,Alam Sekitar,Sumber semula jadi Malaysia,GEO-T3-AS01,Sederhana,MCQ,Sumber semula jadi utama Malaysia ialah ___?,DST – Alam Sekitar
+9,Tahun 3,Sejarah,Sejarah Tempatan,Mengenal sejarah kawasan tempatan,SJ-T3-ST01,Sederhana,MCQ,Siapakah yang membuka bandar tempatan kita?,DST – Sejarah
+9,Tahun 3,Sejarah,Kerajaan Awal,"Pengenalan kerajaan Melayu awal: Srivijaya, Langkasuka",SJ-T3-KA01,Sederhana,MCQ,Srivijaya adalah sebuah kerajaan yang terletak di ___?,DST – Sejarah
+9,Tahun 3,Sejarah,Kerajaan Awal,Pengenalan Kesultanan Melayu Melaka,SJ-T3-KA02,Sederhana,MCQ,Siapakah yang menubuhkan Kesultanan Melayu Melaka?,DST – Sejarah
+9,Tahun 3,Sejarah,Tokoh,Mengenal tokoh tempatan dan sumbangan mereka,SJ-T3-TK01,Sederhana,MCQ,Hang Tuah terkenal sebagai ___?,DST – Sejarah
+9,Tahun 3,Sejarah,Perpaduan,Konsep perpaduan kaum di Malaysia,SJ-T3-PD01,Mudah,MCQ,Perpaduan kaum bermaksud ___?,DST – Perpaduan
+9,Tahun 3,Sejarah,Simbol Negara,Rukun Negara – 5 prinsip secara urutan,SJ-T3-SN01,Sederhana,MCQ,Prinsip pertama Rukun Negara ialah ___?,DST – Negara
+10,Tahun 4,Matematik,Nombor Bulat,Nilai nombor bulat hingga 100 000,MAT-T4-N01,Sederhana,MCQ,Tuliskan 80 450 dalam perkataan.,DSKP SK 1.1
+10,Tahun 4,Matematik,Nombor Bulat,Operasi bergabung darab dan bahagi,MAT-T4-N02,Sederhana,MCQ,(24 ÷ 6) × 5 = ___,DSKP SK 1.7
+10,Tahun 4,Matematik,Pecahan,"Pecahan wajar, tidak wajar, nombor bercampur",MAT-T4-PC01,Sederhana,MCQ,Tukar 7/3 kepada nombor bercampur.,DSKP SK 2.1
+10,Tahun 4,Matematik,Pecahan,Penambahan dan penolakan pecahan penyebut sama,MAT-T4-PC02,Sederhana,MCQ,2/5 + 1/5 = ___,DSKP SK 2.2
+10,Tahun 4,Matematik,Perpuluhan,Perpuluhan 1 tempat perpuluhan,MAT-T4-PP01,Sederhana,MCQ,0.3 + 0.5 = ___,DSKP SK 3.1
+10,Tahun 4,Matematik,Perpuluhan,Hubungan perpuluhan dan pecahan (0.5 = 1/2),MAT-T4-PP02,Sederhana,MCQ,1/4 dalam perpuluhan = ___?,DSKP SK 3.2
+10,Tahun 4,Matematik,Wang,"Tambah, tolak, darab dan bahagi wang",MAT-T4-W01,Sederhana,MCQ,3 × RM4.50 = ___,DSKP SK 4.1
+10,Tahun 4,Matematik,Masa,"Tempoh masa: jam, minit, saat",MAT-T4-M01,Sederhana,MCQ,45 minit selepas 2:30 ptg = ___?,DSKP SK 5.1
+10,Tahun 4,Matematik,Perimeter & Luas,Mengira perimeter segiempat dan segi tiga,MAT-T4-PL01,Sederhana,MCQ,Perimeter segiempat 5cm × 4cm = ___?,DSKP SK 9.1
+10,Tahun 4,Matematik,Perimeter & Luas,Mengira luas segiempat tepat dan segiempat sama,MAT-T4-PL02,Sederhana,MCQ,Luas segiempat 6cm × 3cm = ___?,DSKP SK 9.2
+10,Tahun 4,Matematik,Data,Membaca dan menafsirkan carta palang berganda,MAT-T4-D01,Sederhana,MCQ,Bulan mana sekolah A mengatasi sekolah B? [carta],DSKP SK 12.1
+10,Tahun 4,Sains,Sains Hayat,"Pemakanan manusia: kumpulan makanan, piramid makanan",SCI-T4-H01,Sederhana,MCQ,Kumpulan makanan mana yang harus dimakan PALING banyak?,DSKP Food & Nutrition
+10,Tahun 4,Sains,Sains Hayat,Sistem pernafasan manusia,SCI-T4-H02,Sederhana,MCQ,Organ utama pernafasan manusia ialah ___?,DSKP Human Breathing
+10,Tahun 4,Sains,Sains Hayat,Adaptasi haiwan terhadap persekitaran,SCI-T4-A01,Sederhana,MCQ,Unta menyimpan air di ___?,DSKP Animal Adaptation
+10,Tahun 4,Sains,Sains Fizikal,"Sumber tenaga: matahari, air, angin, bahan api",SCI-T4-F01,Sederhana,MCQ,Panel solar menukar tenaga ___ kepada elektrik.,DSKP Energy
+10,Tahun 4,Sains,Sains Fizikal,Haba: konduktor dan penebat haba,SCI-T4-H03,Sederhana,MCQ,Logam adalah konduktor atau penebat haba?,DSKP Heat
+10,Tahun 4,Sains,Sains Bumi,Sumber semula jadi: boleh diperbaharui dan tidak boleh,SCI-T4-E01,Sederhana,MCQ,Minyak petroleum adalah sumber yang ___ boleh diperbaharui.,DSKP Natural Resources
+10,Tahun 4,Sains,Kemahiran Proses,"Kaedah saintifik: hipotesis, ujikaji, kesimpulan",SCI-T4-KP01,Sederhana,MCQ,Langkah pertama dalam kaedah saintifik ialah ___?,DSKP Scientific Method
+10,Tahun 4,English,Reading,Membaca dan memahami teks – fakta dan inferens,ENG-T4-R01,Sederhana,MCQ,What can we infer from paragraph 2?,DSKP BI 2.4
+10,Tahun 4,English,Grammar,"Kata bantu: can, must, should, will, would",ENG-T4-G01,Sederhana,MCQ,You ___ wear a seatbelt. (must/can/might),DSKP BI 5.6
+10,Tahun 4,English,Grammar,"Kata sifat perbandingan: -er, -est",ENG-T4-G02,Sederhana,MCQ,This mountain is the ___ in the world. (high/higher/highest),DSKP BI 5.7
+10,Tahun 4,English,Grammar,Kata keterangan cara (-ly),ENG-T4-G03,Sederhana,MCQ,She sang ___. (beautiful/beautifully/beauty),DSKP BI 5.8
+10,Tahun 4,English,Writing,Menulis perenggan dengan idea tersusun,ENG-T4-W01,Sederhana,MCQ,Which sentence does NOT belong in this paragraph?,DSKP BI 3.3
+10,Tahun 4,Bahasa Melayu,Membaca,Membaca dan memahami pelbagai jenis teks,BM-T4-MB01,Sederhana,MCQ,Apakah idea utama perenggan ketiga?,DSKP BM SK 2.4
+10,Tahun 4,Bahasa Melayu,Tatabahasa,"Imbuhan Awalan: men-, mem-, meng-, meny-",BM-T4-T01,Sederhana,MCQ,'Sahut' + 'me-' = ___? (menyahut/mensahut/memsahut),DSKP BM SK 5.2.1
+10,Tahun 4,Bahasa Melayu,Tatabahasa,Kata Ganda Separa dan Berentak,BM-T4-T02,Sederhana,MCQ,'sayur-mayur' adalah contoh kata ganda ___?,DSKP BM SK 5.2.3
+10,Tahun 4,Bahasa Melayu,Tatabahasa,Simpulan Bahasa – maksud,BM-T4-T03,Sederhana,MCQ,'Panjang tangan' bermaksud ___?,DSKP BM SK 5.1
+10,Tahun 4,Bahasa Melayu,Penulisan,Mengenal pasti kesilapan ejaan dalam ayat,BM-T4-P01,Sederhana,MCQ,Cari satu kesilapan ejaan dalam ayat berikut.,DSKP BM SK 3.3
+10,Tahun 4,Bahasa Melayu,Penulisan,Menulis surat tidak rasmi,BM-T4-P02,Sederhana,MCQ,Bahagian mana yang ada dalam surat tidak rasmi?,DSKP BM SK 3.4
+10,Tahun 4,Chinese,Aksara,Aksara Tahun 4 (~400 aksara kumulatif),ZH-T4-A01,Sederhana,MCQ,Tulis Pinyin bagi aksara '快乐'.,KSSR Cina T4
+10,Tahun 4,Chinese,Tatabahasa,Ayat 把 (把字句),ZH-T4-G01,Susah,MCQ,他___书放在桌上。(把/被/让),KSSR Cina T4
+10,Tahun 4,Chinese,Tatabahasa,Ayat pasif menggunakan 被,ZH-T4-G02,Susah,MCQ,书被___拿走了。(他/的/很),KSSR Cina T4
+10,Tahun 4,Chinese,Bacaan,Memahami teks naratif,ZH-T4-B01,Sederhana,MCQ,Mengapa 小红 menangis dalam cerita ini?,KSSR Cina T4
+10,Tahun 4,Chinese,Idiom,Makna Chengyu asas: 一石二鸟,ZH-T4-I01,Sederhana,MCQ,'一石二鸟' bermaksud ___?,KSSR Cina T4
+10,Tahun 4,Geography,Malaysia,"Mengenal 14 negeri: lokasi, ibu negeri, lambang",GEO-T4-MY01,Sederhana,MCQ,Ibu negeri Sabah ialah ___?,DSKP Geografi T4
+10,Tahun 4,Geography,Malaysia,Bentuk muka bumi Malaysia,GEO-T4-MY02,Sederhana,MCQ,Gunung tertinggi di Malaysia ialah ___?,DSKP Geografi T4
+10,Tahun 4,Geography,Malaysia,Iklim Malaysia: monsun timur laut dan barat daya,GEO-T4-MY03,Sederhana,MCQ,Monsun yang membawa hujan lebat ke pantai timur ialah ___?,DSKP Geografi T4
+10,Tahun 4,Geography,Peta,Membaca skala peta,GEO-T4-PT01,Sederhana,MCQ,"Jika 1cm = 50km, jarak sebenar bagi 3cm = ___?",DSKP Geografi T4
+10,Tahun 4,Geography,Peta,Membaca dan menggunakan grid peta,GEO-T4-PT02,Sederhana,MCQ,Bandar manakah terletak di grid C3? [peta],DSKP Geografi T4
+10,Tahun 4,Geography,Asia Tenggara,Negara-negara ASEAN dan ibu negerinya,GEO-T4-AT01,Sederhana,MCQ,Ibu negeri Thailand ialah ___?,DSKP Geografi T4
+10,Tahun 4,Geography,Malaysia,Sumber asli Malaysia dan kepentingannya,GEO-T4-MY04,Sederhana,MCQ,Malaysia adalah pengeluar utama ___?,DSKP Geografi T4
+10,Tahun 4,Sejarah,Kemahiran Sejarah,Pengertian sejarah dan sumber sejarah,SJ-T4-KS01,Sederhana,MCQ,Diari penulis adalah sumber ___? (primer/sekunder),DSKP SJ T4 Unit 1
+10,Tahun 4,Sejarah,Kemahiran Sejarah,Konsep masa: kronologi dan urutan peristiwa,SJ-T4-KS02,Sederhana,MCQ,Susun peristiwa mengikut kronologi: [3 peristiwa],DSKP SJ T4 Unit 1
+10,Tahun 4,Sejarah,Tamadun Awal,Tamadun awal di Asia Tenggara,SJ-T4-TA01,Sederhana,MCQ,Tamadun Angkor Wat terletak di negara ___?,DSKP SJ T4 Unit 2
+10,Tahun 4,Sejarah,Kerajaan Melayu,"Kerajaan Melayu awal: Kedah Tua, Srivijaya, Langkasuka",SJ-T4-KM01,Sederhana,MCQ,Srivijaya adalah kerajaan yang terletak di ___?,DSKP SJ T4 Unit 3
+10,Tahun 4,Sejarah,Kerajaan Melayu,Kesultanan Melayu Melaka: penubuhan dan pemerintahan,SJ-T4-KM02,Sederhana,MCQ,Siapakah yang menubuhkan Kesultanan Melayu Melaka?,DSKP SJ T4 Unit 4
+10,Tahun 4,Sejarah,Kerajaan Melayu,Sistem pemerintahan Kesultanan Melaka,SJ-T4-KM03,Sederhana,MCQ,Bendahara dalam sistem pemerintahan Melaka berperanan sebagai ___?,DSKP SJ T4 Unit 4
+10,Tahun 4,Sejarah,Ekonomi,Melaka sebagai pusat perdagangan antarabangsa,SJ-T4-EK01,Sederhana,MCQ,Mengapa Melaka menjadi pusat perdagangan yang penting?,DSKP SJ T4 Unit 5
+11,Tahun 5,Matematik,Nombor Bulat,Nombor bulat hingga 1 juta,MAT-T5-N01,Sederhana,MCQ,Tulis 1 250 000 dalam perkataan.,DSKP SK 1.1
+11,Tahun 5,Matematik,Pecahan,Tambah dan tolak pecahan berlainan penyebut,MAT-T5-PC01,Sederhana,MCQ,1/3 + 1/4 = ___,DSKP SK 2.2
+11,Tahun 5,Matematik,Pecahan,Darab pecahan dengan nombor bulat,MAT-T5-PC02,Sederhana,MCQ,3 × 2/5 = ___,DSKP SK 2.3
+11,Tahun 5,Matematik,Perpuluhan,Perpuluhan sehingga 3 tempat perpuluhan,MAT-T5-PP01,Sederhana,MCQ,1.234 + 2.451 = ___,DSKP SK 3.1
+11,Tahun 5,Matematik,Peratusan,Menukar pecahan/perpuluhan kepada peratus,MAT-T5-PE01,Sederhana,MCQ,3/4 = ___%,DSKP SK 4.1
+11,Tahun 5,Matematik,Peratusan,Mengira peratusan bagi suatu kuantiti,MAT-T5-PE02,Sederhana,MCQ,20% daripada 80 = ___,DSKP SK 4.2
+11,Tahun 5,Matematik,Nisbah,Konsep nisbah dan bentuk termudah,MAT-T5-NS01,Sederhana,MCQ,Nisbah 6:4 dalam bentuk termudah ialah ___?,DSKP SK 5.1
+11,Tahun 5,Matematik,Luas & Isipadu,Luas segi tiga,MAT-T5-LI01,Sederhana,MCQ,"Luas segi tiga tapak 6cm, tinggi 4cm = ___?",DSKP SK 9.3
+11,Tahun 5,Matematik,Luas & Isipadu,Isipadu kiub dan kuboid,MAT-T5-LI02,Susah,MCQ,Isipadu kiub dengan sisi 3cm = ___?,DSKP SK 9.4
+11,Tahun 5,Matematik,Statistik,Mengira min (purata),MAT-T5-ST01,Sederhana,MCQ,"Min bagi 4, 6, 8, 10 = ___?",DSKP SK 12.1
+11,Tahun 5,Matematik,Statistik,Membaca dan menafsir carta garis,MAT-T5-ST02,Sederhana,MCQ,Pada tahun mana pertumbuhan paling cepat? [carta garis],DSKP SK 12.2
+11,Tahun 5,Sains,Sains Hayat,Sistem rangka manusia dan fungsinya,SCI-T5-H01,Sederhana,MCQ,Berapa jumlah tulang dalam badan manusia dewasa?,DSKP Skeleton
+11,Tahun 5,Sains,Sains Hayat,Sistem penghadaman: organ dan proses,SCI-T5-H02,Sederhana,MCQ,Organ manakah menghasilkan enzim untuk mencerna makanan?,DSKP Digestion
+11,Tahun 5,Sains,Sains Fizikal,Cahaya: pantulan dan pembiasan,SCI-T5-F01,Sederhana,MCQ,Bayangan terbentuk kerana cahaya bergerak dalam ___?,DSKP Light
+11,Tahun 5,Sains,Sains Fizikal,Elektrik: litar siri dan selari,SCI-T5-F02,Sederhana,MCQ,"Dalam litar siri, jika satu mentol putus, mentol lain akan ___?",DSKP Electricity
+11,Tahun 5,Sains,Sains Fizikal,"Mesin mudah: tuil, pulli, satah condong, gear",SCI-T5-F03,Sederhana,MCQ,Pembuka tin adalah contoh mesin mudah jenis ___?,DSKP Simple Machines
+11,Tahun 5,Sains,Sains Bumi,Ekosistem: rantai makanan dan siratan makanan,SCI-T5-E01,Sederhana,MCQ,"Dalam rantai makanan, siapa yang menjadi pengeluar?",DSKP Ecosystem
+11,Tahun 5,Sains,Sains Bumi,"Pencemaran: jenis, punca dan kesan",SCI-T5-E02,Sederhana,MCQ,Asap kilang boleh menyebabkan pencemaran ___?,DSKP Environment
+11,Tahun 5,English,Reading,Membaca dan memahami teks – inferens dan penilaian,ENG-T5-R01,Sederhana,MCQ,What is the author's purpose in writing this text?,DSKP BI 2.5
+11,Tahun 5,English,Grammar,Ayat aktif dan ayat pasif,ENG-T5-G01,Sederhana,MCQ,'Ali ate the cake.' → Passive: 'The cake ___ by Ali.',DSKP BI 5.10
+11,Tahun 5,English,Grammar,Ucapan cakap ajuk dan cakap pindah,ENG-T5-G02,Sederhana,MCQ,"He said, 'I am tired.' → He said that he ___ tired.",DSKP BI 5.11
+11,Tahun 5,English,Grammar,"Kata hubung: although, however, therefore, moreover",ENG-T5-G03,Sederhana,MCQ,"He studied hard; ___, he failed. (however/therefore/moreover)",DSKP BI 5.12
+11,Tahun 5,English,Vocabulary,Sinonim dan antonim peringkat menengah,ENG-T5-V01,Sederhana,MCQ,Synonym of 'courageous'? (brave/scared/weak),DSKP BI 2.3
+11,Tahun 5,English,Writing,"Menulis karangan berformat: e-mel, laporan, artikel",ENG-T5-W01,Sederhana,MCQ,Which feature is NOT part of a formal letter?,DSKP BI 3.4
+11,Tahun 5,Bahasa Melayu,Membaca,Membaca dan memahami teks – soalan KBAT,BM-T5-MB01,Sederhana,MCQ,Apakah pandangan penulis dalam petikan ini?,DSKP BM SK 2.4
+11,Tahun 5,Bahasa Melayu,Tatabahasa,"Tanda Baca: koma, noktah bertindih, sempang",BM-T5-T01,Sederhana,MCQ,Tanda baca yang betul dalam ayat ini ialah ___?,DSKP BM SK 5.3
+11,Tahun 5,Bahasa Melayu,Tatabahasa,Ayat Aktif dan Ayat Pasif,BM-T5-T02,Sederhana,MCQ,Tukar kepada ayat pasif: 'Dia membasuh kereta itu.',DSKP BM SK 5.3
+11,Tahun 5,Bahasa Melayu,Tatabahasa,Peribahasa: Perumpamaan,BM-T5-T03,Sederhana,MCQ,'Seperti aur dengan tebing' bermaksud ___?,DSKP BM SK 5.1
+11,Tahun 5,Bahasa Melayu,Penulisan,Menulis karangan perbincangan,BM-T5-P01,Sederhana,MCQ,Struktur karangan perbincangan mengandungi ___?,DSKP BM SK 3.4
+11,Tahun 5,Chinese,Aksara,Aksara Tahun 5 (~500 aksara kumulatif),ZH-T5-A01,Sederhana,MCQ,Aksara '环境' bermaksud ___?,KSSR Cina T5
+11,Tahun 5,Chinese,Idiom,Peribahasa Cina (成语): lengkap dan makna,ZH-T5-I01,Susah,MCQ,'马到成___' – isi peribahasa yang hilang.,KSSR Cina T5
+11,Tahun 5,Chinese,Tatabahasa,Kenal pasti kesilapan tatabahasa dalam ayat,ZH-T5-G01,Susah,MCQ,Cari kesilapan: '他把书给了我昨天。',KSSR Cina T5
+11,Tahun 5,Chinese,Bacaan,Memahami teks fakta – soalan KBAT,ZH-T5-B01,Susah,MCQ,Apakah mesej utama penulis dalam petikan ini?,KSSR Cina T5
+11,Tahun 5,Geography,Asia Tenggara,Ibu negeri negara ASEAN,GEO-T5-AT01,Sederhana,MCQ,Ibu negeri Indonesia ialah ___?,DSKP Geografi T5
+11,Tahun 5,Geography,Asia Tenggara,Ciri-ciri fizikal negara ASEAN,GEO-T5-AT02,Sederhana,MCQ,Negara ASEAN yang paling luas ialah ___?,DSKP Geografi T5
+11,Tahun 5,Geography,Dunia,Benua-benua dunia dan ciri-cirinya,GEO-T5-DU01,Sederhana,MCQ,Benua yang paling besar ialah ___?,DSKP Geografi T5
+11,Tahun 5,Geography,Dunia,Lautan-lautan dunia,GEO-T5-DU02,Sederhana,MCQ,Lautan yang paling besar ialah ___?,DSKP Geografi T5
+11,Tahun 5,Geography,Iklim Dunia,"Zon iklim dunia: tropika, sederhana, kutub",GEO-T5-IK01,Susah,MCQ,Malaysia terletak dalam zon iklim ___?,DSKP Geografi T5
+11,Tahun 5,Geography,Iklim Dunia,Garis khatulistiwa dan pengaruhnya,GEO-T5-IK02,Sederhana,MCQ,Negara yang dilalui garis khatulistiwa mengalami iklim ___?,DSKP Geografi T5
+11,Tahun 5,Geography,Alam Sekitar,"Bencana alam: banjir, tanah runtuh, ribut",GEO-T5-AS01,Sederhana,MCQ,Bencana alam yang paling kerap berlaku di Malaysia ialah ___?,DSKP Geografi T5
+11,Tahun 5,Sejarah,Penjajahan,Kejatuhan Melaka kepada Portugis (1511),SJ-T5-PJ01,Sederhana,MCQ,Siapakah yang memimpin serangan Portugis ke atas Melaka?,DSKP SJ T5 Unit 1
+11,Tahun 5,Sejarah,Penjajahan,Penjajahan Belanda di Melaka,SJ-T5-PJ02,Sederhana,MCQ,Pada tahun berapa Belanda mengambil alih Melaka?,DSKP SJ T5 Unit 2
+11,Tahun 5,Sejarah,Penjajahan,Penjajahan British: Sistem Residen,SJ-T5-PJ03,Sederhana,MCQ,Apakah tujuan Sistem Residen yang diperkenalkan British?,DSKP SJ T5 Unit 3
+11,Tahun 5,Sejarah,Perlembagaan,Islam sebagai agama rasmi Malaysia,SJ-T5-PM01,Sederhana,MCQ,Islam menjadi agama rasmi Malaysia berdasarkan ___?,DSKP SJ T5 Unit 4
+11,Tahun 5,Sejarah,Perlembagaan,Yang di-Pertuan Agong: peranan dan kuasa,SJ-T5-PM02,Sederhana,MCQ,Yang di-Pertuan Agong dipilih setiap ___ tahun.,DSKP SJ T5 Unit 5
+11,Tahun 5,Sejarah,Perlembagaan,Hak asasi rakyat Malaysia dalam Perlembagaan,SJ-T5-PM03,Sederhana,MCQ,Perlembagaan Malaysia menjamin hak ___ bagi semua rakyat.,DSKP SJ T5 Unit 6
+12,Tahun 6,Matematik,Nombor & Operasi,Operasi bergabung dalam lingkungan 1 juta,MAT-T6-N01,Susah,MCQ,1 234 567 – 456 789 + 123 456 = ___,DSKP SK 1.6-1.7
+12,Tahun 6,Matematik,Pecahan,Bahagi pecahan dengan nombor bulat,MAT-T6-PC01,Susah,MCQ,3/4 ÷ 3 = ___,DSKP SK 2.4
+12,Tahun 6,Matematik,Perpuluhan,Darab dan bahagi perpuluhan,MAT-T6-PP01,Susah,MCQ,2.4 × 1.5 = ___,DSKP SK 3.3
+12,Tahun 6,Matematik,Peratusan,Masalah peratusan: untung dan rugi,MAT-T6-PE01,Susah,MCQ,"Harga asal RM80, dijual RM100. Untung ___%.",DSKP SK 4.3
+12,Tahun 6,Matematik,Nisbah,Membahagikan kuantiti mengikut nisbah,MAT-T6-NS01,Susah,MCQ,Bahagikan 60 dalam nisbah 2:3. Bahagian besar = ___?,DSKP SK 5.2
+12,Tahun 6,Matematik,Koordinat,"Mengenal pasti koordinat (x,y) dalam satah Cartes",MAT-T6-KO01,Susah,MCQ,"Titik (3, 4) ada di ___. [grid]",DSKP SK 6.1
+12,Tahun 6,Matematik,Koordinat,Mengira jarak antara dua titik,MAT-T6-KO02,Susah,MCQ,"Jarak antara (1,0) dan (5,0) = ___?",DSKP SK 6.2
+12,Tahun 6,Matematik,Statistik,"Mengira min, mod dan median",MAT-T6-ST01,Susah,MCQ,"Mod bagi 2,3,3,4,5,5,5 ialah ___?",DSKP SK 12.1
+12,Tahun 6,Matematik,Statistik,Membaca pelbagai jenis graf,MAT-T6-ST02,Susah,MCQ,Graf jenis apa yang paling sesuai untuk menunjukkan trend masa?,DSKP SK 12.2
+12,Tahun 6,Matematik,Kebarangkalian,"Konsep kebarangkalian: pasti, mungkin, mustahil",MAT-T6-KB01,Sederhana,MCQ,Peluang mendapat nombor genap bila lempar dadu = ___?,DSKP SK 13.1
+12,Tahun 6,Sains,Sains Hayat,"Mikroorganisma: jenis, peranan dan bahaya",SCI-T6-H01,Susah,MCQ,Kulat digunakan untuk membuat ___?,DSKP Microorganisms
+12,Tahun 6,Sains,Sains Hayat,Rantai makanan dan siratan makanan,SCI-T6-H02,Susah,MCQ,"Jika populasi arnab meningkat, populasi rumput akan ___?",DSKP Food Web
+12,Tahun 6,Sains,Sains Fizikal,Gerhana matahari dan gerhana bulan,SCI-T6-F01,Susah,MCQ,Gerhana matahari berlaku apabila ___?,DSKP Eclipse
+12,Tahun 6,Sains,Sains Fizikal,Sistem suria: planet dan graviti,SCI-T6-F02,Susah,MCQ,Planet yang paling hampir dengan Matahari ialah ___?,DSKP Solar System
+12,Tahun 6,Sains,Sains Bumi,Kitaran air,SCI-T6-E01,Susah,MCQ,Proses air bertukar menjadi wap air dipanggil ___?,DSKP Water Cycle
+12,Tahun 6,Sains,Sains Bumi,"Isu alam sekitar: pemanasan global, penipisan ozon",SCI-T6-E02,Susah,MCQ,Gas yang menyebabkan kesan rumah hijau ialah ___?,DSKP Environment
+12,Tahun 6,English,Reading,Bacaan komprehensif – penilaian kritikal,ENG-T6-R01,Susah,MCQ,How does the author develop the main argument?,DSKP BI 2.6
+12,Tahun 6,English,Grammar,Semua tenses – review dan penggunaan tepat,ENG-T6-G01,Susah,MCQ,"By the time she arrived, he ___ already left. (has/had/have)",DSKP BI 5 Review
+12,Tahun 6,English,Grammar,"Klausa relatif (who, which, that)",ENG-T6-G02,Susah,MCQ,The book ___ I borrowed is interesting. (who/which/what),DSKP BI 5.13
+12,Tahun 6,English,Grammar,Ayat bersyarat – if clauses (Type 1 & 2),ENG-T6-G03,Susah,MCQ,"If I study hard, I ___ pass the exam. (will/would/should)",DSKP BI 5.14
+12,Tahun 6,English,Writing,Menulis esei perbincangan dua pendirian,ENG-T6-W01,Susah,MCQ,Which paragraph structure is best for a discussion essay?,DSKP BI 3.5
+12,Tahun 6,Bahasa Melayu,Membaca,Bacaan komprehensif: prosa klasik dan moden,BM-T6-MB01,Susah,MCQ,"Berdasarkan petikan, apakah pengajaran yang boleh diambil?",DSKP BM SK 2.4
+12,Tahun 6,Bahasa Melayu,Tatabahasa,Kesilapan ejaan dan tatabahasa dalam ayat,BM-T6-T01,Susah,MCQ,Kenal pasti semua kesilapan dalam ayat ini.,DSKP BM SK 5
+12,Tahun 6,Bahasa Melayu,Tatabahasa,Peribahasa: Bidalan dan pepatah,BM-T6-T02,Susah,MCQ,'Kais pagi makan pagi' bermaksud ___?,DSKP BM SK 5.1
+12,Tahun 6,Bahasa Melayu,Penulisan,Menulis karangan imaginatif dan berita,BM-T6-P01,Susah,MCQ,Ciri-ciri karangan berita yang betul ialah ___?,DSKP BM SK 3.4
+12,Tahun 6,Bahasa Melayu,Seni Bahasa,Memahami dan menganalisis puisi moden,BM-T6-SB01,Susah,MCQ,Apakah tema utama puisi ini?,DSKP BM SK 4.2
+12,Tahun 6,Chinese,Aksara,Aksara Tahun 6 (~600+ aksara kumulatif),ZH-T6-A01,Susah,MCQ,Aksara '环保' bermaksud ___?,KSSR Cina T6
+12,Tahun 6,Chinese,Bacaan,Bacaan komprehensif – artikel fakta dan naratif,ZH-T6-B01,Susah,MCQ,Apakah idea utama dalam perenggan kedua?,KSSR Cina T6
+12,Tahun 6,Chinese,Tatabahasa,Kesilapan tatabahasa: kenal pasti dan betulkan,ZH-T6-G01,Susah,MCQ,Betulkan ayat: '我昨天去了图书馆明天。',KSSR Cina T6
+12,Tahun 6,Chinese,Puisi Klasik,Memahami puisi klasik Cina (古诗),ZH-T6-PK01,Susah,MCQ,Apakah maksud '床' dalam puisi '静夜思'?,KSSR Cina T6
+12,Tahun 6,Geography,Dunia,Zon masa dunia dan perbezaan masa,GEO-T6-DU01,Susah,MCQ,"Jika di KL (UTC+8) pukul 12 tgh, di London (UTC+0) pukul ___?",DSKP Geografi T6
+12,Tahun 6,Geography,Dunia,Negara membangun vs negara maju,GEO-T6-DU02,Susah,MCQ,Malaysia diklasifikasikan sebagai negara ___?,DSKP Geografi T6
+12,Tahun 6,Geography,Alam Sekitar,"Isu global: pemanasan global, penebangan hutan",GEO-T6-AS01,Susah,MCQ,Apakah punca utama pemanasan global?,DSKP Geografi T6
+12,Tahun 6,Geography,Alam Sekitar,Kepentingan menjaga alam sekitar,GEO-T6-AS02,Susah,MCQ,Apakah kesan penebangan hutan secara berleluasa?,DSKP Geografi T6
+12,Tahun 6,Geography,Malaysia,"Pembangunan ekonomi Malaysia: pelancongan, perindustrian",GEO-T6-MY01,Susah,MCQ,Sektor ekonomi yang menyumbang paling besar kepada KDNK Malaysia ialah ___?,DSKP Geografi T6
+12,Tahun 6,Geography,Peta,Membaca dan menafsir peta topografi,GEO-T6-PT01,Susah,MCQ,Garisan kontur yang rapat menunjukkan kawasan yang ___?,DSKP Geografi T6
+12,Tahun 6,Sejarah,Kemerdekaan,Perjuangan kemerdekaan Malaysia,SJ-T6-KM01,Sederhana,MCQ,Siapakah yang mengisytiharkan kemerdekaan Tanah Melayu pada 1957?,DSKP SJ T6 Unit 1
+12,Tahun 6,Sejarah,Kemerdekaan,Tokoh-tokoh kemerdekaan dan sumbangan mereka,SJ-T6-KM02,Sederhana,MCQ,Tun Abdul Razak adalah Perdana Menteri Malaysia yang ke-___?,DSKP SJ T6 Unit 1
+12,Tahun 6,Sejarah,Pembentukan Malaysia,Penubuhan Malaysia 16 September 1963,SJ-T6-PM01,Sederhana,MCQ,Negeri-negeri yang menyertai penubuhan Malaysia pada 1963 ialah ___?,DSKP SJ T6 Unit 2
+12,Tahun 6,Sejarah,Pembentukan Malaysia,Cabaran selepas pembentukan Malaysia,SJ-T6-PM02,Sederhana,MCQ,Peristiwa 13 Mei 1969 berlaku disebabkan oleh ___?,DSKP SJ T6 Unit 3
+12,Tahun 6,Sejarah,Perlembagaan,Rukun Negara: prinsip dan maknanya,SJ-T6-PN01,Sederhana,MCQ,Prinsip pertama Rukun Negara ialah ___?,DSKP SJ T6 Unit 4
+12,Tahun 6,Sejarah,Perlembagaan,"Struktur kerajaan: Eksekutif, Legislatif, Kehakiman",SJ-T6-PN02,Susah,MCQ,Cabang kerajaan yang membuat undang-undang ialah ___?,DSKP SJ T6 Unit 5
+12,Tahun 6,Sejarah,Pencapaian,Pencapaian Malaysia selepas merdeka,SJ-T6-PC01,Sederhana,MCQ,PETRONAS Towers siap dibina pada tahun ___?,DSKP SJ T6 Unit 6
+12,Tahun 6,Sejarah,Pencapaian,Perdana Menteri Malaysia dan sumbangan mereka,SJ-T6-PC02,Sederhana,MCQ,Siapakah Perdana Menteri yang memperkenalkan Dasar Ekonomi Baru?,DSKP SJ T6 Unit 6
+4,Prasekolah Thn 1,Chinese,Kosa Kata,"Kosa kata haiwan: 猫,狗,鱼,鸟,鸡",ZH-A4-K02,Mudah,MCQ,Gambar 🐟 ialah aksara ___? [猫/狗/鱼/鸡],KSPK Tahun 1
+4,Prasekolah Thn 1,Chinese,Nombor,"Mengenal nombor Cina 1–5: 一,二,三,四,五",ZH-A4-N01,Mudah,MCQ,Berapa banyak objek? [3 objek] (一/二/三/四),KSPK Tahun 1
+4,Prasekolah Thn 1,Chinese,Pinyin,"Pinyin konsonan mudah: b,p,m,f",ZH-A4-P02,Mudah,MCQ,Huruf Pinyin bagi bunyi [b] ialah ___?,KSPK Tahun 1
+5,Prasekolah Thn 2,Chinese,Kosa Kata,"Kosa kata badan: 头,手,脚,眼,耳",ZH-A5-K02,Mudah,MCQ,Aksara 眼 bermaksud ___? (mata/telinga/hidung/mulut),KSPK Tahun 2
+5,Prasekolah Thn 2,Chinese,Nombor,"Nombor Cina 6–10: 六,七,八,九,十",ZH-A5-N01,Mudah,MCQ,Aksara manakah bermaksud lapan? [六/七/八/九],KSPK Tahun 2
+5,Prasekolah Thn 2,Chinese,Ayat,Ayat mudah: 我有___,ZH-A5-Y01,Mudah,MCQ,Saya ada buku. Pilih ayat betul: (我有书/我是书/我在书),KSPK Tahun 2
+6,Prasekolah Thn 3,Chinese,Nombor,Nombor Cina 1–20,ZH-A6-N01,Mudah,MCQ,十五 bermaksud nombor ___? (12/14/15/16),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Kosa Kata,"Kosa kata makanan: 饭,面,汤,水,果",ZH-A6-K02,Mudah,MCQ,Aksara 水 bermaksud ___? (nasi/air/sup/buah),KSPK Tahun 3
+6,Prasekolah Thn 3,Chinese,Pinyin,"Pinyin konsonan: g,k,h,j,q,x",ZH-A6-P02,Mudah,MCQ,Pinyin bagi aksara 鸡 bermula dengan huruf ___? (j/q/x/g),KSPK Tahun 3
+7,Tahun 1,Chinese,Kosa Kata,"Kosa kata alam sekitar: 天,地,山,水,树",ZH-T1-K02,Mudah,MCQ,Aksara 山 bermaksud ___? (langit/tanah/gunung/pokok),KSSR Cina T1
+7,Tahun 1,Chinese,Radikal,"Mengenal radikal asas: 人,口,手,水,木",ZH-T1-R01,Mudah,MCQ,Radikal 水 sering dijumpai dalam aksara yang berkaitan dengan ___?,KSSR Cina T1
+7,Tahun 1,Chinese,Nombor,Nombor Cina 1–100 dan aplikasi,ZH-T1-N01,Mudah,MCQ,二十三 bermaksud nombor ___? (23/32/30/22),KSSR Cina T1
+8,Tahun 2,Chinese,Kosa Kata,"Kosa kata masa: 今天,昨天,明天,早上,晚上",ZH-T2-K02,Sederhana,MCQ,昨天 bermaksud ___? (semalam/hari ini/esok/pagi),KSSR Cina T2
+8,Tahun 2,Chinese,Penulisan,Susun perkataan menjadi ayat betul,ZH-T2-P01,Sederhana,MCQ,Susun: 学校/我/去/每天 — ayat betul ialah ___?,KSSR Cina T2
+8,Tahun 2,Chinese,Pinyin,Ulang kaji Pinyin 4 nada dengan kosa kata Tahun 2,ZH-T2-PN01,Sederhana,MCQ,Nada bagi 明 dalam 明天 ialah nada ke ___? (1/2/3/4),KSSR Cina T2
+9,Tahun 3,Chinese,Radikal,"Radikal: 心,手,目,足,口 dan aksara terbitan",ZH-T3-R01,Sederhana,MCQ,Aksara 看 mengandungi radikal ___? (目/手/口/心),KSSR Cina T3
+9,Tahun 3,Chinese,Kosa Kata,"Kosa kata perasaan: 高兴,难过,生气,害怕",ZH-T3-K01,Sederhana,MCQ,高兴 bermaksud ___? (gembira/sedih/marah/takut),KSSR Cina T3
+9,Tahun 3,Chinese,Nombor,Nombor ordinal dan pecahan mudah dalam bahasa Cina,ZH-T3-N01,Sederhana,MCQ,第三 bermaksud ___? (ketiga/tiga/dua/ketiga belas),KSSR Cina T3
+10,Tahun 4,Chinese,Radikal,"Radikal lebih kompleks: 氵,木,讠,亻,扌",ZH-T4-R01,Sederhana,MCQ,Aksara 海 mengandungi radikal ___? (氵/木/讠/亻),KSSR Cina T4
+10,Tahun 4,Chinese,Kosa Kata,"Kosa kata alam sekitar dan sains: 植物,动物,环境",ZH-T4-K01,Sederhana,MCQ,植物 bermaksud ___? (haiwan/tumbuhan/alam/air),KSSR Cina T4
+10,Tahun 4,Chinese,Penulisan,Kenal pasti dan betulkan kesilapan ejaan aksara,ZH-T4-P01,Susah,MCQ,Aksara yang salah dalam ayat ini ialah ___?,KSSR Cina T4
+11,Tahun 5,Chinese,Radikal,"Analisis struktur aksara: bahagian kiri-kanan, atas-bawah",ZH-T5-R01,Sederhana,MCQ,Aksara 明 dibentuk oleh ___? (日+月/山+水/人+口),KSSR Cina T5
+11,Tahun 5,Chinese,Kosa Kata,"Kosa kata abstrak: 友谊,诚实,勤劳,勇敢",ZH-T5-K01,Sederhana,MCQ,诚实 bermaksud ___? (jujur/berani/rajin/setia kawan),KSSR Cina T5
+11,Tahun 5,Chinese,Puisi Klasik,Memahami puisi klasik mudah: 静夜思 (Li Bai),ZH-T5-PK01,Susah,MCQ,"Dalam 静夜思, 床前明月光 menggambarkan ___?",KSSR Cina T5
+12,Tahun 6,Chinese,Idiom,"Chengyu lanjutan: 半途而废,废寝忘食,一丝不苟",ZH-T6-I01,Susah,MCQ,半途而废 bermaksud ___? (berhenti di tengah jalan/kerja keras/berjaya),KSSR Cina T6
+12,Tahun 6,Chinese,Kosa Kata,"Kosa kata tinggi: 科技,经济,文化,历史",ZH-T6-K01,Susah,MCQ,经济 bermaksud ___? (sains/ekonomi/budaya/sejarah),KSSR Cina T6
+12,Tahun 6,Chinese,Penulisan,Susun ayat kompleks dengan penghubung kata,ZH-T6-P01,Susah,MCQ,"Pilih penghubung yang betul: 虽然___,但是___",KSSR Cina T6

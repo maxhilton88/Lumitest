@@ -1,0 +1,218 @@
+
+<style>
+.rgn{cursor:pointer;transition:opacity .15s}.rgn:hover{opacity:.8}
+.rt{stroke-dasharray:6 4;fill:none}
+.tag{font-size:10px;fill:var(--color-text-tertiary);letter-spacing:.8px}
+</style>
+<svg width="100%" viewBox="0 0 680 980">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<!-- Title block -->
+<text class="th" x="340" y="30" text-anchor="middle" style="font-size:17px">The Realm of Aeluris</text>
+<text class="ts" x="340" y="50" text-anchor="middle" style="fill:var(--color-text-tertiary)">Shattered by Malachar · Restored by Lumi</text>
+
+<!-- AGE TRACK BADGES -->
+<rect x="40" y="64" width="180" height="26" rx="6" fill="var(--color-background-info)" stroke="none"/>
+<text class="ts" x="130" y="81" text-anchor="middle" style="fill:var(--color-text-info)">Ages 4–6 · Sunpath (7 regions)</text>
+<rect x="460" y="64" width="180" height="26" rx="6" fill="var(--color-background-warning)" stroke="none"/>
+<text class="ts" x="550" y="81" text-anchor="middle" style="fill:var(--color-text-warning)">Ages 7–12 · Deeppath (14 regions)</text>
+
+<!-- ═══════════════════════════════════════
+     CONTINENT 1 — THE VERDANT REACH
+════════════════════════════════════════ -->
+<text class="tag" x="200" y="108" text-anchor="middle">CONTINENT I · THE VERDANT REACH</text>
+
+<!-- R1 Thornhaven -->
+<g class="rgn c-teal" onclick="sendPrompt('Region 1 — Thornhaven details')">
+<rect x="110" y="116" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="138" text-anchor="middle">Thornhaven</text>
+<text class="ts" x="200" y="155" text-anchor="middle">Starting village · Lv 1–5</text>
+<text class="ts" x="200" y="170" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: none · all ages start here</text>
+</g>
+
+<!-- route down -->
+<line x1="200" y1="178" x2="200" y2="202" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R2 Emberveil -->
+<g class="rgn c-green" onclick="sendPrompt('Region 2 — Emberveil details')">
+<rect x="110" y="202" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="224" text-anchor="middle">Emberveil</text>
+<text class="ts" x="200" y="241" text-anchor="middle">Haunted jungle · Lv 5–15</text>
+<text class="ts" x="200" y="256" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 5 · ages 4–6 use days</text>
+</g>
+
+<!-- route right to R3 -->
+<line x1="290" y1="233" x2="330" y2="233" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R3 Cinderpost -->
+<g class="rgn c-coral" onclick="sendPrompt('Region 3 — Cinderpost details')">
+<rect x="330" y="202" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="420" y="224" text-anchor="middle">Cinderpost</text>
+<text class="ts" x="420" y="241" text-anchor="middle">Volcano city · Lv 10–20</text>
+<text class="ts" x="420" y="256" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 10 + Veil Badge</text>
+</g>
+
+<!-- route down from R2 -->
+<line x1="200" y1="264" x2="200" y2="290" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R4 Driftmoor -->
+<g class="rgn c-amber" onclick="sendPrompt('Region 4 — Driftmoor details')">
+<rect x="110" y="290" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="312" text-anchor="middle">Driftmoor</text>
+<text class="ts" x="200" y="329" text-anchor="middle">Eternal plains · Lv 15–25</text>
+<text class="ts" x="200" y="344" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 15 + Cinder Badge</text>
+</g>
+
+<!-- route right to R5 -->
+<line x1="290" y1="321" x2="330" y2="321" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R5 Vaulthollow -->
+<g class="rgn c-purple" onclick="sendPrompt('Region 5 — Vaulthollow details')">
+<rect x="330" y="290" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="420" y="312" text-anchor="middle">Vaulthollow</text>
+<text class="ts" x="420" y="329" text-anchor="middle">Ancient cave city · Lv 20–30</text>
+<text class="ts" x="420" y="344" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 20 + Moor Badge</text>
+</g>
+
+<!-- SUNPATH END MARKER (ages 4-6 stop here at R5 or special R6) -->
+<rect x="40" y="358" width="200" height="22" rx="6" fill="var(--color-background-info)" stroke="none"/>
+<text class="ts" x="140" y="373" text-anchor="middle" style="fill:var(--color-text-info)">Sunpath ends at Vaulthollow</text>
+
+<!-- route down from R4 — deeppath continues -->
+<line x1="200" y1="352" x2="200" y2="376" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- ═══════════════════════════════
+     CONTINENT 2 — THE EASTERN ISLES (boat)
+════════════════════════════════ -->
+<text class="tag" x="420" y="380" text-anchor="middle">CONTINENT II · THE SHATTERED ISLES  ⛵ by boat</text>
+
+<!-- boat line -->
+<line x1="350" y1="321" x2="510" y2="396" class="rt" stroke="var(--color-border-tertiary)" stroke-width="1.5"/>
+<text class="ts" x="462" y="370" style="fill:var(--color-text-tertiary)">⛵</text>
+
+<!-- R6 Stormreach -->
+<g class="rgn c-blue" onclick="sendPrompt('Region 6 — Stormreach details')">
+<rect x="420" y="388" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="510" y="410" text-anchor="middle">Stormreach</text>
+<text class="ts" x="510" y="427" text-anchor="middle">Storm sea island · Lv 28–38</text>
+<text class="ts" x="510" y="442" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 28 + Cave Badge</text>
+</g>
+
+<!-- route left from R4/5 area continuing down -->
+<line x1="200" y1="376" x2="200" y2="400" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R7 Ashenveil -->
+<g class="rgn c-gray" onclick="sendPrompt('Region 7 — Ashenveil details')">
+<rect x="110" y="400" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="422" text-anchor="middle">Ashenveil</text>
+<text class="ts" x="200" y="439" text-anchor="middle">Ruined ghost city · Lv 25–35</text>
+<text class="ts" x="200" y="454" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 25 + Hollow Badge</text>
+</g>
+
+<!-- route right from R7 to R6 area -->
+<line x1="290" y1="431" x2="420" y2="419" class="rt" stroke="var(--color-border-secondary)" stroke-width="1.5"/>
+
+<!-- route down from Stormreach -->
+<line x1="510" y1="450" x2="510" y2="474" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R8 Lumenvast (Sky Island) -->
+<g class="rgn c-purple" onclick="sendPrompt('Region 8 — Lumenvast details')">
+<rect x="420" y="474" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="510" y="496" text-anchor="middle">Lumenvast</text>
+<text class="ts" x="510" y="513" text-anchor="middle">Sky kingdom · Lv 35–45</text>
+<text class="ts" x="510" y="528" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 35 + Storm Badge</text>
+</g>
+
+<!-- route down from R7 -->
+<line x1="200" y1="462" x2="200" y2="488" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R9 Irondeep -->
+<g class="rgn c-amber" onclick="sendPrompt('Region 9 — Irondeep details')">
+<rect x="110" y="488" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="510" text-anchor="middle">Irondeep</text>
+<text class="ts" x="200" y="527" text-anchor="middle">Underground forge · Lv 32–42</text>
+<text class="ts" x="200" y="542" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 32 + Ash Badge</text>
+</g>
+
+<!-- ═══════════════════════════════
+     CONTINENT 3 — THE SOUTHERN EXPANSE (boat)
+════════════════════════════════ -->
+<text class="tag" x="340" y="572" text-anchor="middle">CONTINENT III · THE SOUTHERN EXPANSE  ⛵ by boat</text>
+
+<!-- boat lines south -->
+<line x1="200" y1="550" x2="240" y2="582" class="rt" stroke="var(--color-border-tertiary)" stroke-width="1.5"/>
+<line x1="510" y1="536" x2="460" y2="582" class="rt" stroke="var(--color-border-tertiary)" stroke-width="1.5"/>
+
+<!-- R10 Wraithspire -->
+<g class="rgn c-coral" onclick="sendPrompt('Region 10 — Wraithspire details')">
+<rect x="110" y="582" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="604" text-anchor="middle">Wraithspire</text>
+<text class="ts" x="200" y="621" text-anchor="middle">Ancient temple peak · Lv 42–52</text>
+<text class="ts" x="200" y="636" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 42 + Deep Badge</text>
+</g>
+
+<!-- route right to R11 -->
+<line x1="290" y1="613" x2="330" y2="613" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R11 Echovast -->
+<g class="rgn c-green" onclick="sendPrompt('Region 11 — Echovast details')">
+<rect x="330" y="582" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="420" y="604" text-anchor="middle">Echovast</text>
+<text class="ts" x="420" y="621" text-anchor="middle">Eternal forest · Lv 48–58</text>
+<text class="ts" x="420" y="636" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 48 + Spire Badge</text>
+</g>
+
+<!-- route down from R10 -->
+<line x1="200" y1="644" x2="200" y2="668" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R12 Goldenveil -->
+<g class="rgn c-amber" onclick="sendPrompt('Region 12 — Goldenveil details')">
+<rect x="110" y="668" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="200" y="690" text-anchor="middle">Goldenveil</text>
+<text class="ts" x="200" y="707" text-anchor="middle">Last great city · Lv 55–70</text>
+<text class="ts" x="200" y="722" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 55 + Echo Badge</text>
+</g>
+
+<!-- route right to R13 -->
+<line x1="290" y1="699" x2="330" y2="699" class="rt" stroke="var(--color-border-secondary)" stroke-width="2"/>
+
+<!-- R13 Nullspire -->
+<g class="rgn c-gray" onclick="sendPrompt('Region 13 — Nullspire details')">
+<rect x="330" y="668" width="180" height="62" rx="10" stroke-width="1"/>
+<text class="th" x="420" y="690" text-anchor="middle">Nullspire</text>
+<text class="ts" x="420" y="707" text-anchor="middle">Malachar's dark palace · Lv 70–85</text>
+<text class="ts" x="420" y="722" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 70 + 9 Badges</text>
+</g>
+
+<!-- ═══════════════════════════════
+     FINAL — THE VOID CORE
+════════════════════════════════ -->
+<text class="tag" x="340" y="752" text-anchor="middle">THE VOID CORE — MALACHAR'S FINAL DOMAIN</text>
+
+<!-- converge lines -->
+<line x1="200" y1="730" x2="280" y2="762" class="rt" stroke="var(--color-border-tertiary)" stroke-width="1.5"/>
+<line x1="420" y1="730" x2="380" y2="762" class="rt" stroke="var(--color-border-tertiary)" stroke-width="1.5"/>
+
+<!-- R14 Voidcore -->
+<g class="rgn c-purple" onclick="sendPrompt('Region 14 — Voidcore, the final region')">
+<rect x="220" y="762" width="240" height="66" rx="10" stroke-width="1.5"/>
+<text class="th" x="340" y="786" text-anchor="middle" style="font-size:15px">Voidcore</text>
+<text class="ts" x="340" y="804" text-anchor="middle">Malachar's AI fortress · Lv 85–100</text>
+<text class="ts" x="340" y="820" text-anchor="middle" style="fill:var(--color-text-tertiary)">Gate: Lv 85 + ALL 11 Badges</text>
+</g>
+
+<!-- legend -->
+<rect x="40" y="856" width="600" height="104" rx="10" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+<text class="th" x="340" y="876" text-anchor="middle">World Guide</text>
+<rect x="60" y="888" width="10" height="10" rx="2" fill="var(--color-background-info)"/>
+<text class="ts" x="78" y="898">Sunpath (ages 4–6): Regions 1–5 · 5 guardians · scaled XP gates</text>
+<rect x="60" y="908" width="10" height="10" rx="2" fill="var(--color-background-warning)"/>
+<text class="ts" x="78" y="918">Deeppath (ages 7–12): All 14 regions · full journey</text>
+<line x1="60" y1="930" x2="90" y2="930" stroke="var(--color-border-secondary)" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text class="ts" x="98" y="934">⛵ = boat travel · dashed = routes · click any region for full details</text>
+<text class="ts" x="340" y="952" text-anchor="middle" style="fill:var(--color-text-tertiary)">14 regions · 3 continents · 1 void core · 11 badges · Malachar awaits</text>
+</svg>

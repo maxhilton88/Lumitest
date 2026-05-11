@@ -1,0 +1,46 @@
+[Hydrated]
+62ca96816fbf02ac38be1c6b59a084caca495299.js:12150 [SUPABASE-CLIENT] Module init — raw URL snapshot: Object
+62ca96816fbf02ac38be1c6b59a084caca495299.js:13414 [SESSION] Debug logger initialized Object
+62ca96816fbf02ac38be1c6b59a084caca495299.js:19182 [API] Fetching live quests (public)
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21046 [APP] OAuth return detected Object
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21125 [APP] PKCE code found in URL, attempting manual exchange...
+/manifest.json:3 Manifest: Line: 3, column: 1, Syntax error.Understand this error
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21123 [APP] Auth state change: SIGNED_IN true
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21093 [APP] OAuth session acquired, completing parent record... Object
+62ca96816fbf02ac38be1c6b59a084caca495299.js:12328 [PARENT-API] OAuth complete — ensuring parent record exists Object
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21123 [APP] Auth state change: SIGNED_IN true
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21123 [APP] Auth state change: INITIAL_SESSION true
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21126 [APP] Manual code exchange failed (may already be handled): PKCE code verifier not found in storage. This can happen if the auth flow was initiated in a different browser or device, or if the storage was cleared. For SSR frameworks (Next.js, SvelteKit, etc.), use @supabase/ssr on both the server and client to store the code verifier in cookies.
+(anonymous) @ 62ca96816fbf02ac38be1c6b59a084caca495299.js:21126Understand this warning
+62ca96816fbf02ac38be1c6b59a084caca495299.js:1248 [TAXONOMY] Loaded 411 live skills from server
+62ca96816fbf02ac38be1c6b59a084caca495299.js:19192 [API] 7 live quests
+62ca96816fbf02ac38be1c6b59a084caca495299.js:20599 [QUESTS] Loaded 7 live quests
+62ca96816fbf02ac38be1c6b59a084caca495299.js:20636 [QUESTS] Built 24 quest card image URLs (R2)
+62ca96816fbf02ac38be1c6b59a084caca495299.js:21189 [PWA] Service Worker registration failed: SecurityError: Failed to register a ServiceWorker for scope ('https://www.projectlumi.org/') with script ('https://www.projectlumi.org/sw.js'): The script has an unsupported MIME type ('text/html').
+(anonymous) @ 62ca96816fbf02ac38be1c6b59a084caca495299.js:21189Understand this warning
+62ca96816fbf02ac38be1c6b59a084caca495299.js:12350 [PARENT-API] OAuth parent record ready: Max Hilton (isNew: true)
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34036 [REALM CTX] Applied localStorage cache: level=1, gold=100
+62ca96816fbf02ac38be1c6b59a084caca495299.js:19837 [API] RPG assets fetched fresh: bag_header, battle-ground, realm-bg, realm-bg-landscape, shop_header, battle_mode, foxy, foxy_back, test_mode, game-diamond, item-banana-removebg-preview-mmj2qxct, item-fireblade-removebg-preview-mmszlrw5, item-guardian_plate-removebg-preview-mmszn8qx, item-jimeng-2026-03-16-3066-___________-______-removebg-preview-mmt09xb3, item-jimeng-2026-03-16-6947-___________-______-removebg-preview-mmt098tg, item-lumi_core-removebg-preview-mmt00p4k, item-neaklace-removebg-preview-mmszfhg9, item-neaklace-removebg-preview-mmszga9l, item-potion_2-removebg-preview-mmj29053, item-rare-removebg-preview-mmj27i3d, item-shield_2-removebg-preview-mmj2f2sa, item-shield-removebg-preview-mmj2ckuk, magic-potion, bettle, card_mode, durian_monster, for_kindergarten, for_parents, foxy-ai, homepage_banner, homepage_practice_mode, homepage_test_mode, homepage-banne_object, homepagebg, kid_study, kinder2, kindergarten, kindergarten_heading, kling-20251230-image-can-you-he-3984-1, music_mode, parents-2, practice_mode, quest_mode, quest_mode-homepage, realm-potion, realm-premium, test_mode_2, video_mode, video_mode_homepage, foxy-practice, game_egg, game-coin, magic_button, practice-bg, realm_bag, realm_map, realm_shield, stroll
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34207 [REALM CTX] Assets loaded: 58
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34060 [REALM CTX] No saved stats in KV, using defaults (or localStorage cache if available)
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34067 [REALM CTX] Migrated hatchStartMs from localStorage: 1773131862894
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34088 [REALM CTX] Legacy data migrated into stats — will persist to KV on next debounce
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34115 [REALM CTX] Loaded quest progress: 0 completed quests
+262ca96816fbf02ac38be1c6b59a084caca495299.js:19182 [API] Fetching live quests (public)
+262ca96816fbf02ac38be1c6b59a084caca495299.js:19192 [API] 7 live quests
+62ca96816fbf02ac38be1c6b59a084caca495299.js:19005 [API] Fetching question bank: https://zrtbjefoaennvtlcneal.supabase.co/functions/v1/make-server-221a61bc/question-bank?search=function+search%28%29+%7B+%5Bnative+code%5D+%7D
+62ca96816fbf02ac38be1c6b59a084caca495299.js:19015 [API] Question bank: 0 returned, page 1/1, total 0
+sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8 TypeError: Cannot read properties of undefined (reading 'id')
+    at H4 (62ca96816fbf02ac38be1c6b59a084caca495299.js:35657:9)
+    at rS (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:6:16997)
+    at O1 (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8:43968)
+    at k1 (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8:39726)
+    at BM (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8:39654)
+    at qd (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8:39508)
+    at kv (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8:35876)
+    at C1 (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8:34827)
+    at dy (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:1:9206)
+    at MessagePort.ay (sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:1:9600)
+hv @ sites-runtime.343174caaaed17c584f4bbef3b4ac09803029223cd1847b05e791508001770d2.js:8Understand this error
+62ca96816fbf02ac38be1c6b59a084caca495299.js:13414 [ERROR_BOUNDARY] Component crashed Object
+62ca96816fbf02ac38be1c6b59a084caca495299.js:34153 [REALM CTX] Unmount flush: gold=100, xp=0, hp=100

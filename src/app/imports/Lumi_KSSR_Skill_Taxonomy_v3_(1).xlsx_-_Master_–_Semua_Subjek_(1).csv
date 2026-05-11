@@ -1,0 +1,339 @@
+Tahun/Level,Subjek,Bidang / Topik,Kemahiran / Subtopik,Kod Kemahiran
+Prasekolah,Matematik,Nombor,Membilang objek 1–10,MAT-PS-N01
+Prasekolah,Matematik,Nombor,Mengenal nombor dan lambang angka 1–10,MAT-PS-N02
+Prasekolah,Matematik,Nombor,Membanding lebih banyak dan lebih sedikit,MAT-PS-N03
+Prasekolah,Matematik,Operasi,Menambah dengan objek hingga 5,MAT-PS-O01
+Prasekolah,Matematik,Bentuk 2D,"Mengenal bentuk: bulatan, segi tiga, segi empat",MAT-PS-B01
+Prasekolah,Matematik,Ruang,"Konsep: dalam, luar, atas, bawah, depan, belakang",MAT-PS-R01
+Prasekolah,Matematik,Pola,Mengenal dan menyambung pola mudah,MAT-PS-P01
+Prasekolah,Matematik,Sukatan,Bandingkan panjang: panjang vs pendek,MAT-PS-S01
+Prasekolah,Sains,Hidupan,Benda hidup vs benda bukan hidup,SCI-PS-H01
+Prasekolah,Sains,Hidupan,Lima deria manusia dan organ deria,SCI-PS-H02
+Prasekolah,Sains,Hidupan,"Bahagian badan manusia (kepala, tangan, kaki)",SCI-PS-H03
+Prasekolah,Sains,Haiwan,Mengenal haiwan biasa dan bunyinya,SCI-PS-A01
+Prasekolah,Sains,Tumbuhan,"Bahagian tumbuhan: akar, batang, daun, bunga",SCI-PS-T01
+Prasekolah,Sains,Cuaca,"Keadaan cuaca: cerah, hujan, berangin",SCI-PS-C01
+Prasekolah,Sains,Bahan,Sifat bahan: terapung atau tenggelam,SCI-PS-M01
+Prasekolah,English,Phonics,Mengenal huruf besar A–Z,ENG-PS-P01
+Prasekolah,English,Phonics,"Bunyi huruf awal (phonics): a, b, c…",ENG-PS-P02
+Prasekolah,English,Phonics,"Mengenal huruf vokal (A,E,I,O,U)",ENG-PS-P03
+Prasekolah,English,Vocabulary,"Nama benda harian (cat, dog, ball, book)",ENG-PS-V01
+Prasekolah,English,Vocabulary,"Warna asas (red, blue, yellow, green)",ENG-PS-V02
+Prasekolah,English,Vocabulary,Nombor dalam BI (one to ten),ENG-PS-V03
+Prasekolah,Bahasa Melayu,Fonetik,"Mengenal huruf vokal BM: a,e,i,o,u",BM-PS-F01
+Prasekolah,Bahasa Melayu,Fonetik,"Suku kata KV: ba, bu, da, di, ma, mi",BM-PS-F02
+Prasekolah,Bahasa Melayu,Fonetik,Membatang perkataan dua suku kata KV+KV,BM-PS-F03
+Prasekolah,Bahasa Melayu,Kosa Kata,"Kosa kata benda harian (meja, kerusi, baju)",BM-PS-K01
+Prasekolah,Bahasa Melayu,Ayat,"Memahami arahan mudah (duduk, berdiri, angkat tangan)",BM-PS-A01
+Prasekolah,Chinese,Aksara,Membilang 1–10 dalam aksara Cina (一到十),ZH-PS-A01
+Prasekolah,Chinese,Aksara,"Mengenal aksara asas (人,口,手,眼,耳)",ZH-PS-A02
+Prasekolah,Chinese,Pinyin,"Bunyi vokal Pinyin: a, o, e, i, u, ü",ZH-PS-P01
+Prasekolah,Geography,Persekitaran Diri,"Mengenal persekitaran terdekat: rumah, sekolah, kedai",GEO-PS-PD01
+Prasekolah,Geography,Persekitaran Diri,"Mengenal tempat dalam rumah: bilik tidur, dapur, bilik air",GEO-PS-PD02
+Prasekolah,Geography,Persekitaran Diri,Mengenal kawasan: bandar vs kampung,GEO-PS-PD03
+Prasekolah,Geography,Alam Sekitar,"Mengenal unsur alam: tanah, air, udara",GEO-PS-AS01
+Prasekolah,Geography,Alam Sekitar,Mengenal permukaan bumi: darat dan laut,GEO-PS-AS02
+Prasekolah,Geography,Cuaca & Iklim,"Keadaan cuaca harian: panas, hujan, mendung, berangin",GEO-PS-CK01
+Prasekolah,Geography,Pengangkutan,"Jenis pengangkutan: darat, air, udara",GEO-PS-PG01
+Prasekolah,Geography,Arah,"Konsep arah mudah: kiri, kanan, depan, belakang",GEO-PS-AR01
+Prasekolah,Sejarah,Identiti Diri,"Nama, umur, keluarga – siapa saya",SJ-PS-ID01
+Prasekolah,Sejarah,Identiti Diri,"Mengenal ahli keluarga: ibu, ayah, adik-beradik",SJ-PS-ID02
+Prasekolah,Sejarah,Budaya & Perayaan,"Mengenal perayaan Malaysia: Hari Raya, CNY, Deepavali, Krismas",SJ-PS-BP01
+Prasekolah,Sejarah,Budaya & Perayaan,Mengenal pakaian tradisional kaum,SJ-PS-BP02
+Prasekolah,Sejarah,Budaya & Perayaan,Mengenal makanan tradisional kaum,SJ-PS-BP03
+Prasekolah,Sejarah,Simbol Negara,Mengenal bendera Malaysia (Jalur Gemilang),SJ-PS-SN01
+Prasekolah,Sejarah,Simbol Negara,Mengenal bunga kebangsaan: Bunga Raya,SJ-PS-SN02
+Prasekolah,Sejarah,Komuniti,"Mengenal pekerjaan dalam komuniti: doktor, guru, polis",SJ-PS-KM01
+Tahun 1,Matematik,Nombor Bulat,Nilai nombor bulat hingga 100,MAT-T1-N01
+Tahun 1,Matematik,Nombor Bulat,"Membilang dalam lingkungan 100 (1s, 2s, 5s, 10s)",MAT-T1-N02
+Tahun 1,Matematik,Nombor Bulat,Nilai tempat: puluh dan sa,MAT-T1-N03
+Tahun 1,Matematik,Operasi – Tambah,"Menambah dua nombor, hasil dalam lingkungan 100",MAT-T1-OT01
+Tahun 1,Matematik,Operasi – Tambah,Pasangan nombor bagi suatu jumlah (nombor bon),MAT-T1-OT02
+Tahun 1,Matematik,Operasi – Tolak,Menolak dua nombor dalam lingkungan 100,MAT-T1-OL01
+Tahun 1,Matematik,Wang,Mengenal syiling Malaysia (5 sen hingga RM1),MAT-T1-W01
+Tahun 1,Matematik,Masa,Membaca jam – tepat (o'clock),MAT-T1-M01
+Tahun 1,Matematik,Sukatan Panjang,Mengukur panjang menggunakan unit tidak piawai,MAT-T1-SP01
+Tahun 1,Matematik,Bentuk 2D & 3D,Mengenal dan menamakan bentuk 2D dan 3D,MAT-T1-B01
+Tahun 1,Matematik,Data,Membaca piktograf mudah,MAT-T1-D01
+Tahun 1,Sains,Sains Hayat,Ciri-ciri benda hidup dan bukan hidup,SCI-T1-H01
+Tahun 1,Sains,Sains Hayat,"Keperluan asas hidupan: air, makanan, udara, cahaya",SCI-T1-H02
+Tahun 1,Sains,Sains Hayat,Deria manusia dan fungsinya,SCI-T1-H03
+Tahun 1,Sains,Sains Hayat,Haiwan: ciri-ciri dan pengkelasan asas,SCI-T1-A01
+Tahun 1,Sains,Sains Hayat,Tumbuhan: bahagian-bahagian dan fungsinya,SCI-T1-T01
+Tahun 1,Sains,Sains Fizikal,Magnet: bahan yang boleh dan tidak boleh ditarik magnet,SCI-T1-F01
+Tahun 1,Sains,Sains Bahan,Penyerapan: bahan menyerap dan tidak menyerap air,SCI-T1-B01
+Tahun 1,Sains,Bumi & Angkasa,"Permukaan bumi: tanah, batu, pasir",SCI-T1-E01
+Tahun 1,English,Phonics,"Bunyi huruf CVC (cat, dog, pin)",ENG-T1-P01
+Tahun 1,English,Phonics,Perkataan CVC – isi huruf yang hilang (c_t),ENG-T1-P02
+Tahun 1,English,Sight Words,"Mengenal dan membaca sight words (I, am, is, the, a, can)",ENG-T1-SW01
+Tahun 1,English,Vocabulary,"Kosa kata topik: animals, colours, food, school items",ENG-T1-V01
+Tahun 1,English,Grammar,Ayat mudah: subjek + predikat,ENG-T1-G01
+Tahun 1,English,Writing,Menulis huruf besar dan huruf kecil dengan betul,ENG-T1-W01
+Tahun 1,Bahasa Melayu,Fonetik,"Suku kata KV: ba, be, bi, bo, bu",BM-T1-F01
+Tahun 1,Bahasa Melayu,Fonetik,"Suku kata KVK: bab, cak, dal, mil",BM-T1-F02
+Tahun 1,Bahasa Melayu,Fonetik,Membatang dan membaca perkataan KVKV,BM-T1-F03
+Tahun 1,Bahasa Melayu,Fonetik,Membatang dan membaca perkataan KVKVK,BM-T1-F04
+Tahun 1,Bahasa Melayu,Ejaan,Mengeja dan menulis perkataan KV+KV,BM-T1-E01
+Tahun 1,Bahasa Melayu,Tatabahasa,Kata Nama Am dan Kata Nama Khas,BM-T1-T01
+Tahun 1,Bahasa Melayu,Tatabahasa,"Kata Ganti Nama Diri (saya, awak, dia)",BM-T1-T02
+Tahun 1,Bahasa Melayu,Tatabahasa,Kata Kerja Aktif Transitif,BM-T1-T03
+Tahun 1,Bahasa Melayu,Tatabahasa,Kata Adjektif (sifat benda),BM-T1-T04
+Tahun 1,Bahasa Melayu,Tatabahasa,Imbuhan Awalan (me-),BM-T1-T05
+Tahun 1,Bahasa Melayu,Tatabahasa,Jenis Ayat: Ayat Penyata,BM-T1-T06
+Tahun 1,Chinese,Aksara,Mengenal dan membaca aksara asas Tahun 1 (~150 aksara),ZH-T1-A01
+Tahun 1,Chinese,Pinyin,"Pinyin: huruf konsonan (b,p,m,f,d,t…)",ZH-T1-P01
+Tahun 1,Chinese,Pinyin,Pinyin 4 nada (nada 1–4),ZH-T1-P02
+Tahun 1,Chinese,Ductus,Urutan ductus (笔顺) aksara asas,ZH-T1-B01
+Tahun 1,Chinese,Kosa Kata,"Kosa kata topik: keluarga, sekolah, nombor",ZH-T1-K01
+Tahun 1,Chinese,Ayat,Membina ayat mudah menggunakan 是/有/在,ZH-T1-Y01
+Tahun 1,Geography,Persekitaran,"Mengenal kawasan: rumah, sekolah, kedai, pasar",GEO-T1-PK01
+Tahun 1,Geography,Persekitaran,Mengenal jiran dan komuniti,GEO-T1-PK02
+Tahun 1,Geography,Peta Mudah,"Membaca pelan mudah (bilik darjah, sekolah)",GEO-T1-PM01
+Tahun 1,Geography,Arah,"Mengenal arah: kiri, kanan, depan, belakang, atas, bawah",GEO-T1-AR01
+Tahun 1,Geography,Alam Sekitar,Mengenal tumbuhan dan haiwan di persekitaran,GEO-T1-AS01
+Tahun 1,Geography,Cuaca,Mengenal cuaca dan pakaian yang sesuai,GEO-T1-CW01
+Tahun 1,Geography,Pengangkutan,"Jenis pengangkutan di darat, air dan udara",GEO-T1-PG01
+Tahun 1,Sejarah,Identiti & Keluarga,Mengenal keluarga asas dan peranan ahli keluarga,SJ-T1-IK01
+Tahun 1,Sejarah,Identiti & Keluarga,Mengenal negara Malaysia – saya rakyat Malaysia,SJ-T1-IK02
+Tahun 1,Sejarah,Budaya,"Perayaan kaum di Malaysia: Hari Raya, CNY, Deepavali",SJ-T1-BD01
+Tahun 1,Sejarah,Budaya,Pakaian tradisional mengikut kaum,SJ-T1-BD02
+Tahun 1,Sejarah,Budaya,Makanan tradisional mengikut kaum,SJ-T1-BD03
+Tahun 1,Sejarah,Simbol Negara,Jalur Gemilang: warna dan lambang,SJ-T1-SN01
+Tahun 1,Sejarah,Simbol Negara,Lagu Negaraku – lagu kebangsaan,SJ-T1-SN02
+Tahun 2,Matematik,Nombor Bulat,Nilai nombor bulat hingga 1000,MAT-T2-N01
+Tahun 2,Matematik,Nombor Bulat,Membilang dalam lingkungan 1000,MAT-T2-N02
+Tahun 2,Matematik,Operasi – Tambah,"Tambah dua nombor, hasil dalam lingkungan 1000",MAT-T2-OT01
+Tahun 2,Matematik,Operasi – Tolak,Tolak dua nombor dalam lingkungan 1000,MAT-T2-OL01
+Tahun 2,Matematik,Operasi – Darab,"Sifir 2, 3, 4, 5",MAT-T2-OD01
+Tahun 2,Matematik,Operasi – Bahagi,Konsep bahagi sama rata,MAT-T2-OB01
+Tahun 2,Matematik,Wang,Nilai wang kertas RM1–RM50,MAT-T2-W01
+Tahun 2,Matematik,Masa,Membaca jam – setengah dan suku jam,MAT-T2-M01
+Tahun 2,Matematik,Panjang,Mengukur panjang menggunakan cm dan m,MAT-T2-P01
+Tahun 2,Matematik,Jisim,Menimbang jisim menggunakan g dan kg,MAT-T2-J01
+Tahun 2,Matematik,Data,Membina dan membaca carta palang mudah,MAT-T2-D01
+Tahun 2,Sains,Sains Hayat,"Kitaran hidup haiwan (kupu-kupu, katak)",SCI-T2-H01
+Tahun 2,Sains,Sains Hayat,"Keperluan haiwan: makanan, air, tempat tinggal",SCI-T2-H02
+Tahun 2,Sains,Sains Hayat,Pengkelasan tumbuhan: berbunga dan tidak berbunga,SCI-T2-T01
+Tahun 2,Sains,Sains Fizikal,Daya tolak dan tarik,SCI-T2-F01
+Tahun 2,Sains,Sains Bahan,"Keadaan jirim: pepejal, cecair, gas",SCI-T2-B01
+Tahun 2,Sains,Bumi & Angkasa,"Objek langit: matahari, bulan, bintang",SCI-T2-E01
+Tahun 2,English,Phonics,"Dwigraf: sh, ch, th, wh",ENG-T2-P01
+Tahun 2,English,Phonics,"Bunyi vokal panjang: a-e, i-e, o-e (cake, bike, home)",ENG-T2-P02
+Tahun 2,English,Vocabulary,"Kata sifat: big, small, happy, sad",ENG-T2-V01
+Tahun 2,English,Grammar,Kata nama jamak regular (cat→cats),ENG-T2-G01
+Tahun 2,English,Grammar,"Kata kerja present tense (run, eat, play)",ENG-T2-G02
+Tahun 2,English,Grammar,"Artikel: a, an, the",ENG-T2-G03
+Tahun 2,English,Writing,Menulis ayat mudah dengan tanda baca betul,ENG-T2-W01
+Tahun 2,Bahasa Melayu,Membaca,Membaca dan memahami teks pendek (1–2 perenggan),BM-T2-MB01
+Tahun 2,Bahasa Melayu,Ejaan,"Mengeja perkataan KVK+KV, KV+KVK, KVKK",BM-T2-E01
+Tahun 2,Bahasa Melayu,Tatabahasa,"Penjodoh Bilangan (ekor, orang, biji, buah, helai)",BM-T2-T01
+Tahun 2,Bahasa Melayu,Tatabahasa,Kata Kerja Pasif (di- + kata kerja),BM-T2-T02
+Tahun 2,Bahasa Melayu,Tatabahasa,"Kata Sendi Nama (di, ke, dari, pada, untuk)",BM-T2-T03
+Tahun 2,Bahasa Melayu,Tatabahasa,"Imbuhan Akhiran (-kan, -an, -i)",BM-T2-T04
+Tahun 2,Bahasa Melayu,Tatabahasa,Kata Ganda Penuh,BM-T2-T05
+Tahun 2,Bahasa Melayu,Tatabahasa,Jenis Ayat: Ayat Tanya,BM-T2-T06
+Tahun 2,Chinese,Aksara,Aksara Tahun 2 (~200 aksara kumulatif),ZH-T2-A01
+Tahun 2,Chinese,Radikal,"Mengenal radikal asas (人,水,木,火,土,口)",ZH-T2-R01
+Tahun 2,Chinese,Kosa Kata,"Kosa kata topik: badan manusia, makanan, haiwan",ZH-T2-K01
+Tahun 2,Chinese,Tatabahasa,Ayat tanya menggunakan 吗/什么/哪里/谁,ZH-T2-G01
+Tahun 2,Chinese,Bacaan,Memahami teks pendek dan menjawab soalan,ZH-T2-B01
+Tahun 2,Geography,Peta,Membaca dan memahami simbol peta mudah,GEO-T2-PT01
+Tahun 2,Geography,Peta,"Mengenal arah mata angin: Utara, Selatan, Timur, Barat",GEO-T2-AR01
+Tahun 2,Geography,Malaysia,"Mengenal Malaysia: benua, jiran, lautan",GEO-T2-MY01
+Tahun 2,Geography,Malaysia,Mengenal Semenanjung Malaysia vs Sabah & Sarawak,GEO-T2-MY02
+Tahun 2,Geography,Alam Sekitar,"Mengenal hutan, sungai, gunung dan pantai",GEO-T2-AS01
+Tahun 2,Geography,Cuaca & Iklim,Malaysia beriklim khatulistiwa: panas dan lembap sepanjang tahun,GEO-T2-CK01
+Tahun 2,Geography,Komuniti,"Jenis-jenis tempat dalam komuniti: hospital, stesen polis, sekolah",GEO-T2-KM01
+Tahun 2,Sejarah,Budaya Malaysia,"Kepelbagaian kaum di Malaysia: Melayu, Cina, India, dll",SJ-T2-BM01
+Tahun 2,Sejarah,Budaya Malaysia,Bahasa perpaduan: Bahasa Malaysia,SJ-T2-BM02
+Tahun 2,Sejarah,Simbol Negara,Jata Negara: lambang-lambang,SJ-T2-SN01
+Tahun 2,Sejarah,Simbol Negara,"Bunga kebangsaan, sukan kebangsaan, warna bendera",SJ-T2-SN02
+Tahun 2,Sejarah,Komuniti,"Peranan pemimpin komuniti: ketua kampung, ahli majlis",SJ-T2-KM01
+Tahun 2,Sejarah,Rukun Negara,Pengenalan Rukun Negara (5 prinsip),SJ-T2-RN01
+Tahun 3,Matematik,Nombor Bulat,Nilai nombor bulat hingga 10 000,MAT-T3-N01
+Tahun 3,Matematik,Operasi – Tambah,Tambah hingga tiga nombor dalam 10 000,MAT-T3-OT01
+Tahun 3,Matematik,Operasi – Tolak,Tolak dua nombor dalam lingkungan 10 000,MAT-T3-OL01
+Tahun 3,Matematik,Operasi – Darab,"Sifir 6, 7, 8, 9",MAT-T3-OD01
+Tahun 3,Matematik,Operasi – Bahagi,Bahagi dalam lingkungan sifir 2–9,MAT-T3-OB01
+Tahun 3,Matematik,Pecahan,"Mengenal dan menamakan pecahan (1/2, 1/3, 1/4, 1/5)",MAT-T3-PC01
+Tahun 3,Matematik,Pecahan,Membanding dan menyusun pecahan,MAT-T3-PC02
+Tahun 3,Matematik,Wang,Operasi bergabung melibatkan wang,MAT-T3-W01
+Tahun 3,Matematik,Masa,"Membaca jam – minit (3:15, 4:45)",MAT-T3-M01
+Tahun 3,Matematik,Panjang,"Menukar unit: m ke cm, km ke m",MAT-T3-P01
+Tahun 3,Matematik,Data,Membaca dan menafsir carta palang,MAT-T3-D01
+Tahun 3,Sains,Sains Hayat,Pembiakan haiwan: bertelur dan melahirkan anak,SCI-T3-H01
+Tahun 3,Sains,Sains Hayat,"Pembiakan tumbuhan: benih, spora, keratan",SCI-T3-T01
+Tahun 3,Sains,Sains Fizikal,"Daya: graviti, daya tolak, daya tarik",SCI-T3-F01
+Tahun 3,Sains,Sains Bahan,"Sifat bahan: keras, lembut, telus, legap",SCI-T3-B01
+Tahun 3,Sains,Kemahiran Proses,Kemahiran memerhati dan mengelas,SCI-T3-KP01
+Tahun 3,English,Reading,Membaca dan memahami teks pendek – soalan fakta,ENG-T3-R01
+Tahun 3,English,Grammar,Kata kerja lampau regular (+ed),ENG-T3-G01
+Tahun 3,English,Grammar,Kata kerja lampau irregular (go→went),ENG-T3-G02
+Tahun 3,English,Grammar,Kata nama jamak tidak teratur (child→children),ENG-T3-G03
+Tahun 3,English,Grammar,"Kata depan tempat (in, on, under, beside, between)",ENG-T3-G04
+Tahun 3,English,Grammar,"Kata hubung (and, but, because, so, or)",ENG-T3-G05
+Tahun 3,English,Vocabulary,Sinonim dan antonim mudah,ENG-T3-V01
+Tahun 3,Bahasa Melayu,Membaca,Membaca dan memahami petikan prosa,BM-T3-MB01
+Tahun 3,Bahasa Melayu,Ejaan,Mengeja perkataan berimbuhan awalan,BM-T3-E01
+Tahun 3,Bahasa Melayu,Tatabahasa,"Imbuhan Awalan: ber-, ter-, pe-",BM-T3-T01
+Tahun 3,Bahasa Melayu,Tatabahasa,Kata Majmuk Rangkai Kata Bebas,BM-T3-T02
+Tahun 3,Bahasa Melayu,Tatabahasa,Jenis Ayat: Ayat Perintah dan Ayat Seruan,BM-T3-T03
+Tahun 3,Bahasa Melayu,Tatabahasa,Bentuk Ayat: Ayat Tunggal dan Ayat Majmuk,BM-T3-T04
+Tahun 3,Bahasa Melayu,Seni Bahasa,Melafaz dan memahami pantun dua kerat,BM-T3-SB01
+Tahun 3,Chinese,Aksara,Aksara Tahun 3 (~300 aksara kumulatif),ZH-T3-A01
+Tahun 3,Chinese,Tatabahasa,Kata adjektif – membanding (比),ZH-T3-G01
+Tahun 3,Chinese,Tatabahasa,"Penegas masa: 今天,昨天,明天",ZH-T3-G02
+Tahun 3,Chinese,Bacaan,Memahami teks deskriptif pendek,ZH-T3-B01
+Tahun 3,Chinese,Penulisan,Susun semula ayat mengikut urutan betul,ZH-T3-P01
+Tahun 3,Geography,Malaysia,Mengenal 14 negeri Malaysia dan wilayah persekutuan,GEO-T3-MY01
+Tahun 3,Geography,Malaysia,Ibu negeri bagi setiap negeri Malaysia,GEO-T3-MY02
+Tahun 3,Geography,Malaysia,Mengenal peta Malaysia dan kedudukan negeri,GEO-T3-MY03
+Tahun 3,Geography,Asia Tenggara,Negara-negara Asia Tenggara (ASEAN),GEO-T3-AT01
+Tahun 3,Geography,Asia Tenggara,"Jiran-jiran Malaysia (Thailand, Singapura, Indonesia, Brunei)",GEO-T3-AT02
+Tahun 3,Geography,Dunia,Mengenal 7 benua dunia,GEO-T3-DU01
+Tahun 3,Geography,Dunia,"Mengenal lautan dunia (Lautan Hindi, Pasifik, Atlantik)",GEO-T3-DU02
+Tahun 3,Geography,Alam Sekitar,"Sumber semula jadi Malaysia: petroleum, getah, sawit, kayu",GEO-T3-AS01
+Tahun 3,Sejarah,Sejarah Tempatan,"Mengenal sejarah kawasan tempatan (bandar, kampung)",SJ-T3-ST01
+Tahun 3,Sejarah,Kerajaan Awal,"Pengenalan kerajaan Melayu awal: Srivijaya, Langkasuka",SJ-T3-KA01
+Tahun 3,Sejarah,Kerajaan Awal,Pengenalan Kesultanan Melayu Melaka,SJ-T3-KA02
+Tahun 3,Sejarah,Tokoh,Mengenal tokoh tempatan dan sumbangan mereka,SJ-T3-TK01
+Tahun 3,Sejarah,Perpaduan,Konsep perpaduan kaum di Malaysia,SJ-T3-PD01
+Tahun 3,Sejarah,Simbol Negara,Rukun Negara – 5 prinsip secara urutan,SJ-T3-SN01
+Tahun 4,Matematik,Nombor Bulat,Nilai nombor bulat hingga 100 000,MAT-T4-N01
+Tahun 4,Matematik,Nombor Bulat,Operasi bergabung darab dan bahagi,MAT-T4-N02
+Tahun 4,Matematik,Pecahan,"Pecahan wajar, tidak wajar, nombor bercampur",MAT-T4-PC01
+Tahun 4,Matematik,Pecahan,Penambahan dan penolakan pecahan penyebut sama,MAT-T4-PC02
+Tahun 4,Matematik,Perpuluhan,Perpuluhan 1 tempat perpuluhan,MAT-T4-PP01
+Tahun 4,Matematik,Perpuluhan,Hubungan perpuluhan dan pecahan (0.5 = 1/2),MAT-T4-PP02
+Tahun 4,Matematik,Wang,"Tambah, tolak, darab dan bahagi wang",MAT-T4-W01
+Tahun 4,Matematik,Masa,"Tempoh masa: jam, minit, saat",MAT-T4-M01
+Tahun 4,Matematik,Perimeter & Luas,Mengira perimeter segiempat dan segi tiga,MAT-T4-PL01
+Tahun 4,Matematik,Perimeter & Luas,Mengira luas segiempat tepat dan segiempat sama,MAT-T4-PL02
+Tahun 4,Matematik,Data,Membaca dan menafsirkan carta palang berganda,MAT-T4-D01
+Tahun 4,Sains,Sains Hayat,"Pemakanan manusia: kumpulan makanan, piramid makanan",SCI-T4-H01
+Tahun 4,Sains,Sains Hayat,Sistem pernafasan manusia,SCI-T4-H02
+Tahun 4,Sains,Sains Hayat,Adaptasi haiwan terhadap persekitaran,SCI-T4-A01
+Tahun 4,Sains,Sains Fizikal,"Sumber tenaga: matahari, air, angin, bahan api",SCI-T4-F01
+Tahun 4,Sains,Sains Fizikal,Haba: konduktor dan penebat haba,SCI-T4-H03
+Tahun 4,Sains,Sains Bumi,Sumber semula jadi: boleh diperbaharui dan tidak boleh,SCI-T4-E01
+Tahun 4,Sains,Kemahiran Proses,"Kaedah saintifik: hipotesis, ujikaji, kesimpulan",SCI-T4-KP01
+Tahun 4,English,Reading,Membaca dan memahami teks – fakta dan inferens,ENG-T4-R01
+Tahun 4,English,Grammar,"Kata bantu: can, must, should, will, would",ENG-T4-G01
+Tahun 4,English,Grammar,"Kata sifat perbandingan: -er, -est",ENG-T4-G02
+Tahun 4,English,Grammar,Kata keterangan cara (-ly),ENG-T4-G03
+Tahun 4,English,Writing,Menulis perenggan dengan idea tersusun,ENG-T4-W01
+Tahun 4,Bahasa Melayu,Membaca,Membaca dan memahami pelbagai jenis teks,BM-T4-MB01
+Tahun 4,Bahasa Melayu,Tatabahasa,"Imbuhan Awalan: men-, mem-, meng-, meny-",BM-T4-T01
+Tahun 4,Bahasa Melayu,Tatabahasa,Kata Ganda Separa dan Berentak,BM-T4-T02
+Tahun 4,Bahasa Melayu,Tatabahasa,Simpulan Bahasa – maksud,BM-T4-T03
+Tahun 4,Bahasa Melayu,Penulisan,Mengenal pasti kesilapan ejaan dalam ayat,BM-T4-P01
+Tahun 4,Bahasa Melayu,Penulisan,Menulis surat tidak rasmi,BM-T4-P02
+Tahun 4,Chinese,Aksara,Aksara Tahun 4 (~400 aksara kumulatif),ZH-T4-A01
+Tahun 4,Chinese,Tatabahasa,Ayat 把 (把字句),ZH-T4-G01
+Tahun 4,Chinese,Tatabahasa,Ayat pasif menggunakan 被,ZH-T4-G02
+Tahun 4,Chinese,Bacaan,Memahami teks naratif,ZH-T4-B01
+Tahun 4,Chinese,Idiom,Makna Chengyu asas: 一石二鸟,ZH-T4-I01
+Tahun 4,Geography,Malaysia,"Mengenal 14 negeri: lokasi, ibu negeri, lambang",GEO-T4-MY01
+Tahun 4,Geography,Malaysia,"Bentuk muka bumi Malaysia: gunung, sungai, pantai, tanah pamah",GEO-T4-MY02
+Tahun 4,Geography,Malaysia,Iklim Malaysia: monsun timur laut dan monsun barat daya,GEO-T4-MY03
+Tahun 4,Geography,Malaysia,Sumber asli Malaysia dan kepentingannya,GEO-T4-MY04
+Tahun 4,Geography,Peta,Membaca skala peta,GEO-T4-PT01
+Tahun 4,Geography,Peta,Membaca dan menggunakan grid peta,GEO-T4-PT02
+Tahun 4,Geography,Asia Tenggara,Negara-negara ASEAN dan ibu negerinya,GEO-T4-AT01
+Tahun 4,Sejarah,Kemahiran Sejarah,Pengertian sejarah dan sumber sejarah,SJ-T4-KS01
+Tahun 4,Sejarah,Kemahiran Sejarah,Konsep masa: kronologi dan urutan peristiwa,SJ-T4-KS02
+Tahun 4,Sejarah,Tamadun Awal,Tamadun awal di Asia Tenggara,SJ-T4-TA01
+Tahun 4,Sejarah,Kerajaan Melayu,"Kerajaan Melayu awal: Kedah Tua, Srivijaya, Langkasuka",SJ-T4-KM01
+Tahun 4,Sejarah,Kerajaan Melayu,Kesultanan Melayu Melaka: penubuhan dan pemerintahan,SJ-T4-KM02
+Tahun 4,Sejarah,Kerajaan Melayu,Sistem pemerintahan Kesultanan Melaka,SJ-T4-KM03
+Tahun 4,Sejarah,Ekonomi,Melaka sebagai pusat perdagangan antarabangsa,SJ-T4-EK01
+Tahun 5,Matematik,Nombor Bulat,Nombor bulat hingga 1 juta,MAT-T5-N01
+Tahun 5,Matematik,Pecahan,Tambah dan tolak pecahan berlainan penyebut,MAT-T5-PC01
+Tahun 5,Matematik,Pecahan,Darab pecahan dengan nombor bulat,MAT-T5-PC02
+Tahun 5,Matematik,Perpuluhan,Perpuluhan sehingga 3 tempat perpuluhan,MAT-T5-PP01
+Tahun 5,Matematik,Peratusan,Menukar pecahan/perpuluhan kepada peratus,MAT-T5-PE01
+Tahun 5,Matematik,Peratusan,Mengira peratusan bagi suatu kuantiti,MAT-T5-PE02
+Tahun 5,Matematik,Nisbah,Konsep nisbah dan bentuk termudah,MAT-T5-NS01
+Tahun 5,Matematik,Luas & Isipadu,Luas segi tiga,MAT-T5-LI01
+Tahun 5,Matematik,Luas & Isipadu,Isipadu kiub dan kuboid,MAT-T5-LI02
+Tahun 5,Matematik,Statistik,Mengira min (purata),MAT-T5-ST01
+Tahun 5,Matematik,Statistik,Membaca dan menafsir carta garis,MAT-T5-ST02
+Tahun 5,Sains,Sains Hayat,Sistem rangka manusia dan fungsinya,SCI-T5-H01
+Tahun 5,Sains,Sains Hayat,Sistem penghadaman: organ dan proses,SCI-T5-H02
+Tahun 5,Sains,Sains Fizikal,Cahaya: pantulan dan pembiasan,SCI-T5-F01
+Tahun 5,Sains,Sains Fizikal,Elektrik: litar siri dan selari,SCI-T5-F02
+Tahun 5,Sains,Sains Fizikal,"Mesin mudah: tuil, pulli, satah condong, gear",SCI-T5-F03
+Tahun 5,Sains,Sains Bumi,Ekosistem: rantai makanan dan siratan makanan,SCI-T5-E01
+Tahun 5,Sains,Sains Bumi,"Pencemaran: jenis, punca dan kesan",SCI-T5-E02
+Tahun 5,English,Reading,Membaca dan memahami teks – inferens dan penilaian,ENG-T5-R01
+Tahun 5,English,Grammar,Ayat aktif dan ayat pasif,ENG-T5-G01
+Tahun 5,English,Grammar,Ucapan cakap ajuk dan cakap pindah,ENG-T5-G02
+Tahun 5,English,Grammar,"Kata hubung: although, however, therefore, moreover",ENG-T5-G03
+Tahun 5,English,Vocabulary,Sinonim dan antonim peringkat menengah,ENG-T5-V01
+Tahun 5,English,Writing,"Menulis karangan berformat: e-mel, laporan, artikel",ENG-T5-W01
+Tahun 5,Bahasa Melayu,Membaca,Membaca dan memahami teks – soalan KBAT,BM-T5-MB01
+Tahun 5,Bahasa Melayu,Tatabahasa,"Tanda Baca: koma, noktah bertindih, sempang",BM-T5-T01
+Tahun 5,Bahasa Melayu,Tatabahasa,Ayat Aktif dan Ayat Pasif,BM-T5-T02
+Tahun 5,Bahasa Melayu,Tatabahasa,Peribahasa: Perumpamaan,BM-T5-T03
+Tahun 5,Bahasa Melayu,Penulisan,Menulis karangan perbincangan,BM-T5-P01
+Tahun 5,Chinese,Aksara,Aksara Tahun 5 (~500 aksara kumulatif),ZH-T5-A01
+Tahun 5,Chinese,Idiom,Peribahasa Cina (成语): lengkap dan makna,ZH-T5-I01
+Tahun 5,Chinese,Tatabahasa,Kenal pasti kesilapan tatabahasa dalam ayat,ZH-T5-G01
+Tahun 5,Chinese,Bacaan,Memahami teks fakta – soalan KBAT,ZH-T5-B01
+Tahun 5,Geography,Asia Tenggara,Ibu negeri negara ASEAN,GEO-T5-AT01
+Tahun 5,Geography,Asia Tenggara,Ciri-ciri fizikal negara ASEAN,GEO-T5-AT02
+Tahun 5,Geography,Dunia,Benua-benua dunia dan ciri-cirinya,GEO-T5-DU01
+Tahun 5,Geography,Dunia,Lautan-lautan dunia,GEO-T5-DU02
+Tahun 5,Geography,Iklim Dunia,"Zon iklim dunia: tropika, sederhana, kutub",GEO-T5-IK01
+Tahun 5,Geography,Iklim Dunia,Garis khatulistiwa dan pengaruhnya,GEO-T5-IK02
+Tahun 5,Geography,Alam Sekitar,"Bencana alam: banjir, tanah runtuh, ribut",GEO-T5-AS01
+Tahun 5,Sejarah,Penjajahan,Kejatuhan Melaka kepada Portugis (1511),SJ-T5-PJ01
+Tahun 5,Sejarah,Penjajahan,Penjajahan Belanda di Melaka,SJ-T5-PJ02
+Tahun 5,Sejarah,Penjajahan,Penjajahan British: Sistem Residen,SJ-T5-PJ03
+Tahun 5,Sejarah,Perlembagaan,Islam sebagai agama rasmi Malaysia,SJ-T5-PM01
+Tahun 5,Sejarah,Perlembagaan,Yang di-Pertuan Agong: peranan dan kuasa,SJ-T5-PM02
+Tahun 5,Sejarah,Perlembagaan,Hak asasi rakyat Malaysia dalam Perlembagaan,SJ-T5-PM03
+Tahun 6,Matematik,Nombor & Operasi,Operasi bergabung dalam lingkungan 1 juta,MAT-T6-N01
+Tahun 6,Matematik,Pecahan,Bahagi pecahan dengan nombor bulat,MAT-T6-PC01
+Tahun 6,Matematik,Perpuluhan,Darab dan bahagi perpuluhan,MAT-T6-PP01
+Tahun 6,Matematik,Peratusan,Masalah peratusan: untung dan rugi,MAT-T6-PE01
+Tahun 6,Matematik,Nisbah,Membahagikan kuantiti mengikut nisbah,MAT-T6-NS01
+Tahun 6,Matematik,Koordinat,"Mengenal pasti koordinat (x,y) dalam satah Cartes",MAT-T6-KO01
+Tahun 6,Matematik,Koordinat,Mengira jarak antara dua titik,MAT-T6-KO02
+Tahun 6,Matematik,Statistik,"Mengira min, mod dan median",MAT-T6-ST01
+Tahun 6,Matematik,Statistik,Membaca pelbagai jenis graf,MAT-T6-ST02
+Tahun 6,Matematik,Kebarangkalian,"Konsep kebarangkalian: pasti, mungkin, mustahil",MAT-T6-KB01
+Tahun 6,Sains,Sains Hayat,"Mikroorganisma: jenis, peranan dan bahaya",SCI-T6-H01
+Tahun 6,Sains,Sains Hayat,Rantai makanan dan siratan makanan,SCI-T6-H02
+Tahun 6,Sains,Sains Fizikal,Gerhana matahari dan gerhana bulan,SCI-T6-F01
+Tahun 6,Sains,Sains Fizikal,Sistem suria: planet dan graviti,SCI-T6-F02
+Tahun 6,Sains,Sains Bumi,Kitaran air,SCI-T6-E01
+Tahun 6,Sains,Sains Bumi,"Isu alam sekitar: pemanasan global, penipisan ozon",SCI-T6-E02
+Tahun 6,English,Reading,Bacaan komprehensif – penilaian kritikal,ENG-T6-R01
+Tahun 6,English,Grammar,Semua tenses – review dan penggunaan tepat,ENG-T6-G01
+Tahun 6,English,Grammar,"Klausa relatif (who, which, that)",ENG-T6-G02
+Tahun 6,English,Grammar,Ayat bersyarat – if clauses (Type 1 & 2),ENG-T6-G03
+Tahun 6,English,Writing,Menulis esei perbincangan dua pendirian,ENG-T6-W01
+Tahun 6,Bahasa Melayu,Membaca,Bacaan komprehensif: prosa klasik dan moden,BM-T6-MB01
+Tahun 6,Bahasa Melayu,Tatabahasa,Kesilapan ejaan dan tatabahasa dalam ayat,BM-T6-T01
+Tahun 6,Bahasa Melayu,Tatabahasa,Peribahasa: Bidalan dan pepatah,BM-T6-T02
+Tahun 6,Bahasa Melayu,Penulisan,Menulis karangan imaginatif dan berita,BM-T6-P01
+Tahun 6,Bahasa Melayu,Seni Bahasa,Memahami dan menganalisis puisi moden,BM-T6-SB01
+Tahun 6,Chinese,Aksara,Aksara Tahun 6 (~600+ aksara kumulatif),ZH-T6-A01
+Tahun 6,Chinese,Bacaan,Bacaan komprehensif – artikel fakta dan naratif,ZH-T6-B01
+Tahun 6,Chinese,Tatabahasa,Kesilapan tatabahasa: kenal pasti dan betulkan,ZH-T6-G01
+Tahun 6,Chinese,Puisi Klasik,Memahami puisi klasik Cina (古诗),ZH-T6-PK01
+Tahun 6,Geography,Dunia,Zon masa dunia dan perbezaan masa,GEO-T6-DU01
+Tahun 6,Geography,Dunia,Negara-negara membangun vs maju,GEO-T6-DU02
+Tahun 6,Geography,Alam Sekitar,"Isu global: pemanasan global, penebangan hutan",GEO-T6-AS01
+Tahun 6,Geography,Alam Sekitar,Kepentingan menjaga alam sekitar,GEO-T6-AS02
+Tahun 6,Geography,Malaysia,"Pembangunan ekonomi Malaysia: pelancongan, perindustrian",GEO-T6-MY01
+Tahun 6,Geography,Peta,Membaca dan menafsir peta topografi,GEO-T6-PT01
+Tahun 6,Sejarah,Kemerdekaan,Perjuangan kemerdekaan Malaysia,SJ-T6-KM01
+Tahun 6,Sejarah,Kemerdekaan,Tokoh-tokoh kemerdekaan dan sumbangan mereka,SJ-T6-KM02
+Tahun 6,Sejarah,Pembentukan Malaysia,Penubuhan Malaysia 16 September 1963,SJ-T6-PM01
+Tahun 6,Sejarah,Pembentukan Malaysia,Cabaran selepas pembentukan Malaysia,SJ-T6-PM02
+Tahun 6,Sejarah,Perlembagaan,Rukun Negara: prinsip dan maknanya,SJ-T6-PN01
+Tahun 6,Sejarah,Perlembagaan,"Struktur kerajaan: Eksekutif, Legislatif, Kehakiman",SJ-T6-PN02
+Tahun 6,Sejarah,Pencapaian,Pencapaian Malaysia selepas merdeka,SJ-T6-PC01
+Tahun 6,Sejarah,Pencapaian,Perdana Menteri Malaysia dan sumbangan mereka,SJ-T6-PC02

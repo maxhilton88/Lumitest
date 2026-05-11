@@ -1,0 +1,340 @@
+
+<style>
+*{box-sizing:border-box}
+.wrap{padding:1rem 0}
+.tabs{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:5px 14px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary);font-size:12px;cursor:pointer;transition:all .15s}
+.tab.active{background:var(--color-text-primary);color:var(--color-background-primary)}
+.panel{display:none}.panel.active{display:block}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--color-background-secondary);padding:7px 10px;text-align:left;font-weight:500;font-size:11px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+td{padding:7px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;margin:1px}
+.eff-2{background:#EAF3DE;color:#3B6D11}.eff-half{background:#FAECE7;color:#993C1D}.eff-0{background:#F1EFE8;color:#5F5E5A}
+.cell-atk{background:var(--color-background-secondary);padding:6px 8px;border-radius:6px;margin:2px 0;font-size:11px}
+.move-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.move-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.move-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.move-type{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500}
+.move-row{display:flex;gap:16px;font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.move-val{color:var(--color-text-primary);font-weight:500}
+.move-desc{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.stat-mod{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);margin:2px}
+.section-title{font-size:12px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.4px;margin:1rem 0 .5rem;padding-bottom:4px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.type-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px}
+.type-name{font-size:14px;font-weight:500;margin-bottom:6px}
+.type-row{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.type-row span{color:var(--color-text-primary)}
+@media(max-width:500px){.grid2{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+<div class="tabs">
+  <button class="tab active" onclick="showTab('chart',this)">Type chart</button>
+  <button class="tab" onclick="showTab('types',this)">Type profiles</button>
+  <button class="tab" onclick="showTab('moves',this)">Move list</button>
+  <button class="tab" onclick="showTab('formula',this)">Battle formula</button>
+</div>
+
+<!-- TYPE CHART -->
+<div class="panel active" id="chart">
+<div class="section-title">Effectiveness — attacker vs defender (2× = super effective · 0.5× = not very effective)</div>
+<div style="overflow-x:auto">
+<table>
+<thead>
+<tr>
+  <th>Attacker ↓ / Defender →</th>
+  <th>🔥 Fire</th><th>💧 Water</th><th>🌿 Wood</th>
+  <th>⚡ Thunder</th><th>🪨 Earth</th><th>🌑 Shadow</th><th>✨ Gold</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><strong>🔥 Fire</strong></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td>1×</td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td>1×</td>
+</tr>
+<tr><td><strong>💧 Water</strong></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td>1×</td>
+  <td>1×</td>
+</tr>
+<tr><td><strong>🌿 Wood</strong></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td>1×</td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td>1×</td>
+</tr>
+<tr><td><strong>⚡ Thunder</strong></td>
+  <td>1×</td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td>1×</td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td>1×</td>
+  <td><span class="badge eff-2">2×</span></td>
+</tr>
+<tr><td><strong>🪨 Earth</strong></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td>1×</td>
+  <td>1×</td>
+</tr>
+<tr><td><strong>🌑 Shadow</strong></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td>1×</td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td>1×</td>
+  <td>1×</td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-2">2×</span></td>
+</tr>
+<tr><td><strong>✨ Gold</strong></td>
+  <td>1×</td>
+  <td>1×</td>
+  <td>1×</td>
+  <td><span class="badge eff-half">0.5×</span></td>
+  <td>1×</td>
+  <td><span class="badge eff-2">2×</span></td>
+  <td><span class="badge eff-half">0.5×</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section-title" style="margin-top:1rem">Dual-type damage — both types are checked, multiply together</div>
+<div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+A Water/Thunder spirit hit by a Wood attack: Wood vs Water = 0.5× · Wood vs Thunder = 1× · Final = <strong style="color:var(--color-text-primary)">0.5×</strong><br>
+A Fire/Earth spirit hit by a Water attack: Water vs Fire = 2× · Water vs Earth = 2× · Final = <strong style="color:var(--color-text-primary)">4× (double weakness!)</strong><br>
+Max multiplier: 4× · Min multiplier: 0.25× · Standard: 1×
+</div>
+</div>
+
+<!-- TYPE PROFILES -->
+<div class="panel" id="types">
+<div class="grid2">
+
+<div class="type-card">
+  <div class="type-name">🔥 Fire</div>
+  <div class="type-row">Strong vs: <span>Wood, Shadow</span></div>
+  <div class="type-row">Weak vs: <span>Water, Earth</span></div>
+  <div class="type-row">Resists: <span>Fire, Wood, Shadow</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>High ATK · Low DEF</span></div>
+  <div class="type-row">Modifier: <span>ATK ×1.15 · DEF ×0.85</span></div>
+  <div class="type-row">Feels like: <span>Aggressive, glass cannon</span></div>
+</div>
+
+<div class="type-card">
+  <div class="type-name">💧 Water</div>
+  <div class="type-row">Strong vs: <span>Fire, Earth, Thunder (counters)</span></div>
+  <div class="type-row">Weak vs: <span>Wood, Thunder</span></div>
+  <div class="type-row">Resists: <span>Fire, Water, Earth</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>Balanced · Slight HP bonus</span></div>
+  <div class="type-row">Modifier: <span>HP ×1.1 · ATK ×0.95</span></div>
+  <div class="type-row">Feels like: <span>Reliable, steady</span></div>
+</div>
+
+<div class="type-card">
+  <div class="type-name">🌿 Wood</div>
+  <div class="type-row">Strong vs: <span>Water, Earth</span></div>
+  <div class="type-row">Weak vs: <span>Fire, Shadow</span></div>
+  <div class="type-row">Resists: <span>Water, Earth, Gold</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>High HP · Average ATK</span></div>
+  <div class="type-row">Modifier: <span>HP ×1.2 · ATK ×0.9</span></div>
+  <div class="type-row">Feels like: <span>Tanky, enduring</span></div>
+</div>
+
+<div class="type-card">
+  <div class="type-name">⚡ Thunder</div>
+  <div class="type-row">Strong vs: <span>Water, Gold</span></div>
+  <div class="type-row">Weak vs: <span>Earth, Thunder</span></div>
+  <div class="type-row">Resists: <span>Thunder, Wood</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>High Speed · Low HP</span></div>
+  <div class="type-row">Modifier: <span>Speed ×1.2 · HP ×0.9</span></div>
+  <div class="type-row">Feels like: <span>Fast, high-risk</span></div>
+</div>
+
+<div class="type-card">
+  <div class="type-name">🪨 Earth</div>
+  <div class="type-row">Strong vs: <span>Fire, Thunder</span></div>
+  <div class="type-row">Weak vs: <span>Water, Wood</span></div>
+  <div class="type-row">Resists: <span>Fire, Thunder, Earth</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>Very high DEF · Slow</span></div>
+  <div class="type-row">Modifier: <span>DEF ×1.25 · Speed ×0.8</span></div>
+  <div class="type-row">Feels like: <span>Immovable wall</span></div>
+</div>
+
+<div class="type-card">
+  <div class="type-name">🌑 Shadow</div>
+  <div class="type-row">Strong vs: <span>Wood, Shadow, Gold</span></div>
+  <div class="type-row">Weak vs: <span>Fire, Shadow</span></div>
+  <div class="type-row">Resists: <span>Water, Wood</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>Balanced · Unpredictable</span></div>
+  <div class="type-row">Modifier: <span>All stats ×1.0 (no modifier)</span></div>
+  <div class="type-row">Feels like: <span>Wild card, high ceiling</span></div>
+</div>
+
+<div class="type-card" style="border-color:#C9A227">
+  <div class="type-name">✨ Gold</div>
+  <div class="type-row">Strong vs: <span>Shadow</span></div>
+  <div class="type-row">Weak vs: <span>Thunder, Shadow (double threat)</span></div>
+  <div class="type-row">Resists: <span>Fire, Wood, Earth</span></div>
+  <div class="type-row" style="margin-top:6px">Stat profile: <span>Highest ATK · Fragile</span></div>
+  <div class="type-row">Modifier: <span>ATK ×1.2 · DEF ×0.8</span></div>
+  <div class="type-row">Feels like: <span>Rare, powerful, risky</span></div>
+</div>
+
+</div>
+</div>
+
+<!-- MOVE LIST -->
+<div class="panel" id="moves">
+<div class="section-title">🔥 Fire — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Ember Strike</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">40</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Basic fire attack. Fast answer required — speed bonus applies fully.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Flameburst</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">65</span></span><span>Accuracy: <span class="move-val">95%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Erupts in a burst. If answered in &lt;3s, deals +15 bonus damage.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Cinderlash</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">55</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Reliable mid-power attack. No special condition. Good all-rounder.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Nova Surge</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">90</span></span><span>Accuracy: <span class="move-val">85%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Lumira exclusive move. Critical hit on 100% accuracy session answer. High risk, devastating reward.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Ashveil</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">30</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Lowers opponent DEF by 20% for this battle. Pairs with high-power follow-up.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Pyrestep</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">50</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Always goes first (priority move). Useful to land first hit regardless of speed.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Magma Core</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">80</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Hits hard but slightly unreliable. Best used after DEF-lowering setup.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Scorchtail</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">45</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Hits twice if answered correctly AND fast (&lt;3s). Total 90 power if both hit.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Inferno Veil</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">70</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Raises own ATK by 15% after use. Snowballs in longer battles.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Final Ember</span><span class="move-type" style="background:#FAECE7;color:#993C1D">Fire</span></div><div class="move-row"><span>Power: <span class="move-val">120</span></span><span>Accuracy: <span class="move-val">80%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Highest power Fire move. Unreliable. Spirit loses 20 HP after use regardless of hit.</div></div>
+
+<div class="section-title">💧 Water — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Aqua Tap</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">40</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Standard water attack. Reliable opener, no conditions.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Tidecrash</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">70</span></span><span>Accuracy: <span class="move-val">95%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Powerful wave. Deals 10% of opponent max HP as bonus damage.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Riptide</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">55</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Pulls opponent. Lowers opponent speed bonus by 1 tier for this battle.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Photon Bloom</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Lumira exclusive. Heals full party 15 HP per correct answer this battle.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Surge Pulse</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">60</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Hits harder if used after opponent misses a question. Punisher move.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Dewshield</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Raises own DEF by 25% for this battle. Best opener for a tanky Water build.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Whirlpool</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">50</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Hits twice across 2 consecutive correct answers. 25 power each hit.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Deep Current</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">85</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">High damage, slightly unreliable. Best mid-game move.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Mistform</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Reduces all incoming damage by 20% for 3 opponent attacks.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Ocean Wrath</span><span class="move-type" style="background:#E6F1FB;color:#185FA5">Water</span></div><div class="move-row"><span>Power: <span class="move-val">110</span></span><span>Accuracy: <span class="move-val">85%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Signature high-power move. Lowers own ATK by 10% after use.</div></div>
+
+<div class="section-title">🌿 Wood — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Leaf Slash</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">40</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Fast, reliable. No conditions. Standard Wood opener.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Root Grasp</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">50</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Slows opponent — their speed bonus reduced to 1.0× for next 2 attacks.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Thornwall</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Creates a barrier. Opponent takes 10 damage per attack they land this battle.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Vine Whip</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">35</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Hits 3 times at 35 power each if answered correctly 3 times in a row.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Petal Storm</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">65</span></span><span>Accuracy: <span class="move-val">95%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Scatters petals. Lowers opponent ATK by 15% as a side effect.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Forest Breath</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Heals own HP by 20% of max HP. Best used at critical HP.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Bark Armour</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Raises DEF by 30%. Makes Wood spirits near-unkillable when stacked with type bonus.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Ancient Growth</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">80</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Power scales with HP remaining — full HP = 80 power, low HP = 40 power.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Arc Chain</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">55</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Lumira exclusive. Chains to all opponent party spirits for 55 damage each on correct answer.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">World Tree</span><span class="move-type" style="background:#EAF3DE;color:#3B6D11">Wood</span></div><div class="move-row"><span>Power: <span class="move-val">100</span></span><span>Accuracy: <span class="move-val">80%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Signature ultimate. Only unlocks at Lumi Level 50+. Cannot miss if Lumi scored 100% on last test.</div></div>
+
+<div class="section-title">⚡ Thunder — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Static Snap</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">40</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Standard opener. Always activates full speed bonus tier.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Voltdash</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">60</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Always strikes first. Speed-based: power increases to 80 if answered in &lt;3s.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Thunderclap</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">75</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Loud, concussive hit. Lowers opponent speed bonus by 1 tier.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Spark Frenzy</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">30</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Hits 4 times at 30 power. Best against high-DEF targets.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Storm Surge</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">85</span></span><span>Accuracy: <span class="move-val">85%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Power scales with answer speed: &lt;3s = 85, 3–5s = 60, &gt;5s = 40.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Charge Up</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Boosts next Thunder move power by 50%. Skip an attack to set up a devastating hit.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Lightning Rod</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Absorbs next incoming Thunder attack completely — heals 20 HP instead.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Null Shift</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Lumira exclusive. Negates the opponent's last attack — HP is restored as if it never landed.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Megavolt</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">95</span></span><span>Accuracy: <span class="move-val">80%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Unreliable but devastating. Pairs with Charge Up for 142 effective power.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Thundergod Strike</span><span class="move-type" style="background:#FAEEDA;color:#854F0B">Thunder</span></div><div class="move-row"><span>Power: <span class="move-val">130</span></span><span>Accuracy: <span class="move-val">70%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Highest power Thunder move. Never misses if answered in &lt;2s. High risk.</div></div>
+
+<div class="section-title">🪨 Earth — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Rock Slam</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">50</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Slow but reliable. Earth spirits are built for sustained damage.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Stone Guard</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Raises DEF by 30%. Combined with Earth's base modifier, nearly doubles effective DEF.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Tremor</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">60</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Shakes the ground. Deals half damage to all opponent party spirits (30 each).</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Boulder Drop</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">80</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Crushes target. Always hits on first correct answer after missing one.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Quicksand</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">40</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Traps opponent. Negates their speed bonus entirely for this battle.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Ironstone</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">70</span></span><span>Accuracy: <span class="move-val">95%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Heavy strike. Power increases by 10 for each DEF buff active on self.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Foundation Wall</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Lumira exclusive. DEF doubles for first 3 hits taken. Impenetrable opener.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Rockslide</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">75</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Deals extra 15 damage if opponent's HP is below 50%.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Eruption</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">100</span></span><span>Accuracy: <span class="move-val">85%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Splits damage — 60 to active opponent, 40 to next spirit in their party.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Titan Crush</span><span class="move-type" style="background:#F1EFE8;color:#5F5E5A">Earth</span></div><div class="move-row"><span>Power: <span class="move-val">120</span></span><span>Accuracy: <span class="move-val">80%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Pure power. Ignores opponent DEF buffs. Slow — always strikes last.</div></div>
+
+<div class="section-title">🌑 Shadow — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Void Touch</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">40</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Basic Shadow attack. Ignores type resistances — always deals at least 1× damage.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Darkpulse</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">65</span></span><span>Accuracy: <span class="move-val">95%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Resonant dark wave. Lowers opponent ATK by 10%.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Nightmare</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Opponent's next incorrect answer costs them 20 bonus HP. High pressure move.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Shadow Step</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">55</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Always strikes first. Moves before any speed calculation.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Abyssal Cry</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Lowers ALL opponent stats (ATK, DEF, Speed) by 10% each. Best debuff move in game.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Voidstrike</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">80</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Pierces DEF — treats opponent DEF as 0 for this hit. One-shot potential.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Phantom Cloak</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Next incoming attack misses completely (once per battle).</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Null Drain</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">60</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Drains — heals own HP by 50% of damage dealt.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Eclipse</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">90</span></span><span>Accuracy: <span class="move-val">85%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Deals 90 + 15% of opponent current HP as bonus damage. Devastating on full-HP targets.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Malachar's Wrath</span><span class="move-type" style="background:#EEEDFE;color:#3C3489">Shadow</span></div><div class="move-row"><span>Power: <span class="move-val">140</span></span><span>Accuracy: <span class="move-val">75%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Final boss move. Corrupted spirits only — wild bosses in Nullspire and Voidcore exclusively.</div></div>
+
+<div class="section-title">✨ Gold — 10 moves</div>
+<div class="move-card"><div class="move-top"><span class="move-name">Auric Pulse</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">45</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Standard Gold attack. Slightly higher power than most type openers.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Codex Beam</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">70</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Power scales with Lumi's study streak — +5 power per consecutive correct answer this session (max +30).</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Lumira Flare</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">80</span></span><span>Accuracy: <span class="move-val">95%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Deals 2× damage to Shadow types — the signature anti-Malachar move.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Ancient Light</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Removes all debuffs from self. Restores 15 HP. Gold spirits resist Malachar's control.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Star Fragment</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">55</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Physical</span></span></div><div class="move-desc">Hits twice — once on correct answer, once on fast answer (&lt;3s). Max 110 total.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Knowledge Surge</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Raises entire party ATK by 15% for this battle. Only Gold-type spirits can use this.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Auraveil</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">0</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Status</span></span></div><div class="move-desc">Shields party — reduces all incoming damage by 25% for next 2 opponent attacks.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Golden Age</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">90</span></span><span>Accuracy: <span class="move-val">90%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Evokes the First Civilisation. Power +20 for each Codex Fragment recovered so far (max +280 at 14 fragments).</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Foxy's Bond</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">75</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Foxy exclusive. Cannot be learned by any other spirit. Power doubles when Foxy is below 30% HP.</div></div>
+<div class="move-card"><div class="move-top"><span class="move-name">Codex Restored</span><span class="move-type" style="background:#FEF9E7;color:#7D6008">Gold</span></div><div class="move-row"><span>Power: <span class="move-val">150</span></span><span>Accuracy: <span class="move-val">100%</span></span><span>Category: <span class="move-val">Special</span></span></div><div class="move-desc">Final boss finisher. Only usable with all 14 Fragments recovered. Never misses. Cannot be resisted.</div></div>
+</div>
+
+<!-- FORMULA -->
+<div class="panel" id="formula">
+<div class="section-title">Updated battle damage formula — spirits share Lumi's level</div>
+<div style="background:var(--color-background-secondary);border-radius:8px;padding:12px 14px;font-size:12px;font-family:monospace;line-height:2;margin-bottom:1rem">
+baseDamage = movePower × (baseATK / 100)<br>
+baseATK = 10 + (lumiLevel × 3) + equip_ATK<br>
+typeMod = typeEffectiveness(attackerType, defenderType) <span style="color:var(--color-text-tertiary)">// 0.25 | 0.5 | 1 | 2 | 4</span><br>
+spiritMod = spirit.baseStatModifier <span style="color:var(--color-text-tertiary)">// e.g. Fire ATK ×1.15</span><br>
+speedMod = answerSpeed <span style="color:var(--color-text-tertiary)">// 1.0 | 1.15 | 1.3</span><br>
+rawDamage = baseDamage × typeMod × spiritMod × speedMod<br>
+netDamage = max(1, rawDamage − equip_DEF)
+</div>
+<div class="section-title">Example — Lumi Level 10, Fire spirit vs Wood enemy</div>
+<div style="font-size:12px;line-height:2;color:var(--color-text-secondary)">
+baseATK = 10 + (10×3) = <strong style="color:var(--color-text-primary)">40</strong><br>
+movePower = Flameburst = <strong style="color:var(--color-text-primary)">65</strong><br>
+baseDamage = 65 × (40/100) = <strong style="color:var(--color-text-primary)">26</strong><br>
+typeMod = Fire vs Wood = <strong style="color:var(--color-text-primary)">2×</strong><br>
+spiritMod = Fire ATK ×1.15 = <strong style="color:var(--color-text-primary)">1.15×</strong><br>
+speedMod = answered in 2s = <strong style="color:var(--color-text-primary)">1.3×</strong><br>
+rawDamage = 26 × 2 × 1.15 × 1.3 = <strong style="color:var(--color-text-primary)">77.74 → 78</strong><br>
+netDamage (no DEF gear) = <strong style="color:var(--color-text-primary)">78 damage</strong><br>
+Wood enemy HP at Level 10 = 200 HP → <strong style="color:var(--color-text-primary)">~2–3 hits to KO</strong> ✅
+</div>
+<div class="section-title" style="margin-top:1rem">Spirit stat modifiers — all scale off Lumi's level</div>
+<table>
+<thead><tr><th>Type</th><th>HP mod</th><th>ATK mod</th><th>DEF mod</th><th>Speed mod</th></tr></thead>
+<tbody>
+<tr><td>🔥 Fire</td><td>1.0×</td><td>1.15×</td><td>0.85×</td><td>1.0×</td></tr>
+<tr><td>💧 Water</td><td>1.1×</td><td>0.95×</td><td>1.0×</td><td>1.0×</td></tr>
+<tr><td>🌿 Wood</td><td>1.2×</td><td>0.9×</td><td>1.1×</td><td>0.95×</td></tr>
+<tr><td>⚡ Thunder</td><td>0.9×</td><td>1.0×</td><td>0.9×</td><td>1.2×</td></tr>
+<tr><td>🪨 Earth</td><td>1.1×</td><td>0.9×</td><td>1.25×</td><td>0.8×</td></tr>
+<tr><td>🌑 Shadow</td><td>1.0×</td><td>1.0×</td><td>1.0×</td><td>1.0×</td></tr>
+<tr><td>✨ Gold</td><td>0.9×</td><td>1.2×</td><td>0.8×</td><td>1.05×</td></tr>
+</tbody>
+</table>
+<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">Dual-type spirits average the two type modifiers. Shadow has no modifier — pure base stats, unpredictable.</div>
+</div>
+
+</div>
+<script>
+function showTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
